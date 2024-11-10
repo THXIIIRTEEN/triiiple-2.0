@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset</title>
+    <link rel="stylesheet" href="/password/index.css">
+</head>
+<body>
+    <form method="post" action="#" id="form">
+        <label for="password">Ваш пароль может быть обновлён кнопкой ниже</label>
+        <input name="password" type="password" placeholder="Введите новый пароль"/>
+        <button type="submit">Сбросить пароль</button>
+    </form>
+    <div id="success-block" class="success-block invisible">
+        <p>Пароль успешно изменён, можете закрыть это окно</p>
+    </div>
+    <div id="error-block" class="error-block invisible">
+        <p id="error-message">Произошла ошибка при изменении пароля</p>
+    </div>
+    <script>
+        const form = document.getElementById('form');
+        form.onsubmit = function(event) {
+            event.preventDefault();
+
+            const path = window.location.pathname; 
+            const segments = path.split('/'); 
+            const token = segments[segments.length - 1]; 
+
+            const formData = new FormData(this);
+            formData.append('token', token);
+            const data = Object.fromEntries(formData.entries());
+
+            const errorBlock = document.getElementById('error-block');
+            const errorBlockMessage = document.getElementById('error-message');
+            const successBlock = document.getElementById('success-block');
+
+            fetch(`/reset/password/change`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(response => {
+                console.log(response.status);
+                if (response.ok) {
+                    successBlock.classList.remove('invisible');
+                    errorBlock.classList.add('invisible');
+                } else {
+                    throw new Error(`${response.message}`);
+                }
+            })
+            .catch(error => {
+                console.log(error)
+                errorBlockMessage.textContent = error.message;
+                errorBlock.classList.remove('invisible');
+                successBlock.classList.add('invisible');
+            });
+        }
+    </script>
+</body>
+</html>
