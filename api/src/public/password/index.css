@@ -1,0 +1,11 @@
+.success-block {
+    display: flex;
+}
+
+.error-block {
+    display: flex;
+}
+
+.invisible {
+    display: none !important;
+}

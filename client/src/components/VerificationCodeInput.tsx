@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from "axios";
 import { useRouter } from 'next/router';
-
+import { saveToken } from '@/utils/cookies';
 interface VerificationCodeInputProps {
     email: string;
 }
@@ -55,12 +55,14 @@ const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({ email }) 
         const sendCode = async () => {
             if (isComplete) {
                 try {
-                    const response = await axios.post(`${process.env.API_URI!}/users/verification`, { code: code.join(''), email });
+                    const response = await axios.post(`${process.env.API_URI!}/users/verification`, { code: code.join(''), email }, { withCredentials: true });
                     if (response.status === 200) {
-                        router.push('/profile')
+                        const token = response.data.token;
+                        saveToken(token);
+                        router.push('/profile');
                     }
                     else {
-                        setError('Неправильный код')
+                        setError('Неправильный код');
                     }
                 } catch (error) { 
                     console.error('Error sending code:', error);

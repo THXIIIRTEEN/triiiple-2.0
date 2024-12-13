@@ -64,7 +64,7 @@ const RegistrationPage: React.FC = () => {
       try {
         const response = await axios.post(`${process.env.API_URI!}/users/registration`, convertedUserData);
         if (response.status === 200) {
-          router.push('/profile')
+          router.push('/login')
         }
       }
       catch (error) {

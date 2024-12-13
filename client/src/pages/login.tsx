@@ -6,12 +6,16 @@ import VerificationCodeInput from "@/components/VerificationCodeInput";
 import axios from "axios";
 import HCaptchaComponent from "@/components/HCaptchaComponent";
 import { handleVerifyCaptcha } from "@/utils/captcha";
+import GoogleOuath from "@/components/GoogleOauth";
+import { useSession, signIn } from "next-auth/react";
 
 const LoginPage: React.FC = () => {
     const [formValues, setFormValues] = useState<UserData>({
         email: '',
         password: ''
     });
+
+    const { data: session } = useSession();
 
     const [serverError, setServerError] = useState<ServerError | null | string>(null);
     const [emailAlert, setEmailAlert] = useState<string | null>(null);
@@ -76,21 +80,31 @@ const LoginPage: React.FC = () => {
     }
 
     return (
-        <form method="post" onSubmit={handlePostUserData}>
-            <AuthorizationInput name='email' placeholder='Почта' type='text' value={formValues.email} serverError={serverError} autoComplete='email' setFormValues={setFormValues} />
-            <AuthorizationInput name='password' placeholder='Пароль' type='password' minLength={6} maxLength={32} value={formValues.password} autoComplete='current-password' serverError={serverError} setFormValues={setFormValues} />
-            <button type="button" onClick={triggerForgotPassword}>Забыли пароль?</button>
-            <button type="submit">Отправить</button>       
-            {emailAlert && (
-                <>
-                    <p>{emailAlert}</p>
-                    {emailAlert === 'Введите код, который пришёл на ваш электронный почтовый ящик' && <VerificationCodeInput email={memoizedEmail} />}
-                </>
-            )}
-            {showCaptcha && (
-                <HCaptchaComponent onVerify={onCaptchaVerified} />
-            )}
-        </form>
+        <>
+            <form method="post" onSubmit={handlePostUserData}>
+                <AuthorizationInput name='email' placeholder='Почта' type='text' value={formValues.email} serverError={serverError} autoComplete='email' setFormValues={setFormValues} />
+                <AuthorizationInput name='password' placeholder='Пароль' type='password' minLength={6} maxLength={32} value={formValues.password} autoComplete='current-password' serverError={serverError} setFormValues={setFormValues} />
+                <button type="button" onClick={triggerForgotPassword}>Забыли пароль?</button>
+                <button type="submit">Отправить</button>       
+                {emailAlert && (
+                    <>
+                        <p>{emailAlert}</p>
+                        {emailAlert === 'Введите код, который пришёл на ваш электронный почтовый ящик' && <VerificationCodeInput email={memoizedEmail} />}
+                    </>
+                )}
+                {showCaptcha && (
+                    <HCaptchaComponent onVerify={onCaptchaVerified} />
+                )}
+                <GoogleOuath/>
+                {!session && (
+                    <>
+                    <p>Not signed in</p>
+                    <br />
+                    <button type="button" onClick={() => signIn()}>Sign in</button>
+                    </>
+                )}
+            </form>
+            </>
     );
 }
 

@@ -1,0 +1,8 @@
+.submit {
+    position: absolute;
+    z-index: 1000;
+}
+
+.cropper :global(.reactEasyCrop_CropArea) {
+    transition: transform 0.2s ease-out;
+}
