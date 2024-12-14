@@ -7,6 +7,7 @@ import axios from "axios";
 import HCaptchaComponent from "@/components/HCaptchaComponent";
 import { handleVerifyCaptcha } from "@/utils/captcha";
 import GoogleOuath from "@/components/GoogleOauth";
+import SocialOAuthButton from "@/components/SocialOAuthButton";
 
 const LoginPage: React.FC = () => {
     const [formValues, setFormValues] = useState<UserData>({
@@ -93,6 +94,7 @@ const LoginPage: React.FC = () => {
                     <HCaptchaComponent onVerify={onCaptchaVerified} />
                 )}
                 <GoogleOuath/>
+                <SocialOAuthButton/>
             </form>
             </>
     );
