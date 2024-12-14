@@ -7,15 +7,12 @@ import axios from "axios";
 import HCaptchaComponent from "@/components/HCaptchaComponent";
 import { handleVerifyCaptcha } from "@/utils/captcha";
 import GoogleOuath from "@/components/GoogleOauth";
-import { useSession, signIn } from "next-auth/react";
 
 const LoginPage: React.FC = () => {
     const [formValues, setFormValues] = useState<UserData>({
         email: '',
         password: ''
     });
-
-    const { data: session } = useSession();
 
     const [serverError, setServerError] = useState<ServerError | null | string>(null);
     const [emailAlert, setEmailAlert] = useState<string | null>(null);
@@ -96,13 +93,6 @@ const LoginPage: React.FC = () => {
                     <HCaptchaComponent onVerify={onCaptchaVerified} />
                 )}
                 <GoogleOuath/>
-                {!session && (
-                    <>
-                    <p>Not signed in</p>
-                    <br />
-                    <button type="button" onClick={() => signIn()}>Sign in</button>
-                    </>
-                )}
             </form>
             </>
     );
