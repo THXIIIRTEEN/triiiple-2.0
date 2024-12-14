@@ -12,13 +12,13 @@ userRouter.post('/users/verification', verifyCode);
 userRouter.post('/avatar/upload', uploadAvatar, changeUserAvatar);
 userRouter.post('/avatar', getProfilePicture);
 userRouter.post('/google/auth', authNewGoogleUser);
-userRouter.get('/auth/vk', passport.authenticate('vkontakte', {
-    scope: ['friends', 'email'] // Здесь указываются необходимые разрешения
-}));
+// userRouter.get('/auth/vk', passport.authenticate('vkontakte', {
+//     scope: ['friends', 'email'] // Здесь указываются необходимые разрешения
+// }));
 
-userRouter.get('/auth/vk/callback', passport.authenticate('vkontakte', {
-    successRedirect: '/',      // Переадресация после успешной авторизации
-    failureRedirect: '/login', // Переадресация в случае неудачи
-}));
+// userRouter.get('/auth/vk/callback', passport.authenticate('vkontakte', {
+//     successRedirect: '/',      // Переадресация после успешной авторизации
+//     failureRedirect: '/login', // Переадресация в случае неудачи
+// }));
 
 export { userRouter };

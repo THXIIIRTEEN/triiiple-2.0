@@ -15,7 +15,11 @@ declare global {
         GOOGLE_CLIENT_ID: string;
         GOOGLE_CLIENT_SECRET: string;
         VK_SECURITY_KEY: string;
-        VK_SERVICE_KEY: string
+        VK_SERVICE_KEY: string;
+        GITHUB_ID: string;
+        GITHUB_SECRET: string;
+        DISCORD_ID: string;
+        DISCORD_SECRET: string;
       }
     }
   }
