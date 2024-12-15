@@ -42,7 +42,7 @@ const RegistrationPage: React.FC = () => {
         convertedData[key as keyof UserData] = value.replace(regex, '_');
       }
       if (key === 'tag') {
-        convertedData[key as keyof UserData] = '@' + (convertedData[key as keyof UserData] || '').toLowerCase();
+        convertedData[key as keyof UserData] = (convertedData[key as keyof UserData] || '').toLowerCase();
       }
     });
 

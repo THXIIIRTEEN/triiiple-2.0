@@ -15,13 +15,13 @@ interface GoogleJwtPayload extends JwtPayload {
     picture: string
 }
 
-const generateRandomPassword = (length = 12) => {
+export const generateRandomPassword = (length = 12) => {
     return crypto.randomBytes(length).toString('hex');
 }
 
 const convertTextToTag = (text: string) => {
     let tag = transliterate(text.replace(/\s+/g, '')).toLowerCase();
-    return tag = '@' + tag;
+    return tag;
 }
 
 const verifyToken = async (token: string) => {

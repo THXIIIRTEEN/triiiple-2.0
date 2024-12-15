@@ -1,8 +1,9 @@
 import AvatarInput from "@/components/AvatarInput";
 import UserAvatar from "@/components/UserAvatar";
-import { getUserFromCookies } from "@/utils/cookies";
+import { getUserFromCookies, saveToken } from "@/utils/cookies";
 import { useAuthStore } from "@/utils/store";
 import { useEffect, useState } from "react";
+import { useCookies } from 'react-cookie';
 
 const ProfilePage: React.FC = () => {
 
@@ -13,7 +14,18 @@ const ProfilePage: React.FC = () => {
         if (!user) {
             setProfile(getUserFromCookies())
         }
-    }, [user])
+    }, [user]);
+
+    const [cookies] = useCookies(['jwtToken']);
+
+    console.log(cookies)
+
+    useEffect(() => {
+        const token = cookies.jwtToken;
+        if (token) {
+            saveToken(token);
+        }
+    }, [cookies]);
 
     return (
         <>  

@@ -10,7 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "typeRoots": [
       "./node_modules/@types",
-      "./@types"
+      "./@types",
     ]
   },
   "include": [
