@@ -94,7 +94,7 @@ const LoginPage: React.FC = () => {
                     <HCaptchaComponent onVerify={onCaptchaVerified} />
                 )}
                 <GoogleOuath/>
-                {/* <SocialOAuthButton/> */}
+                <SocialOAuthButton/>
             </form>
             </>
     );

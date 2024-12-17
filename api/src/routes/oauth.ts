@@ -12,12 +12,13 @@ oauthRouter.get('/auth/discord/callback',
     (req: Request, res: Response) => {
       const user = req.user as IUser;
       const jwtToken = createJWTToken(user, req, res);
+      console.log(jwtToken)
       res.cookie('token', jwtToken, {
         httpOnly: true,   // Защищает от доступа через JS
         secure: process.env.NODE_ENV === 'production', // Работает только через HTTPS в продакшн
         sameSite: 'none', // Разрешает кросс-доменные запросы
         path: '/',        // Доступно на всех страницах
-      });
+    });
       res.redirect(`${process.env.FRONTEND_URL}/profile`);
     }
   );

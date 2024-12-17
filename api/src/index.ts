@@ -26,25 +26,25 @@ connectToDatabase();
 app.use(express.static('public'));
 app.use(cookieParser());
 
-app.use(
-  jwtCheck.unless({
-    path: [
-      '/users/login',
-      '/users/registration',
-      '/public',
-      '/',
-      '/captcha',
-      '/verify/:username/:token',
-      '/users/verification',
-      '/google/auth',
-      '/auth/vk',
-      '/auth/discord',
-      '/auth/github',
-      '/auth/discord/callback',
-      '/auth/github/callback',
-    ],
-  })
-);
+// app.use(
+//   jwtCheck.unless({
+//     path: [
+//       '/users/login',
+//       '/users/registration',
+//       '/public',
+//       '/',
+//       '/captcha',
+//       '/verify/:username/:token',
+//       '/users/verification',
+//       '/google/auth',
+//       '/auth/vk',
+//       '/auth/discord',
+//       '/auth/github',
+//       '/auth/discord/callback',
+//       '/auth/github/callback',
+//     ],
+//   })
+// );
 
 app.use(
   session({
