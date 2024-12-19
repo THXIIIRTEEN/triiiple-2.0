@@ -3,13 +3,11 @@ import fs from 'fs';
 import multer from 'multer';
 import { Request, Response, NextFunction } from 'express';
 import User from '../database/schemes/users';
-
+import { JwtPayload } from "jsonwebtoken";
 interface CustomRequest extends Request {
     fileUrl?: string;
     userId?: string;
-    auth?: {
-        id: string;
-    };
+    auth?: JwtPayload;
 }
 
 const s3Client = new S3Client({
@@ -78,11 +76,7 @@ export const changeUserAvatar = async(req: CustomRequest, res: Response, next: N
 
 export const getProfilePicture = async (req: CustomRequest, res: Response) => {
     try {
-        const userId = req.auth?.id;
-        if (!userId) {
-            res.status(401).json({ message: 'Вы не авторизованы' });
-            return;
-        }
+        const userId = req.body.userId;
 
         const user = await User.findById(userId).select('profile'); 
 

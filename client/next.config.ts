@@ -3,7 +3,7 @@ import { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
-    const apiUri = isDev ? 'http://localhost:3001' : 'https://your-production-api.com'; // Замените на реальный URL API
+    const apiUri = isDev ? 'http://localhost:80' : process.env.API_URI; // Замените на реальный URL API
     const vkDomains = 'https://id.vk.com https://vk.com https://login.vk.com';
     const discordDomain = 'https://discord.com';
 
@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    domains: ['triiiple.storage.yandexcloud.net', 'lh3.googleusercontent.com'], // Замените на ваши домены для изображений
+    domains: ['triiiple.storage.yandexcloud.net', 'lh3.googleusercontent.com', 'cdn.discordapp.com', 'avatars.githubusercontent.com', 'sun1-97.userapi.com'], // Замените на ваши домены для изображений
   },
 
   env: {
@@ -67,16 +67,15 @@ const nextConfig: NextConfig = {
         source: '/old-route',
         destination: '/new-route',
         permanent: true,
-      },
+      }
     ];
   },
 
-  // Обработка cookies и credentials
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: `${process.env.API_URI}/:path*`, // Прокси для вашего API
+        source: '/auth/:path*',
+        destination: 'http://localhost:3000/auth/:path*'
       },
     ];
   },

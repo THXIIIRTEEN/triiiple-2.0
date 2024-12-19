@@ -14,12 +14,12 @@ declare global {
         CLOUD_KEY_ID: string;
         GOOGLE_CLIENT_ID: string;
         GOOGLE_CLIENT_SECRET: string;
-        VK_SECURITY_KEY: string;
-        VK_SERVICE_KEY: string;
-        GITHUB_ID: string;
-        GITHUB_SECRET: string;
-        DISCORD_ID: string;
-        DISCORD_SECRET: string;
+        VK_CLIENT_ID: string;
+        VK_CLIENT_SECRET: string;
+        GITHUB_CLIENT_ID: string;
+        GITHUB_CLIENT_SECRET: string;
+        DISCORD_CLIENT_ID: string;
+        DISCORD_CLIENT_SECRET: string;
       }
     }
   }

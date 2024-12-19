@@ -1,18 +1,14 @@
 import AvatarInput from "@/components/AvatarInput";
+import Protected from "@/components/Protected";
 import UserAvatar from "@/components/UserAvatar";
 import { getUserFromCookies } from "@/utils/cookies";
 import { useAuthStore } from "@/utils/store";
 import { useEffect, useState } from "react";
-import Cookies from 'js-cookie';
-import axios from "axios";
-import { getToken } from "@/utils/cookies";
 
 const ProfilePage: React.FC = () => {
 
     const user = useAuthStore(state => state.user);
-    const [ profile, setProfile ] = useState(user);
-    const token = getToken();
-    
+    const [ profile, setProfile ] = useState(user);    
 
     useEffect(() => {
         if (!user) {
@@ -20,17 +16,15 @@ const ProfilePage: React.FC = () => {
         }
     }, [user]);
 
-    console.log(user)
-
     return (
-        <>  
+        <Protected>  
             <AvatarInput user={profile}/>
-            {/* <UserAvatar/> */}
+            <UserAvatar/>
             <p>{profile?.id}</p>
             <p>{profile?.username}</p>
             <p>{profile?.email}</p>
             <p>{profile?.tag}</p>
-        </>
+        </Protected>
     )
 }
 

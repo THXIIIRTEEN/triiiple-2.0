@@ -43,6 +43,7 @@
     "passport-discord": "^0.1.4",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
+    "passport-vk": "^1.0.0",
     "passport-vkontakte": "^0.5.0",
     "transliteration": "^2.3.5",
     "ts-node": "^10.9.2"

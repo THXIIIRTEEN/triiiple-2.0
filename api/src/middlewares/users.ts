@@ -146,9 +146,7 @@ export const createJWTToken = (user: IUser, req: Request, res: Response) => {
         tag: user.tag,
     };
     const token = jwtLibrary.sign(payload, secret, { expiresIn: '30d' });
-
-    (req.session as any).user = payload;
-    res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'strict' });
+    res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'none', maxAge: 3600000 * 24 * 30 });
 
     return token;
 }
