@@ -19,7 +19,7 @@ const ProfilePage: React.FC = () => {
     return (
         <Protected>  
             <AvatarInput user={profile}/>
-            <UserAvatar/>
+            <UserAvatar id={profile?.id}/>
             <p>{profile?.id}</p>
             <p>{profile?.username}</p>
             <p>{profile?.email}</p>

@@ -1,39 +1,50 @@
 import axios from "axios";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/utils/store";
 import { getToken } from "@/utils/cookies";
 
-const UserAvatar: React.FC = () => {
+interface UserAvatarProps {
+    id: string | undefined;
+}
+
+const UserAvatar: React.FC<UserAvatarProps> = ({ id }) => {
     const [image, setImage] = useState<string | null>(null);
     const token = getToken();
-    const user = useAuthStore(state => state.user);
-
-    console.log(user)
 
     useEffect(() => {
-        if (user && user.id) {
+        if (id) {
             const handleGetAvatar = async (): Promise<void> => {
                 const timestamp = new Date().getTime();
 
                 try {
-                    const response = await axios.post(`${process.env.API_URI}/avatar`, { userId: user.id }, {
+                    const response = await axios.post(`${process.env.API_URI}/avatar`, { userId: id }, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                         },
                     });
-
-                    const imageUrlWithTimestamp = `${response.data.user.profile}?${timestamp}`;
-                    setImage(imageUrlWithTimestamp);
+                    const imageUrl = response.data.user.profile
+                    try {
+                        const parsedUrl = new URL(imageUrl);
+                        if (parsedUrl.hostname === "sun1-97.userapi.com") { //приходится фиксить косяки за VK
+                            const cleanUrl = imageUrl.split('?')[0];
+                            const imageUrlWithTimestamp = `${cleanUrl}?quality=95&crop=12,100,682,682&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640&ava=1&t=${timestamp}`;
+                            setImage(imageUrlWithTimestamp);
+                        } else {
+                            const imageUrlWithTimestamp = `${imageUrl}?${timestamp}`;
+                            setImage(imageUrlWithTimestamp);
+                        }
+                    } catch (error) {
+                        console.error("Invalid URL:", error);
+                    }
                 } catch (error) {
                     console.error('Error fetching avatar:', error);
-                    setImage(null); // В случае ошибки можно установить image в null
+                    setImage(null);
                 }
             };
 
             handleGetAvatar();
         }
-    }, [user, token]);
+    }, [id, token]);
     
     return (
         <>

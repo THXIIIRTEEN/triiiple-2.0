@@ -21,9 +21,6 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
         console.error("Error decoding token:", error);
       }
     }
-    // if (!token && !user) {
-    //   router.push('/login')
-    // }
   }, [user, setUser, router]);
 
   return (

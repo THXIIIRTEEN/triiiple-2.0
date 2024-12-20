@@ -21,7 +21,6 @@ const Protected: React.FC<ProtectedProps> = ({ children }) => {
             setLoading(false);
             return;
         }
-        console.log(token)
         await axios.post(`${process.env.API_URI}/protected`, null, {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -88,6 +88,7 @@ passport.use( new VKStrategy({
     //@ts-ignore
     scope: ["email", "friends", "offline"], 
     profileFields: ["email", "city", "bdate"],
+    display: 'page'
 },  async (accessToken, refreshToken, params, profile, done) => {
         let user = await User.findOne({ email: profile.emails?.[0]?.value });
         if (!user) {

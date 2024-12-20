@@ -37,7 +37,7 @@ oauthRouter.get('/discord/callback', passport.authenticate('discord', { failureR
   }
 );
 //@ts-ignore
-oauthRouter.get('/vk', passport.authenticate('vkontakte', {scope: ["status", "email", "friends", "notify"]}));
+oauthRouter.get('/vk', passport.authenticate('vkontakte', { display: 'popup' }));
 oauthRouter.get('/vk/callback', passport.authenticate('vkontakte', { failureRedirect: '/' }),
   (req, res) => {
     callbackRedirectFunction(req, res);

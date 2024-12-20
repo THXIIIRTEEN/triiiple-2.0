@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    domains: ['triiiple.storage.yandexcloud.net', 'lh3.googleusercontent.com', 'cdn.discordapp.com', 'avatars.githubusercontent.com', 'sun1-97.userapi.com'], // Замените на ваши домены для изображений
+    domains: ['triiiple.storage.yandexcloud.net', 'lh3.googleusercontent.com', 'cdn.discordapp.com', 'avatars.githubusercontent.com', 'sun1-97.userapi.com'],
   },
 
   env: {
