@@ -1,16 +1,10 @@
 import { create } from 'zustand';
-
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-  tag: string;
-}
+import { IUser } from '@/types/user';
 
 interface AuthState {
   isAuthenticated: boolean;
-  user: User | null;
-  setUser: (user: User) => void;
+  user: IUser | null;
+  setUser: (user: IUser) => void;
   logout: () => void;
 }
 

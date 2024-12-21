@@ -28,6 +28,11 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
     type: Boolean,
     default: false,
   },
+  chatRooms: {
+    type: [Schema.Types.ObjectId],
+    default: [],
+    required: false
+  }
 });
 
 userSchema.pre('save', async function(next) {

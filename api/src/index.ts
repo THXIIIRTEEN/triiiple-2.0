@@ -13,6 +13,8 @@ import oauthRouter from './routes/oauth';
 import captchaRouter from './routes/captcha';
 import passport from './config/passport';
 import protectedRouter from './routes/protected';
+import chatRouter from './routes/chat';
+import messangerRouter from './routes/messanger';
 
 const app = express();
 const port = 80;
@@ -29,7 +31,9 @@ app.use(
   userRouter,
   confirmationRouter,
   captchaRouter,
-  passwordRouter
+  passwordRouter,
+  chatRouter,
+  messangerRouter
 );
 
 app.use(
