@@ -6,6 +6,7 @@ declare global {
         EMAIL_PASS: string;
         FRONTEND_URL: string;
         BACKEND_URL: string;
+        WEBSOCKET_URL: string;
         CAPTCHA_SITE_KEY: string;
         CAPTCHA_SECRET_KEY: string;
         SECRET_KEY: string;

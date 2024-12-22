@@ -32,6 +32,10 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
     type: [Schema.Types.ObjectId],
     default: [],
     required: false
+  },
+  created_at: {
+    type: Date,
+    default: new Date()
   }
 });
 

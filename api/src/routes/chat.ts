@@ -4,7 +4,6 @@ import { createNewChatRoom, createNewMessage, getMessagesFromChatRoom } from '..
 const chatRouter = express.Router();
 
 chatRouter.post('/create-chat', createNewChatRoom);
-chatRouter.post('/create-message', createNewMessage);
 chatRouter.post('/get-messages', getMessagesFromChatRoom)
 
 export default chatRouter;

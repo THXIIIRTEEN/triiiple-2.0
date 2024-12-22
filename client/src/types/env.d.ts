@@ -1,6 +1,7 @@
 declare namespace NodeJS {
     interface ProcessEnv {
       API_URI: string;
+      WEBSOCKET_URL: string;
       CAPTCHA_SITE_KEY: string;
       CAPTCHA_SECRET_KEY: string;
       NODE_ENV: string;

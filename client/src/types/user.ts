@@ -1,9 +1,10 @@
 export interface IUser {
     _id?: string;
-    id: string;
-    email: string;
-    username: string;
-    tag: string;
+    id?: string;
+    email?: string;
+    username?: string;
+    password?: string;
+    tag?: string;
 }
 
 export interface IMessage {

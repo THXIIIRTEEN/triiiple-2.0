@@ -7,6 +7,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Message from "@/components/Message";
+import { socket } from "@/config/socket";
 
 const Messanger: React.FC = () => {
 
@@ -14,7 +15,7 @@ const Messanger: React.FC = () => {
 
     const user = useAuthStore(state => state.user);
     const [ profile, setProfile ] = useState(user);  
-    const [ messageArray, setMessageArray ] = useState<IMessage[] | null>(null)
+    const [ messageArray, setMessageArray ] = useState<IMessage[]>([])
     const token = getToken();
     const chatId = router.query.id;
     
@@ -37,6 +38,22 @@ const Messanger: React.FC = () => {
             handleGetMessages();
         }
     }, [profile, token, chatId])
+
+    useEffect(() => {
+        if (chatId) {
+            socket.connect();
+            socket.emit('joinRoom', chatId);
+    
+            socket.on('chatMessage', (msg: IMessage) => {
+                setMessageArray((prevMessages) => [...prevMessages, msg]);
+            });
+    
+            return () => {
+                socket.off('chatMessage');
+                socket.disconnect();
+            };
+        }
+    }, [chatId]);
 
     return (
         <Protected>

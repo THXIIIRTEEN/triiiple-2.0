@@ -82,7 +82,7 @@ const LoginPage: React.FC = () => {
                 <AuthorizationInput name='email' placeholder='Почта' type='text' value={formValues.email} serverError={serverError} autoComplete='email' setFormValues={setFormValues} />
                 <AuthorizationInput name='password' placeholder='Пароль' type='password' minLength={6} maxLength={32} value={formValues.password} autoComplete='current-password' serverError={serverError} setFormValues={setFormValues} />
                 <button type="button" onClick={triggerForgotPassword}>Забыли пароль?</button>
-                <button type="submit">Отправить</button>       
+                <button disabled={!verifyCorrectSymbols(formValues)} type="submit">Отправить</button>       
                 {emailAlert && (
                     <>
                         <p>{emailAlert}</p>

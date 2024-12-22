@@ -15,13 +15,17 @@ import passport from './config/passport';
 import protectedRouter from './routes/protected';
 import chatRouter from './routes/chat';
 import messangerRouter from './routes/messanger';
-
-const app = express();
-const port = 80;
+import http from 'http';
+import { initSocket } from './config/socket';
 
 const secret = process.env.SECRET_KEY || 'default_secret';  
+const port = 80;
+
+const app = express();
+const server = http.createServer(app);
 
 connectToDatabase();
+initSocket(server)
 
 app.use(cors);
 
@@ -64,6 +68,6 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Hello, World!');
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

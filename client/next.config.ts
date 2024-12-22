@@ -3,9 +3,10 @@ import { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
-    const apiUri = isDev ? 'http://localhost:80' : process.env.API_URI; // Замените на реальный URL API
+    const apiUri = isDev ? 'http://localhost:80' : process.env.API_URI;
     const vkDomains = 'https://id.vk.com https://vk.com https://login.vk.com';
     const discordDomain = 'https://discord.com';
+    const websocketUri = isDev ? 'ws://localhost:80' : process.env.WEBSOCKET_URL;
 
     const csp = isDev
       ? `
@@ -13,7 +14,7 @@ const nextConfig: NextConfig = {
           script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.hcaptcha.com ${apiUri} https://accounts.google.com https://unpkg.com ${vkDomains} ${discordDomain};
           style-src 'self' 'unsafe-inline' https://*.hcaptcha.com ${apiUri} https://accounts.google.com;
           img-src 'self' data: https://*.hcaptcha.com https://*.googleusercontent.com ${vkDomains} ${discordDomain};
-          connect-src 'self' https://*.hcaptcha.com ${apiUri} ${vkDomains} ${discordDomain};
+          connect-src 'self' https://*.hcaptcha.com ${apiUri} ${vkDomains} ${discordDomain} ${websocketUri};
           font-src 'self' https://*.hcaptcha.com;
           object-src 'none';
           frame-src https://*.hcaptcha.com ${vkDomains} ${discordDomain};
@@ -48,6 +49,7 @@ const nextConfig: NextConfig = {
 
   env: {
     API_URI: process.env.API_URI,
+    WEBSOCKET_URL: process.env.WEBSOCKET_URL,
     CAPTCHA_SITE_KEY: process.env.CAPTCHA_SITE_KEY,
     CAPTCHA_SECRET_KEY: process.env.CAPTCHA_SECRET_KEY,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
@@ -60,7 +62,6 @@ const nextConfig: NextConfig = {
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
   },
 
-  // Настройки для CORS
   async redirects() {
     return [
       {

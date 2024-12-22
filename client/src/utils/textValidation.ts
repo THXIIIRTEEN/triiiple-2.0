@@ -1,37 +1,49 @@
 import { Dispatch, SetStateAction } from 'react';
 
-export const verifyCorrectSymbols = (dataObject: object, setError?: Dispatch<SetStateAction<string | null>>): boolean => {
-    const unicodeRegex = /^[a-zA-Zа-яА-ЯёЁ0-9\s.,?!:;-@"#№$%^&*()_=+'`~<>{}[]|\/]+$/;
-    const regex = /\s+/g;
 
-    Object.entries(dataObject).forEach(([key, value]) => {
+export const verifyCorrectSymbols = (
+    //@ts-expect-error Полный кошмар с типами
+    dataObject, 
+    setError?: Dispatch<SetStateAction<string | null>>
+): boolean => {
+    const unicodeRegex = /^[a-zA-Zа-яА-ЯёЁ0-9\s.,?!:;@\"#№$%^&*()_=+'`~<>{}[\]|\/-]+$/;
+    const noSpacesRegex = /\s+/g;
+
+    for (const [key, value] of Object.entries(dataObject)) {
         if (typeof value !== 'string') {
-            setError!(`Используйте только текст`);
+            if (setError) setError(`Используйте только текст`);
+            return false;
         }
-        else if (value.trim().length <= 0 ) {
-            setError!(`Кажется вы ничего не написали`);
+        if (value.trim().length === 0) {
+            if (setError) setError(`Кажется, вы ничего не написали`);
+            return false;
         }
-        else if (unicodeRegex.test(value) === false) {
-            setError!(`Используйте только цифры, буквы, нижние подчёркивания и точки`);
+        if (!unicodeRegex.test(value)) {
+            if (setError) setError(`Используйте только цифры, буквы, нижние подчёркивания и точки`);
+            return false;
         }
-        else if (key != 'username' && regex.test(value)) {
-            setError!(`Не используйте пробелы`);
+        if (key !== 'username' && key !== 'tag' && noSpacesRegex.test(value)) {
+            if (setError) setError(`Не используйте пробелы`);
+            return false;
         }
-        else if ((key === 'username' || key === 'tag') && value.trim().length < 4 ) {
-            setError!(`Не должно быть короче 4 символов`);
+        if ((key === 'username' || key === 'tag') && value.trim().length < 4) {
+            if (setError) setError(`Не должно быть короче 4 символов`);
+            return false;
         }
-        else if ((key === 'password') && value.trim().length < 6 ) {
-            setError!(`Не должно быть короче 6 символов`); 
+        if (key === 'password' && value.trim().length < 6) {
+            if (setError) setError(`Не должно быть короче 6 символов`);
+            return false;
         }
-        else if ((key === 'username' || key === 'tag') && value.trim().length > 16 ) {
-            setError!(`Не должно быть длиннее 16 символов`); 
+        if ((key === 'username' || key === 'tag') && value.trim().length > 16) {
+            if (setError) setError(`Не должно быть длиннее 16 символов`);
+            return false;
         }
-        else if ((key === 'password') && value.trim().length > 32 ) {
-            setError!(`Не должно быть длиннее 32 символов`); 
+        if (key === 'password' && value.trim().length > 32) {
+            if (setError) setError(`Не должно быть длиннее 32 символов`);
+            return false;
         }
-        else {
-            if (setError) setError!(null);
-        }
-    });
-    return true
-}
+    }
+
+    if (setError) setError(null);
+    return true;
+};

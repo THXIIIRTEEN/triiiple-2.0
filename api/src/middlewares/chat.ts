@@ -25,19 +25,24 @@ export const createNewChatRoom = async (req: Request, res: Response): Promise<vo
     }
 };
 
-export const createNewMessage = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { author, chatId, text } = req.body;
+interface INewMessageDataType {
+    author: string;
+    chatId: string;
+    text: string
+}
 
-        let message = new Message({ author: author, text: text});
-        message = await message.save();
+export const createNewMessage = async (msg: INewMessageDataType) => {
+    const { author, chatId, text } = msg;
 
-        await ChatRoom.findByIdAndUpdate(chatId, {$push: {messages: message}});
-        res.status(200).json({ message: `Сообщение отправлено успешно` })
-    }
-    catch (error) {
-        res.status(400).json({ message: `Произошла ошибка при отправке сообщения: ${error}`})
-    }
+    let message = new Message({ author: author, text: text});
+    message = await message.save();
+
+    await ChatRoom.findByIdAndUpdate(chatId, {$push: {messages: message}});
+
+    return message.populate({
+        path: 'author',
+        select: 'profile username'
+    });
 }
 
 export const getMessagesFromChatRoom = async (req: Request, res: Response) => {
@@ -53,7 +58,7 @@ export const getMessagesFromChatRoom = async (req: Request, res: Response) => {
                 select: 'profile username'
             }
         });
-        res.status(200).json({ chat })
+        res.status(200).json({ chat });
     }
     catch (error) {
         res.status(400).json({ message: `Произошла ошибка при получении сообщений: ${error}`})

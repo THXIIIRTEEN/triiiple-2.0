@@ -84,7 +84,7 @@ const RegistrationPage: React.FC = () => {
         <AuthorizationInput name='tag' placeholder='Имя пользователя' type='text' minLength={4} maxLength={16} value={formValues.tag || ''} autoComplete='new-password' serverError={serverError} setFormValues={setFormValues} />
         <AuthorizationInput name='email' placeholder='Почта' type='text' value={formValues.email} autoComplete='new-password' serverError={serverError} setFormValues={setFormValues}/>
         <AuthorizationInput name='password' placeholder='Пароль' type='password' minLength={6} maxLength={32} value={formValues.password} autoComplete='new-password' setFormValues={setFormValues}/>
-        <button type="submit">Отправить</button>
+        <button disabled={!verifyCorrectSymbols(formValues)} type="submit">Отправить</button>
       </form>
       {showCaptcha && (
         <HCaptchaComponent onVerify={onCaptchaVerified} />
