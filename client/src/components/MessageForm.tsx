@@ -34,7 +34,7 @@ const MessageForm: React.FC<IMessageForm> = ({ user }) => {
         <>
             <form onSubmit={(event) => {sendMessage(event)}}>
                 <textarea onChange={(event) => setMessage(event.target.value)} value={message}></textarea>
-                <button disabled={!verifyCorrectSymbols(message)} type="submit">Ok</button>
+                <button disabled={!verifyCorrectSymbols({message: message})} type="submit">Ok</button>
             </form>
             {   error &&
                 <p>{error}</p>

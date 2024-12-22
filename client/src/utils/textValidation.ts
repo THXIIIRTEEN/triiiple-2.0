@@ -10,11 +10,12 @@ export const verifyCorrectSymbols = (
     const noSpacesRegex = /\s+/g;
 
     for (const [key, value] of Object.entries(dataObject)) {
+        console.log(key)
         if (typeof value !== 'string') {
             if (setError) setError(`Используйте только текст`);
             return false;
         }
-        if (value.trim().length === 0) {
+        if (value.trim().length === 0 && key !== 'message') {
             if (setError) setError(`Кажется, вы ничего не написали`);
             return false;
         }
@@ -22,7 +23,7 @@ export const verifyCorrectSymbols = (
             if (setError) setError(`Используйте только цифры, буквы, нижние подчёркивания и точки`);
             return false;
         }
-        if (key !== 'username' && key !== 'tag' && noSpacesRegex.test(value)) {
+        if (key !== 'username' && key !== 'tag' && noSpacesRegex.test(value) && key !== 'message') {
             if (setError) setError(`Не используйте пробелы`);
             return false;
         }
