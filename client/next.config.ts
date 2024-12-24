@@ -7,13 +7,14 @@ const nextConfig: NextConfig = {
     const vkDomains = 'https://id.vk.com https://vk.com https://login.vk.com';
     const discordDomain = 'https://discord.com';
     const websocketUri = isDev ? 'ws://localhost:80' : process.env.WEBSOCKET_URL;
+    const cdnJsdelivr = 'https://cdn.jsdelivr.net';
 
     const csp = isDev
       ? `
           default-src 'self' ${apiUri};
           script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.hcaptcha.com ${apiUri} https://accounts.google.com https://unpkg.com ${vkDomains} ${discordDomain};
           style-src 'self' 'unsafe-inline' https://*.hcaptcha.com ${apiUri} https://accounts.google.com;
-          img-src 'self' data: https://*.hcaptcha.com https://*.googleusercontent.com ${vkDomains} ${discordDomain};
+          img-src 'self' data: https://*.hcaptcha.com https://*.googleusercontent.com https://twemoji.maxcdn.com ${vkDomains} ${discordDomain} ${cdnJsdelivr};
           connect-src 'self' https://*.hcaptcha.com ${apiUri} ${vkDomains} ${discordDomain} ${websocketUri};
           font-src 'self' https://*.hcaptcha.com;
           object-src 'none';
@@ -23,7 +24,7 @@ const nextConfig: NextConfig = {
           default-src 'self' https://your-production-domain.com; // Замените на ваш продакшн домен
           script-src 'self' 'unsafe-inline' https://*.hcaptcha.com https://accounts.google.com https://unpkg.com ${vkDomains} ${discordDomain};
           style-src 'self' 'unsafe-inline' https://*.hcaptcha.com https://accounts.google.com;
-          img-src 'self' data: https://*.hcaptcha.com https://*.googleusercontent.com ${vkDomains} ${discordDomain};
+          img-src 'self' data: https://*.hcaptcha.com https://*.googleusercontent.com https://twemoji.maxcdn.com ${vkDomains} ${discordDomain} ${cdnJsdelivr};
           connect-src 'self' https://*.hcaptcha.com ${vkDomains} ${discordDomain};
           font-src 'self' https://*.hcaptcha.com;
           object-src 'none';
@@ -44,7 +45,36 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    domains: ['triiiple.storage.yandexcloud.net', 'lh3.googleusercontent.com', 'cdn.discordapp.com', 'avatars.githubusercontent.com', 'sun1-97.userapi.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'triiiple.storage.yandexcloud.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.discordapp.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'sun1-97.userapi.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.jsdelivr.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'twemoji.maxcdn.com'
+      }
+    ],
   },
 
   env: {

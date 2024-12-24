@@ -1,4 +1,4 @@
-import MessageForm from "@/components/MessageForm";
+import MessageForm from "@/components/Messanger/MessageForm";
 import Protected from "@/components/Protected";
 import { IMessage } from "@/types/user";
 import { getToken, getUserFromCookies } from "@/utils/cookies";
@@ -6,7 +6,7 @@ import { useAuthStore } from "@/utils/store";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Message from "@/components/Message";
+import Message from "@/components/Messanger/Message";
 import { socket } from "@/config/socket";
 
 const Messanger: React.FC = () => {

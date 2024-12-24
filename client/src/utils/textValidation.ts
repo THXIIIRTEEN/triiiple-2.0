@@ -10,16 +10,15 @@ export const verifyCorrectSymbols = (
     const noSpacesRegex = /\s+/g;
 
     for (const [key, value] of Object.entries(dataObject)) {
-        console.log(key)
         if (typeof value !== 'string') {
             if (setError) setError(`Используйте только текст`);
             return false;
         }
-        if (value.trim().length === 0 && key !== 'message') {
+        if (value.trim().length === 0) {
             if (setError) setError(`Кажется, вы ничего не написали`);
             return false;
         }
-        if (!unicodeRegex.test(value)) {
+        if (!unicodeRegex.test(value) && key !== 'message') {
             if (setError) setError(`Используйте только цифры, буквы, нижние подчёркивания и точки`);
             return false;
         }
