@@ -64,3 +64,33 @@ export const getMessagesFromChatRoom = async (req: Request, res: Response) => {
         res.status(400).json({ message: `Произошла ошибка при получении сообщений: ${error}`})
     }
 }
+interface IMsgDelete {
+    messageId: string,
+    chatId: string
+}
+
+export const deleteMessage = async (msg: IMsgDelete) => {
+    const { messageId, chatId } = msg;
+
+    await Message.findByIdAndDelete(messageId);
+    await ChatRoom.findByIdAndUpdate(
+        chatId,
+        { $pull: { messages: messageId } },
+        { new: true }
+    );
+}
+
+
+interface IMsgEdit {
+    messageId: string,
+    text: string
+}
+
+export const editMessage = async (msg: IMsgEdit) => {
+    const { messageId, text } = msg;
+
+    await Message.findByIdAndUpdate(
+        messageId,
+        { text: text }
+    );
+}

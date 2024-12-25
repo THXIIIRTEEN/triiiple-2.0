@@ -1,6 +1,6 @@
 import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { createNewMessage } from '../middlewares/chat';
+import { createNewMessage, deleteMessage, editMessage } from '../middlewares/chat';
 
 let io: SocketIOServer;
 
@@ -19,9 +19,20 @@ export const initSocket = (server: HttpServer) => {
             console.log(`Пользователь присоединился к комнате: ${room}`);
         });
 
-        socket.on('sendMessage', async (msg) => {
+        socket.on('sendMessageRequest', async (msg) => {
             const message = await createNewMessage(msg);
-            io.to(msg.chatId).emit('chatMessage', message);
+            io.to(msg.chatId).emit('sendMessageResponse', message);
+        });
+
+        socket.on('deleteMessageRequest', async (msg) => {
+            await deleteMessage(msg);
+            io.to(msg.chatId).emit('deleteMessageResponse', msg);
+        });
+
+        
+        socket.on('editMessageRequest', async (msg) => {
+            await editMessage(msg);
+            io.to(msg.chatId).emit('editMessageResponse', msg);
         });
 
         socket.on('disconnect', () => {

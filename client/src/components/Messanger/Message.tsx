@@ -1,35 +1,89 @@
 import { IMessage } from "@/types/user";
 import UserAvatar from "../UserAvatar";
 import { formateDate } from "@/utils/date";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useAuthStore } from "@/utils/store";
+import { getUserFromCookies } from "@/utils/cookies";
+import { useRouter } from "next/router";
+import { socket } from "@/config/socket";
+import MessageForm from "./MessageForm";
 
-const Message: React.FC<IMessage> = ({ author, text, date }) => {
-  const { _id, username } = author;
+const Message: React.FC<IMessage> = ({ _id, author, text, date }) => {
+  const { _id: authorId, username } = author;
   const dateString = formateDate(date);
+  const user = useAuthStore(state => state.user);
+
+  const [ profile, setProfile ] = useState(user);    
+  const [ editMode, setEditMode ] = useState<boolean>(false)
+
+  const router = useRouter();
+  const chatId = router.query.id;
+
+  useEffect(() => {
+      if (!user) {
+          setProfile(getUserFromCookies())
+      }
+  }, [user]);
 
   const renderMessageWithEmojis = (message: string) => {
-    return message.split(" ").map((word, index) => {
-      if (word.startsWith(":") && word.endsWith(":")) {
-        const shortcodes = word
-        return (
-          <em-emoji
-            key={index}
-            shortcodes={shortcodes} 
-            size="1.25em"
-            set="twitter" 
-          />
-        );
-      }
-      return <span key={index}>{word} </span>;
-    });
+    return message.split('\n').map((line, index) => (
+      <React.Fragment key={index}>
+        {line.split(' ').map((word, wordIndex) => {
+          if (word.startsWith(":") && word.endsWith(":")) {
+            return (
+              <em-emoji
+                key={wordIndex}
+                shortcodes={word}
+                size="1.25em"
+                set="twitter"
+              />
+            );
+          }
+          return <span key={wordIndex}>{word} </span>;
+        })}
+        <br />
+      </React.Fragment>
+    ));
   };
+
+  const handleDeleteMessage = async () => {
+      if (_id && chatId) {
+        socket.emit("deleteMessageRequest", {
+          messageId: _id,
+          chatId: chatId,
+        });
+      }
+  }
+
+  useEffect(() => {
+    if (chatId) {
+        socket.on('editMessageResponse', () => {
+          setEditMode(false)
+        });
+
+        return () => {
+          socket.off('editMessageResponse');
+        };
+    }
+}, [chatId]);
 
   return (
     <div>
-      <UserAvatar id={_id} />
+      <UserAvatar id={authorId} />
       <p>{username}</p>
-      <p>{renderMessageWithEmojis(text)}</p>
+      { !editMode ?
+        <p>{renderMessageWithEmojis(text)}</p>
+        :
+        <MessageForm type="edit" user={user} value={text} messageId={_id}/>
+      }
       <p>{dateString}</p>
+
+      { authorId === profile?.id &&
+        <div>
+          <button type="button" onClick={() => setEditMode(!editMode)}>edit</button>
+          <button type="button" onClick={handleDeleteMessage}>delete</button>
+        </div>
+      }
     </div>
   );
 };

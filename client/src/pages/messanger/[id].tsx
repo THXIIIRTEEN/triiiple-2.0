@@ -44,13 +44,54 @@ const Messanger: React.FC = () => {
             socket.connect();
             socket.emit('joinRoom', chatId);
     
-            socket.on('chatMessage', (msg: IMessage) => {
+            socket.on('sendMessageResponse', (msg: IMessage) => {
                 setMessageArray((prevMessages) => [...prevMessages, msg]);
             });
     
             return () => {
-                socket.off('chatMessage');
+                socket.off('sendMessageResponse');
                 socket.disconnect();
+            };
+        }
+    }, [chatId]);
+
+    interface IMsgDelete {
+        messageId: string,
+        chatId: string
+    }
+
+    useEffect(() => {
+        if (chatId) {
+            socket.on('deleteMessageResponse', (msg: IMsgDelete) => {
+                setMessageArray((prevMessages) => 
+                    prevMessages.filter((message) => 
+                        message._id !== msg.messageId
+                    )
+                );
+            });
+    
+            return () => {
+                socket.off('deleteMessageResponse');
+            };
+        }
+    }, [chatId]);
+    interface IMsgEdit {
+        messageId: string,
+        text: string
+    }
+
+    useEffect(() => {
+        if (chatId) {
+            socket.on('editMessageResponse', (msg: IMsgEdit) => {
+                setMessageArray((prevMessages) => 
+                    prevMessages.map((message) => 
+                        message._id === msg.messageId ? { ...message, text: msg.text } : message
+                    )
+                );
+            });
+    
+            return () => {
+                socket.off('editMessageResponse');
             };
         }
     }, [chatId]);
@@ -62,7 +103,7 @@ const Messanger: React.FC = () => {
                     <Message key={message._id} {...message} />
                 ))
             }
-            <MessageForm user={profile}/>
+            <MessageForm type="send" user={profile}/>
         </Protected>
     );
 }
