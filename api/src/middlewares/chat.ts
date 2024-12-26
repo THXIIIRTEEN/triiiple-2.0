@@ -91,6 +91,6 @@ export const editMessage = async (msg: IMsgEdit) => {
 
     await Message.findByIdAndUpdate(
         messageId,
-        { text: text }
+        { text: text, isEdited: true }
     );
 }

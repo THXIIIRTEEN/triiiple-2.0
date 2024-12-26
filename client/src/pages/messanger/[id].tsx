@@ -77,7 +77,8 @@ const Messanger: React.FC = () => {
     }, [chatId]);
     interface IMsgEdit {
         messageId: string,
-        text: string
+        text: string,
+        isEdited: true
     }
 
     useEffect(() => {
@@ -85,7 +86,7 @@ const Messanger: React.FC = () => {
             socket.on('editMessageResponse', (msg: IMsgEdit) => {
                 setMessageArray((prevMessages) => 
                     prevMessages.map((message) => 
-                        message._id === msg.messageId ? { ...message, text: msg.text } : message
+                        message._id === msg.messageId ? { ...message, text: msg.text, isEdited: msg.isEdited } : message
                     )
                 );
             });

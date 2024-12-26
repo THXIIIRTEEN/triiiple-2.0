@@ -11,5 +11,6 @@ export interface IMessage {
     _id: string;
     author: IUser;
     text: string;
-    date: Date
+    date: Date;
+    isEdited: boolean
 }

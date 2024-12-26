@@ -3,7 +3,8 @@ import mongoose, { Schema } from 'mongoose';
 export interface IMessageSchema {
     author: Schema.Types.ObjectId,
     text: String,
-    date: Date
+    date: Date,
+    isEdited: Boolean
 }
 
 const messageSchema: Schema<IMessageSchema> = new Schema<IMessageSchema>({
@@ -21,6 +22,11 @@ const messageSchema: Schema<IMessageSchema> = new Schema<IMessageSchema>({
         type: Date,
         required: true,
         default: new Date()
+    },
+    isEdited: {
+        type: Boolean,
+        required: false,
+        default: false
     }
 });
 

@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import { socket } from "@/config/socket";
 import MessageForm from "./MessageForm";
 
-const Message: React.FC<IMessage> = ({ _id, author, text, date }) => {
+const Message: React.FC<IMessage> = ({ _id, author, text, date, isEdited }) => {
   const { _id: authorId, username } = author;
   const dateString = formateDate(date);
   const user = useAuthStore(state => state.user);
@@ -75,6 +75,9 @@ const Message: React.FC<IMessage> = ({ _id, author, text, date }) => {
         <p>{renderMessageWithEmojis(text)}</p>
         :
         <MessageForm type="edit" user={user} value={text} messageId={_id}/>
+      }
+      { isEdited &&
+        <p>ред.</p>
       }
       <p>{dateString}</p>
 

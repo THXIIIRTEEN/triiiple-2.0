@@ -5,6 +5,8 @@ import { socket } from "@/config/socket";
 import { verifyCorrectSymbols } from "@/utils/textValidation";
 import emojiData from "@emoji-mart/data/sets/15/all.json";
 import Picker from "@emoji-mart/react";
+import FilePreview from "./FilePreview/FilePreview";
+import FilePreviewScroll from "./FilePreview/FilePreviewScroll";
 
 interface IMessageForm {
   type: string;
@@ -16,10 +18,11 @@ interface IMessageForm {
 const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) => {
   const router = useRouter();
 
-  const [message, setMessage] = useState<string>(value ? value : "");
-  const [error, setError] = useState<string | null>(null);
-  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
-  const [cursorPosition, setCursorPosition] = useState<number | null>(null);
+  const [ message, setMessage ] = useState<string>(value ? value : "");
+  const [ error, setError ] = useState<string | null>(null);
+  const [ showEmojiPicker, setShowEmojiPicker ] = useState<boolean>(false);
+  const [ cursorPosition, setCursorPosition ] = useState<number | null>(null);
+  const [ files, setFiles ] = useState<(File)[]>([])
   const chatId = router.query.id;
 
   const toggleEmojiPicker = () => {
@@ -72,7 +75,8 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
         socket.emit("editMessageRequest", {
           messageId: messageId,
           text: message,
-          chatId: chatId
+          chatId: chatId,
+          isEdited: true
         });
         setMessage(""); 
         setError(null);
@@ -80,9 +84,25 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
     }
   }
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const newFiles = Array.from(event.target.files);
+      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      console.log(files)
+    }
+  }
+
   return (
     <>
       <form onSubmit={type === "send" ? (event) => sendMessage(event) : (event) => editMessage(event)}>
+        { files.length > 0 &&
+          <FilePreviewScroll>
+            {files.map((file, index) => (
+              <FilePreview key={index} file={file}/>
+            ))}
+          </FilePreviewScroll>
+        }
+        <input type="file" multiple onChange={handleFileChange}/>
         <textarea
           onChange={(event) => setMessage(event.target.value)}
           value={message}
