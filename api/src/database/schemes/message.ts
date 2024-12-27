@@ -4,6 +4,7 @@ export interface IMessageSchema {
     author: Schema.Types.ObjectId,
     text: String,
     date: Date,
+    files: Schema.Types.ObjectId[],
     isEdited: Boolean
 }
 
@@ -22,6 +23,11 @@ const messageSchema: Schema<IMessageSchema> = new Schema<IMessageSchema>({
         type: Date,
         required: true,
         default: new Date()
+    },
+    files: {
+        type: [Schema.Types.ObjectId],
+        required: false,
+        default: []
     },
     isEdited: {
         type: Boolean,

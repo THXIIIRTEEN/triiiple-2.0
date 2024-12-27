@@ -28,13 +28,16 @@ export const initSocket = (server: HttpServer) => {
             await deleteMessage(msg);
             io.to(msg.chatId).emit('deleteMessageResponse', msg);
         });
-
         
         socket.on('editMessageRequest', async (msg) => {
             await editMessage(msg);
             io.to(msg.chatId).emit('editMessageResponse', msg);
         });
 
+        socket.on('sendMessageAndFilesRequest', async (msg) => {
+            console.log(msg)
+        });
+        
         socket.on('disconnect', () => {
             console.log('Пользователь отключился');
         });

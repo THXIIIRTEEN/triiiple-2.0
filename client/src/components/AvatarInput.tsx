@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { User } from '../utils/store';
 import { getToken } from '@/utils/cookies';
 import ImageCropper from './ImageCropper';
 import { useRouter } from 'next/router';
+import { IUser } from '@/types/user';
 
 interface AvatarInputProps {
-    user: User | null;
+    user: IUser | null;
 }
 
 const AvatarInput: React.FC<AvatarInputProps> = ({ user }) => {
@@ -47,24 +47,26 @@ const AvatarInput: React.FC<AvatarInputProps> = ({ user }) => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('file', blob);
-        formData.append('userId', user!.id);
+        if (user && user.id) {
+            const formData = new FormData();
+            formData.append('file', blob);
+            formData.append('userId', user.id);
 
-        try {
-            await axios.post(`${process.env.API_URI}/avatar/upload`, formData, {
-                headers: {
-                  'Content-Type': 'multipart/form-data',
-                  'Authorization': `Bearer ${token}`,
-                },
-            }).then((response) => {
-                if (response.status === 200) {
-                    router.reload();
-                }
-            });
-        }
-        catch (error) {
-            setErrorMessage(`Ошибка при загрузке аватара: ${error}`)
+            try {
+                await axios.post(`${process.env.API_URI}/avatar/upload`, formData, {
+                    headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`,
+                    },
+                }).then((response) => {
+                    if (response.status === 200) {
+                        router.reload();
+                    }
+                });
+            }
+            catch (error) {
+                setErrorMessage(`Ошибка при загрузке аватара: ${error}`)
+            }
         }
 
     }

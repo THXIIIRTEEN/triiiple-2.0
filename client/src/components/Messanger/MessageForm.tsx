@@ -53,17 +53,51 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
     }
   }, [cursorPosition]);
 
+  const sendMessageWithoutFiles = () => {
+    socket.emit("sendMessageRequest", {
+      author: user!.id,
+      chatId: chatId,
+      text: message,
+    });
+    setMessage(""); 
+    setError(null);
+  }
+
+  const sendMessageWithFiles = () => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    const messageData = {
+      author: user!.id,
+      chatId: chatId,
+      text: message,
+    }
+
+    formData.append('message', JSON.stringify(messageData));
+
+    socket.emit("sendMessageAndFilesRequest", {
+      formData
+    });
+
+    setMessage(""); 
+    setFiles([]);
+    setError(null);
+  }
+
   const sendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (user && user.id) {
-      if (verifyCorrectSymbols({ message: message }, setError)) {
-        socket.emit("sendMessageRequest", {
-          author: user.id,
-          chatId: chatId,
-          text: message,
-        });
-        setMessage(""); 
-        setError(null);
+    if (user && user.id && chatId) {
+      if (files.length === 0) {
+        if (verifyCorrectSymbols({ message: message }, setError)) {
+          sendMessageWithoutFiles();
+        }
+      }
+      else if (files.length > 0) {
+        if (verifyCorrectSymbols({ message: message }, setError)) {
+          sendMessageWithFiles();
+        }
       }
     }
   };
@@ -84,11 +118,18 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
     }
   }
 
+  const MAX_FILES = 10;
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const newFiles = Array.from(event.target.files);
-      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-      console.log(files)
+      if (files.length + newFiles.length > MAX_FILES) {
+        setError(`Вы не можете загрузить больше ${MAX_FILES} файлов`);
+      } 
+      else {
+        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+        setError(null);
+      }
     }
   }
 
@@ -98,7 +139,7 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
         { files.length > 0 &&
           <FilePreviewScroll>
             {files.map((file, index) => (
-              <FilePreview key={index} file={file}/>
+              <FilePreview key={index} setFiles={setFiles} file={file}/>
             ))}
           </FilePreviewScroll>
         }
@@ -114,7 +155,7 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
           emoji
         </button>
         <button
-          disabled={!verifyCorrectSymbols({ message: message })}
+          disabled={!verifyCorrectSymbols({ message: message }) && files.length === 0}
           type="submit"
         >
           Ok
