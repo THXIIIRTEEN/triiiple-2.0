@@ -123,9 +123,9 @@ export const createNewMessageWithFiles = async (req: CustomRequest, res: Respons
             }
 
             const totalFileSizeLimit = 50 * 1024 * 1024; 
-            if (!checkTotalFileSize(req.files as Express.Multer.File[], totalFileSizeLimit)) {
-                return new Error('Cуммарный размер файлов превышает допустимый лимит 50 МБ.');
-            }
+            // if (!checkTotalFileSize(req.files as Express.Multer.File[], totalFileSizeLimit)) {
+            //     return new Error('Cуммарный размер файлов превышает допустимый лимит 50 МБ.');
+            // }
 
             const messageData = JSON.parse(req.body.message);
 
