@@ -1,23 +1,10 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import fs from 'fs';
 import multer from 'multer';
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import User from '../database/schemes/users';
-import { JwtPayload } from "jsonwebtoken";
-interface CustomRequest extends Request {
-    fileUrl?: string;
-    userId?: string;
-    auth?: JwtPayload;
-}
-
-const s3Client = new S3Client({
-    region: 'ru-central1',
-    credentials: {
-        accessKeyId: process.env.CLOUD_KEY_ID!,
-        secretAccessKey: process.env.CLOUD_SECRET_LEY!,
-    },
-    endpoint: 'https://storage.yandexcloud.net',
-});
+import { s3Client } from "../utils/s3Client";
+import { CustomRequest } from "../types/requests";
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -39,7 +26,7 @@ export const uploadAvatar = (req: CustomRequest, res: Response, next: NextFuncti
 
             const params = {
                 Bucket: 'triiiple',
-                Key: `${userId}/avatar`,
+                Key: `profile/${userId}/avatar`,
                 Body: fileContent,
                 ContentType: file.mimetype,
             };

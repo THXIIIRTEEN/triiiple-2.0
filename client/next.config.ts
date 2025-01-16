@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
     const discordDomain = 'https://discord.com';
     const websocketUri = isDev ? 'ws://localhost:80' : process.env.WEBSOCKET_URL;
     const cdnJsdelivr = 'https://cdn.jsdelivr.net';
+    const yandexCloudDomain = 'https://triiiple.storage.yandexcloud.net';
 
     const csp = isDev
       ? `
@@ -19,6 +20,7 @@ const nextConfig: NextConfig = {
           font-src 'self' https://*.hcaptcha.com;
           object-src 'none';
           frame-src https://*.hcaptcha.com ${vkDomains} ${discordDomain};
+          media-src 'self' ${yandexCloudDomain};
         `
       : `
           default-src 'self' https://your-production-domain.com; // Замените на ваш продакшн домен
@@ -29,6 +31,7 @@ const nextConfig: NextConfig = {
           font-src 'self' https://*.hcaptcha.com;
           object-src 'none';
           frame-src https://*.hcaptcha.com ${vkDomains} ${discordDomain};
+          media-src 'self' ${yandexCloudDomain};
         `;
 
     return [

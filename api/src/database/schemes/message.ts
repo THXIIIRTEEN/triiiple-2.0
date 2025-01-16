@@ -1,10 +1,11 @@
 import mongoose, { Schema } from 'mongoose';
 
 export interface IMessageSchema {
+    _id?: string,
     author: Schema.Types.ObjectId,
     text: String,
     date: Date,
-    files: Schema.Types.ObjectId[],
+    files?: Schema.Types.ObjectId[],
     isEdited: Boolean
 }
 
@@ -27,7 +28,8 @@ const messageSchema: Schema<IMessageSchema> = new Schema<IMessageSchema>({
     files: {
         type: [Schema.Types.ObjectId],
         required: false,
-        default: []
+        default: [],
+        ref: 'File'
     },
     isEdited: {
         type: Boolean,

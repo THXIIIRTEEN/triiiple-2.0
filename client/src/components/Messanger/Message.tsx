@@ -7,8 +7,10 @@ import { getUserFromCookies } from "@/utils/cookies";
 import { useRouter } from "next/router";
 import { socket } from "@/config/socket";
 import MessageForm from "./MessageForm";
+import Image from "next/image";
+import ReactPlayer from 'react-player';
 
-const Message: React.FC<IMessage> = ({ _id, author, text, date, isEdited }) => {
+const Message: React.FC<IMessage> = ({ _id, author, text, date, files, isEdited }) => {
   const { _id: authorId, username } = author;
   const dateString = formateDate(date);
   const user = useAuthStore(state => state.user);
@@ -71,6 +73,20 @@ const Message: React.FC<IMessage> = ({ _id, author, text, date, isEdited }) => {
     <div>
       <UserAvatar id={authorId} />
       <p>{username}</p>
+      <div>
+        { files?.map((file) => (
+          file.type.split("/")[0] === 'video' &&
+          // <video key={file._id} controls width="600">
+          //   <source src={file.url} type={file.type} />
+          //   Ваш браузер не поддерживает видео.
+          // </video>
+          <ReactPlayer controls key={file._id} url={file.url} width='200px' height='auto' />
+        ))}
+        { files?.map((file) => (
+          file.type.split("/")[0] === 'image' &&
+          <Image width={200} height={200} key={file._id} src={file.url} alt={'image'}/>
+        ))}
+      </div>
       { !editMode ?
         <p>{renderMessageWithEmojis(text)}</p>
         :

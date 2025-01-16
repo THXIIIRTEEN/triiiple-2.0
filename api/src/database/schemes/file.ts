@@ -3,6 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 export interface IFileSchema {
     name: String,
     url: String,
+    type: String
 }
 
 const fileSchema: Schema<IFileSchema> = new Schema<IFileSchema>({
@@ -13,6 +14,10 @@ const fileSchema: Schema<IFileSchema> = new Schema<IFileSchema>({
     url: {
         type: String,
         required: true,
+    },
+    type: {
+        type: String,
+        required: true
     }
 });
 

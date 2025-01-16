@@ -4,7 +4,8 @@ import { Dispatch, SetStateAction } from 'react';
 export const verifyCorrectSymbols = (
     //@ts-expect-error Полный кошмар с типами
     dataObject, 
-    setError?: Dispatch<SetStateAction<string | null>>
+    setError?: Dispatch<SetStateAction<string | null>>,
+    includesFiles?: boolean
 ): boolean => {
     const unicodeRegex = /^[a-zA-Zа-яА-ЯёЁ0-9\s.,?!:;@\"#№$%^&*()_=+'`~<>{}[\]|\/-]+$/;
     const noSpacesRegex = /\s+/g;
@@ -14,7 +15,7 @@ export const verifyCorrectSymbols = (
             if (setError) setError(`Используйте только текст`);
             return false;
         }
-        if (value.trim().length === 0) {
+        if (value.trim().length === 0 && !includesFiles) {
             if (setError) setError(`Кажется, вы ничего не написали`);
             return false;
         }

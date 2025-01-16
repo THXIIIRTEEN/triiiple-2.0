@@ -7,6 +7,8 @@ import emojiData from "@emoji-mart/data/sets/15/all.json";
 import Picker from "@emoji-mart/react";
 import FilePreview from "./FilePreview/FilePreview";
 import FilePreviewScroll from "./FilePreview/FilePreviewScroll";
+import axios from "axios";
+import { getToken } from "@/utils/cookies";
 
 interface IMessageForm {
   type: string;
@@ -24,6 +26,7 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
   const [ cursorPosition, setCursorPosition ] = useState<number | null>(null);
   const [ files, setFiles ] = useState<(File)[]>([])
   const chatId = router.query.id;
+  const token = getToken();
 
   const toggleEmojiPicker = () => {
     setShowEmojiPicker(!showEmojiPicker);
@@ -63,8 +66,17 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
     setError(null);
   }
 
-  const sendMessageWithFiles = () => {
+  const sendMessageWithFiles = async () => {
+    const maxTotalSize = 50 * 1024 * 1024;
     const formData = new FormData();
+
+    const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+
+    if (totalSize > maxTotalSize) {
+      setError(`Общий размер файлов превышает допустимый лимит. Максимальный размер: 50 МБ`);
+      return;
+    }
+
     files.forEach((file) => {
       formData.append('files', file);
     });
@@ -77,9 +89,21 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
 
     formData.append('message', JSON.stringify(messageData));
 
-    socket.emit("sendMessageAndFilesRequest", {
-      formData
-    });
+    try {
+      await axios.post(`${process.env.API_URI}/send-file`, formData, {
+        headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`,
+        },
+      });
+    }
+    catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);  
+      } else {
+        setError("Произошла неизвестная ошибка"); 
+      }
+    }
 
     setMessage(""); 
     setFiles([]);
@@ -95,7 +119,7 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
         }
       }
       else if (files.length > 0) {
-        if (verifyCorrectSymbols({ message: message }, setError)) {
+        if (verifyCorrectSymbols({ message: message }, setError, true)) {
           sendMessageWithFiles();
         }
       }
@@ -121,11 +145,18 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
   const MAX_FILES = 10;
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const maxTotalSize = 50 * 1024 * 1024;
+
     if (event.target.files) {
       const newFiles = Array.from(event.target.files);
+      const totalSize = newFiles.reduce((acc, file) => acc + file.size, 0);
+
       if (files.length + newFiles.length > MAX_FILES) {
         setError(`Вы не можете загрузить больше ${MAX_FILES} файлов`);
       } 
+      else if (totalSize > maxTotalSize) {
+        setError(`Общий размер файлов превышает допустимый лимит. Максимальный размер: 50 МБ`);
+      }
       else {
         setFiles((prevFiles) => [...prevFiles, ...newFiles]);
         setError(null);

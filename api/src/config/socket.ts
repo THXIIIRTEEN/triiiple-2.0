@@ -1,8 +1,11 @@
 import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { createNewMessage, deleteMessage, editMessage } from '../middlewares/chat';
+import multer from 'multer';
 
 let io: SocketIOServer;
+
+const upload = multer({ dest: 'uploads/' });
 
 export const initSocket = (server: HttpServer) => {
     io = new SocketIOServer(server, {
@@ -34,10 +37,6 @@ export const initSocket = (server: HttpServer) => {
             io.to(msg.chatId).emit('editMessageResponse', msg);
         });
 
-        socket.on('sendMessageAndFilesRequest', async (msg) => {
-            console.log(msg)
-        });
-        
         socket.on('disconnect', () => {
             console.log('Пользователь отключился');
         });
