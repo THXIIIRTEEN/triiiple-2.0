@@ -7,7 +7,7 @@ import emojiData from "@emoji-mart/data/sets/15/all.json";
 import Picker from "@emoji-mart/react";
 import FilePreview from "./FilePreview/FilePreview";
 import FilePreviewScroll from "./FilePreview/FilePreviewScroll";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { getToken } from "@/utils/cookies";
 
 interface IMessageForm {
@@ -66,6 +66,8 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
     setError(null);
   }
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const sendMessageWithFiles = async () => {
     const maxTotalSize = 50 * 1024 * 1024;
     const formData = new FormData();
@@ -96,18 +98,20 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
         'Authorization': `Bearer ${token}`,
         },
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      setMessage(""); 
+      setFiles([]);
+      setError(null);
     }
     catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);  
+      if (error instanceof AxiosError) {
+        setError(error.response?.data);  
       } else {
         setError("Произошла неизвестная ошибка"); 
       }
     }
-
-    setMessage(""); 
-    setFiles([]);
-    setError(null);
   }
 
   const sendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -159,6 +163,9 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
       }
       else {
         setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
         setError(null);
       }
     }
@@ -174,7 +181,7 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
             ))}
           </FilePreviewScroll>
         }
-        <input type="file" multiple onChange={handleFileChange}/>
+        <input type="file" ref={fileInputRef} multiple onChange={handleFileChange}/>
         <textarea
           onChange={(event) => setMessage(event.target.value)}
           value={message}

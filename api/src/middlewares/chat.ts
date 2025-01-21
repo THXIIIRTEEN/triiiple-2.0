@@ -93,7 +93,6 @@ export const deleteMessage = async (msg: IMsgDelete) => {
     );
 }
 
-
 interface IMsgEdit {
     messageId: string,
     text: string
@@ -119,13 +118,13 @@ export const createNewMessageWithFiles = async (req: CustomRequest, res: Respons
     upload.array('files')(req, res, async (err) => {
         try {
             if (err) {
-                return new Error(err);
+                throw new Error(err);
             }
 
             const totalFileSizeLimit = 50 * 1024 * 1024; 
-            // if (!checkTotalFileSize(req.files as Express.Multer.File[], totalFileSizeLimit)) {
-            //     return new Error('Cуммарный размер файлов превышает допустимый лимит 50 МБ.');
-            // }
+            if (!checkTotalFileSize(req.files as Express.Multer.File[], totalFileSizeLimit)) {
+                throw new Error('Cуммарный размер файлов превышает допустимый лимит 50 МБ.');
+            }
 
             const messageData = JSON.parse(req.body.message);
 
@@ -152,8 +151,7 @@ export const uploadMessageFilesToCloud = async (req: CustomRequest, res: Respons
         const files = req.files as Express.Multer.File[];
         
         if (!files || files.length === 0) {
-            new Error(`Файл отсутствует`);
-            return;
+            throw new Error(`Файл отсутствует`);
         }
         
         const messageData = JSON.parse(req.body.message);
