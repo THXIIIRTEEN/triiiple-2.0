@@ -31,17 +31,31 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ id }) => {
             );
 
             if (response && response.data.user.profile) {
-              const imageUrl = response.data.user.profile;
-              const imageResponse = await fetch(imageUrl);
-              const imageBlob = await imageResponse.blob();
 
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                const base64Image = reader.result as string;
-                sessionStorage.setItem(`avatar-${id}`, base64Image); 
-                setImage(base64Image); 
-              };
-              reader.readAsDataURL(imageBlob);
+                const imageUrl = response.data.user.profile;
+                const url = new URL(imageUrl);  
+                const hostname = url.hostname;  
+
+                let imageResponse;
+
+                if (hostname === 'triiiple.storage.yandexcloud.net') {
+                    const res = await axios.post(`${process.env.API_URI}/get-signed-url`, {fileUrl: imageUrl});
+                    imageResponse = await fetch(res.data.signedUrl)
+                }
+                else {
+                    imageResponse = await fetch(imageUrl);
+                }
+                if (imageResponse) {
+                    const imageBlob = await imageResponse.blob();
+
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const base64Image = reader.result as string;
+                        sessionStorage.setItem(`avatar-${id}`, base64Image); 
+                        setImage(base64Image); 
+                    };
+                    reader.readAsDataURL(imageBlob);
+                }
             }
           } catch (error) {
             console.error("Error fetching avatar:", error);
@@ -61,7 +75,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ id }) => {
 
   return (
     <>
-      {image && <Image src={image} alt="profile" width={400} height={400} />}
+        {image && <Image src={image} alt="zzz" width={400} height={400} />}
     </>
   );
 };

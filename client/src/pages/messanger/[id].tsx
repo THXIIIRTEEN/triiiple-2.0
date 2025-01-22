@@ -25,6 +25,10 @@ const Messanger: React.FC = () => {
         }
     }, [user, profile]);
 
+    const url = new URL('https://triiiple.storage.yandexcloud.net/chats/6766f6f3c64b580ea2031da7/message/678fd8611d2e209794f42d70/files/photo_2024-08-18_23-06-10.jpg');
+    const bucketName = url.hostname
+    console.log(bucketName)
+
     useEffect(() => {
         if (profile && profile.id) {
             const handleGetMessages = async () => {
