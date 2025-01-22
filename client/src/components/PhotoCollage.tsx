@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { IFile } from "@/types/user";
 import photoCollageStyles from '../styles/photo-collage.module.css'
+import FileProvider from "./Messanger/FileProvider";
 
 const PhotoCollage = ({ photos }: { photos: IFile[] }) => {
     const collageClass = `photo-collage photos-${photos.length}`;
@@ -11,22 +12,41 @@ const PhotoCollage = ({ photos }: { photos: IFile[] }) => {
         {photos.map((photo, index) => {
             if (photo.type.split("/")[0] === "video") {
                 return (
-                    <video
-                        key={index}
-                        src={photo.url}
-                        controls
-                    />
+                    <FileProvider key={index} file={photo}>
+                        {(signedUrl: string) => {
+                            if (!signedUrl) {
+                                return <div>Loading...</div>;
+                            }
+
+                            return (
+                                <video
+                                    key={index}
+                                    src={signedUrl}
+                                    controls
+                                />
+                            );
+                        }}
+                    </FileProvider>
                 );
         }
         else if (photo.type.split("/")[0] === "image") {
             return (
-                <Image
-                    key={index}
-                    src={photo.url}
-                    alt={`Photo ${index + 1}`}
-                    width={200} 
-                    height={200}
-                />
+                <FileProvider key={index} file={photo}>
+                    {(signedUrl: string) => {
+                        if (!signedUrl) {
+                            return <div>Loading...</div>;
+                        }
+
+                        return (
+                            <Image
+                                src={signedUrl}
+                                alt="Photo"
+                                width={200}
+                                height={200}
+                            />
+                        );
+                    }}
+                </FileProvider>
             );
         } 
         return null; 

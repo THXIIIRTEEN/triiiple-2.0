@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     const isDev = process.env.NODE_ENV === 'development';
     const apiUri = isDev ? 'http://localhost:80' : process.env.API_URI;
     const vkDomains = 'https://id.vk.com https://vk.com https://login.vk.com';
-    const discordDomain = 'https://discord.com';
+    const discordDomain = 'https://cdn.discordapp.com';
     const websocketUri = isDev ? 'ws://localhost:80' : process.env.WEBSOCKET_URL;
     const cdnJsdelivr = 'https://cdn.jsdelivr.net';
     const yandexCloudDomain = 'https://triiiple.storage.yandexcloud.net';
@@ -15,8 +15,8 @@ const nextConfig: NextConfig = {
           default-src 'self' ${apiUri};
           script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.hcaptcha.com ${apiUri} https://accounts.google.com https://unpkg.com ${vkDomains} ${discordDomain};
           style-src 'self' 'unsafe-inline' https://*.hcaptcha.com ${apiUri} https://accounts.google.com;
-          img-src 'self' data: https://*.hcaptcha.com https://*.googleusercontent.com https://twemoji.maxcdn.com ${vkDomains} ${discordDomain} ${cdnJsdelivr};
-          connect-src 'self' https://*.hcaptcha.com ${apiUri} ${vkDomains} ${discordDomain} ${websocketUri};
+          img-src 'self' blob: data: https://*.hcaptcha.com https://*.googleusercontent.com https://twemoji.maxcdn.com ${vkDomains} ${discordDomain} ${cdnJsdelivr};
+          connect-src 'self' https://*.hcaptcha.com ${apiUri} ${vkDomains} ${discordDomain} ${websocketUri} ${yandexCloudDomain};
           font-src 'self' https://*.hcaptcha.com;
           object-src 'none';
           frame-src https://*.hcaptcha.com ${vkDomains} ${discordDomain};
@@ -26,8 +26,8 @@ const nextConfig: NextConfig = {
           default-src 'self' https://your-production-domain.com; // Замените на ваш продакшн домен
           script-src 'self' 'unsafe-inline' https://*.hcaptcha.com https://accounts.google.com https://unpkg.com ${vkDomains} ${discordDomain};
           style-src 'self' 'unsafe-inline' https://*.hcaptcha.com https://accounts.google.com;
-          img-src 'self' data: https://*.hcaptcha.com https://*.googleusercontent.com https://twemoji.maxcdn.com ${vkDomains} ${discordDomain} ${cdnJsdelivr};
-          connect-src 'self' https://*.hcaptcha.com ${vkDomains} ${discordDomain};
+          img-src 'self' blob: data: https://*.hcaptcha.com https://*.googleusercontent.com https://twemoji.maxcdn.com ${vkDomains} ${discordDomain} ${cdnJsdelivr};
+          connect-src 'self' https://*.hcaptcha.com ${vkDomains} ${discordDomain} ${yandexCloudDomain};
           font-src 'self' https://*.hcaptcha.com;
           object-src 'none';
           frame-src https://*.hcaptcha.com ${vkDomains} ${discordDomain};

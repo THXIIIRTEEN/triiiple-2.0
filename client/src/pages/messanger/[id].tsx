@@ -18,8 +18,6 @@ const Messanger: React.FC = () => {
     const [ messageArray, setMessageArray ] = useState<IMessage[]>([])
     const token = getToken();
     const chatId = router.query.id;
-
-    console.log(messageArray)
     
     useEffect(() => {
         if (!user) {
@@ -102,7 +100,6 @@ const Messanger: React.FC = () => {
     useEffect(() => {
         if (chatId) {
             socket.on('sendMessageWithFilesResponse', (msg: IMessage) => {
-                console.log(msg)
                 setMessageArray((prevMessages) => [...prevMessages, msg]);
             });
     

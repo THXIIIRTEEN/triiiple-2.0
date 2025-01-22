@@ -3,13 +3,15 @@ import ChatRoom from "../database/schemes/chatRoom"
 import User from "../database/schemes/users";
 import Message from "../database/schemes/message";
 import { s3Client } from "../utils/s3Client";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { ListObjectsV2Command, PutObjectCommand, DeleteObjectsCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import fs from 'fs';
 import multer from 'multer';
 import { CustomRequest } from "../types/requests";
 import { getIO } from "../config/socket";
 import File from "../database/schemes/file";
 import mime from 'mime'
+import { IFileSchema } from "../database/schemes/file";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export const createNewChatRoom = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -82,8 +84,50 @@ interface IMsgDelete {
     chatId: string
 }
 
+const deleteFile = async (fileUrl: string) => {
+    try {
+        const url = new URL(fileUrl);
+        const bucketName = url.hostname.split('.')[0]; 
+        let filePath = decodeURIComponent(url.pathname.substring(1)); 
+        filePath = filePath.split('/files')[0];
+
+        const listObjectsCommand = new ListObjectsV2Command({ 
+            Bucket: bucketName,
+            Prefix: filePath,
+        });
+        const listObjectsResponse = await s3Client.send(listObjectsCommand);
+        const objectsToDelete = listObjectsResponse.Contents?.map((obj) => ({
+            Key: obj.Key!,
+        }));
+      
+        if (objectsToDelete && objectsToDelete.length > 0) {
+            const deleteFolderCommand = new DeleteObjectsCommand({
+                Bucket: bucketName,
+                Delete: {
+                Objects: objectsToDelete,
+                },
+            });
+            await s3Client.send(deleteFolderCommand);
+        } 
+        else {
+            throw new Error(`Папка пуста или не существует`);
+        }
+      } catch (err) {
+        throw new Error(`Ошибка при удалении файла: ${err}`);
+      } 
+}
+
 export const deleteMessage = async (msg: IMsgDelete) => {
     const { messageId, chatId } = msg;
+
+    const message = await Message.findById(messageId).populate<{ files: IFileSchema[]}>('files');
+
+    if (message && message?.files?.length > 0) {
+        message.files.forEach(async (file) => {
+            deleteFile(file.url);
+            await File.findByIdAndDelete(file._id)
+        });
+    }
 
     await Message.findByIdAndDelete(messageId);
     await ChatRoom.findByIdAndUpdate(
@@ -243,5 +287,29 @@ export const sendMessageWithFiles = async (req: CustomRequest, res: Response) =>
         res.status(200).json({ message: "Сообщение успешно отправлено" });
     } catch (err) {
         res.status(500).send('Ошибка при отправке сообщения');
+    }
+}
+
+export const sendSignedUrl = async (req: CustomRequest, res: Response) => {
+
+    try {
+        const fileUrl = req.body.fileUrl
+
+        const url = new URL(fileUrl);
+        let filePath = decodeURIComponent(url.pathname.substring(1)); 
+
+        const command = new GetObjectCommand({
+            Bucket: 'triiiple',
+            Key: filePath,
+        });
+        //@ts-ignore
+        const signedUrl = await getSignedUrl(s3Client, command, {
+            expiresIn: 3600, 
+        });
+
+        res.status(200).send({ signedUrl: signedUrl })
+    }
+    catch (error) {
+        res.status(400).send({ message: `Ошибка получения файла: ${error}`})
     }
 }

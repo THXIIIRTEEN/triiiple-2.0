@@ -8,6 +8,8 @@ import { useRouter } from "next/router";
 import { socket } from "@/config/socket";
 import MessageForm from "./MessageForm";
 import PhotoCollage from "../PhotoCollage";
+import FileDownload from "./FileDownload";
+import FileProvider from "./FileProvider";
 
 const Message: React.FC<IMessage> = ({ _id, author, text, date, files, isEdited }) => {
   const { _id: authorId, username } = author;
@@ -84,11 +86,16 @@ const Message: React.FC<IMessage> = ({ _id, author, text, date, files, isEdited 
       }
       { files?.map((file) => (
         file.type.split("/")[0] !== 'image' && file.type.split("/")[0] !== 'video' &&
-        <div key={file._id}>
-          <a href={file.url} download={file.name}>
-            <p>{file.name}</p>
-          </a>
-        </div>
+          <FileProvider key={file._id} file={file}> 
+              {(signedUrl: string) => {
+                  if (!signedUrl) {
+                      return <div>Loading...</div>;
+                  }
+                  return (
+                      <FileDownload file={file} signedUrl={signedUrl}/>
+                  );
+              }}
+          </FileProvider>
       ))}
       { isEdited &&
         <p>ред.</p>

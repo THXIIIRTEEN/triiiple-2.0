@@ -1,9 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
 
 export interface IFileSchema {
-    name: String,
-    url: String,
-    type: String
+    _id: Schema.Types.ObjectId,
+    name: string,
+    url: string,
+    type: string
 }
 
 const fileSchema: Schema<IFileSchema> = new Schema<IFileSchema>({

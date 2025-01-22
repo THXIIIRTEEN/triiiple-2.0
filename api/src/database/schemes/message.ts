@@ -5,7 +5,7 @@ export interface IMessageSchema {
     author: Schema.Types.ObjectId,
     text: String,
     date: Date,
-    files?: Schema.Types.ObjectId[],
+    files: Schema.Types.ObjectId[] | [],
     isEdited: Boolean
 }
 
