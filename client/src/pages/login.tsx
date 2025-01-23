@@ -1,5 +1,5 @@
 import AuthorizationInput from "@/components/AuthorizationInput";
-import React, { useState, FormEvent, useMemo } from 'react';
+import React, { useState, FormEvent, useMemo, useRef } from 'react';
 import { ServerError, UserData } from '@/types/registration';
 import { verifyCorrectSymbols } from "@/utils/textValidation";
 import VerificationCodeInput from "@/components/VerificationCodeInput";
@@ -7,6 +7,7 @@ import axios from "axios";
 import HCaptchaComponent from "@/components/HCaptchaComponent";
 import { handleVerifyCaptcha } from "@/utils/captcha";
 import OauthButton from "@/components/OauthButton/OauthButton";
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 const LoginPage: React.FC = () => {
     const [formValues, setFormValues] = useState<UserData>({
@@ -20,6 +21,8 @@ const LoginPage: React.FC = () => {
     const [captchaAction, setCaptchaAction] = useState<'login' | 'forgotPassword' | null>(null); 
 
     const memoizedEmail = useMemo(() => formValues.email, [formValues.email]);
+
+    const captchaRef = useRef<HCaptcha | null>(null);
 
     const handlePostUserData = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -54,6 +57,10 @@ const LoginPage: React.FC = () => {
             } catch (error) {
                 if (axios.isAxiosError(error) && error.response) {
                     setServerError(error.response.data);
+                    if (captchaRef && captchaRef.current) {
+                        //@ts-expect-error nah
+                        captchaRef.current._hcaptcha.reset();
+                    }
                 }
             }
         }
@@ -90,7 +97,7 @@ const LoginPage: React.FC = () => {
                     </>
                 )}
                 {showCaptcha && (
-                    <HCaptchaComponent onVerify={onCaptchaVerified} />
+                    <HCaptchaComponent ref={captchaRef} onVerify={onCaptchaVerified} />
                 )}
                 <OauthButton text="Вход через аккаунт Google" link="/auth/google" style="google"/>
                 <OauthButton text="Вход через аккаунт Discord" link="/auth/discord" style="discord"/>

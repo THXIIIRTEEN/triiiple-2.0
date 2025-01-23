@@ -12,6 +12,12 @@ import File from "../database/schemes/file";
 import mime from 'mime'
 import { IFileSchema } from "../database/schemes/file";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { slugify } from 'transliteration';
+import iconv from 'iconv-lite';
+
+const fixEncoding = (text: string): string => {
+    return iconv.decode(Buffer.from(text, 'binary'), 'utf-8');
+};
 
 export const createNewChatRoom = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -203,9 +209,11 @@ export const uploadMessageFilesToCloud = async (req: CustomRequest, res: Respons
         const uploadPromises = files.map(async (file) => {
             const fileContent = fs.readFileSync(file.path);
 
+            const fixedName = fixEncoding(file.originalname)
+
             const params = {
                 Bucket: 'triiiple',
-                Key: `chats/${messageData.chatId}/message/${req!.message!._id}/files/${file.originalname}`,
+                Key: `chats/${messageData.chatId}/message/${req!.message!._id}/files/${slugify(fixedName)}`,
                 Body: fileContent,
                 ContentType: file.mimetype,
             };
@@ -219,7 +227,7 @@ export const uploadMessageFilesToCloud = async (req: CustomRequest, res: Respons
             const url = `https://${params.Bucket}.storage.yandexcloud.net/${params.Key}`;
 
             let newFile = new File({
-                name: file.originalname,
+                name: slugify(fixedName),
                 url: url,
                 type: mime.lookup(file.originalname)
             });

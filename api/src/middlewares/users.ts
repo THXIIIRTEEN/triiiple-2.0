@@ -8,7 +8,6 @@ import User from '../database/schemes/users';
 import { IUser } from '../types/IUser';
 
 const secret = process.env.SECRET_KEY as string;
-
 interface ErrorMessage {
     name: string;
     message: string;
