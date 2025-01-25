@@ -1,68 +1,51 @@
 .photo-collage {
-    display: grid;
-    gap: 4px; /* Расстояние между изображениями и видео */
-    width: 100%;
-    overflow: hidden;
-  }
-  
-  .photo-collage img,
-  .photo-collage video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  /* Макет для 1 фото или видео */
-  .photo-collage.photos-1 {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-  }
-  
-  /* Макет для 2 фото или видео */
-  .photo-collage.photos-2 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto;
-  }
-  
-  /* Макет для 3 фото или видео */
-  .photo-collage.photos-3 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 2fr 1fr;
-    grid-template-areas:
-      "a a"
-      "b c";
-  }
-  
-  .photo-collage.photos-3 img:nth-child(1),
-  .photo-collage.photos-3 video:nth-child(1) {
-    grid-area: a;
-  }
-  
-  .photo-collage.photos-3 img:nth-child(2),
-  .photo-collage.photos-3 video:nth-child(2) {
-    grid-area: b;
-  }
-  
-  .photo-collage.photos-3 img:nth-child(3),
-  .photo-collage.photos-3 video:nth-child(3) {
-    grid-area: c;
-  }
-  
-  /* Макет для 4 фото или видео */
-  .photo-collage.photos-4 {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-  }
-  
-  .photo-collage.photos-4 img,
-  .photo-collage.photos-4 video {
-    grid-area: auto;
-  }
-  
-  .photo-collage.photos-flex {
-    display: grid;
-    gap: 4px;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    grid-template-rows: auto;
-  }
-  
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 600px;
+  height: auto;
+}
+
+.photo-collage div img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-collage div video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-collage div {
+  width: 33.3333%;
+  height: 200px;
+}
+
+.photos-1 > div:nth-child(1){
+  width: 100%;
+}
+
+.photos-2 > div:nth-child(1) {
+  width: 50%;
+}
+
+.photos-2 > div:nth-child(2) {
+  width: 50%;
+}
+
+.photos-0 > div {
+  width: 33.3333%;
+  height: 200px;
+}
+
+.single-photo div {
+  width: auto;
+  height: 400px;
+}
+
+.double-photo div {
+  width: 50%;
+  height: 400px;
+}
