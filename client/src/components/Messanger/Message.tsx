@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { IMessage } from "@/types/user";
+import { IFile, IMessage } from "@/types/user";
 import UserAvatar from "../UserAvatar";
 import { formateDate } from "@/utils/date";
 import { useAuthStore } from "@/utils/store";
@@ -25,6 +25,7 @@ const Message: React.FC<IMessage> = ({
 
   const [profile, setProfile] = useState(user);
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [ mediaFiles, setMediaFiles ] = useState<IFile[]>([])
 
   const router = useRouter();
   const chatId = router.query.id;
@@ -77,12 +78,23 @@ const Message: React.FC<IMessage> = ({
     }
   }, [chatId]);
 
+  useEffect(() => {
+    if (files) {
+      const filteredFiles = files.filter((file) => {
+        return file.type.startsWith('video') || file.type.startsWith('image')
+      });
+      if (filteredFiles) {
+        setMediaFiles(filteredFiles);
+      }
+    }
+  }, [files])
+
   return (
     <div>
       <UserAvatar id={authorId} />
       <p>{username}</p>
       <div>
-        {files && <PhotoCollage photos={files} />}
+        {mediaFiles && <PhotoCollage photos={mediaFiles} />}
       </div>
       {!editMode ? (
         <p>{renderMessageWithEmojis(text)}</p>

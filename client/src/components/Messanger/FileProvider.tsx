@@ -6,7 +6,7 @@ import { useInView } from 'react-intersection-observer';
 const FileProvider: React.FC<{ children: (data: string) => JSX.Element, file: IFile }> = ({ children, file }) => {
 
     const [ signedUrl, setSignedUrl ] = useState(null);
-    const [isVisible, setIsVisible] = useState(false);
+    const [ isVisible, setIsVisible ] = useState(false);
 
     const { ref, inView } = useInView({
         triggerOnce: true,
