@@ -5,10 +5,11 @@ import { socket } from "@/config/socket";
 import { verifyCorrectSymbols } from "@/utils/textValidation";
 import emojiData from "@emoji-mart/data/sets/15/all.json";
 import Picker from "@emoji-mart/react";
-import FilePreview from "./FilePreview/FilePreview";
-import FilePreviewScroll from "./FilePreview/FilePreviewScroll";
-import axios, { AxiosError } from "axios";
+import FilePreview from "../FilePreview/FilePreview";
+import FilePreviewScroll from "../FilePreview/FilePreviewScroll";
+import axios, { AxiosError, AxiosProgressEvent } from "axios";
 import { getToken } from "@/utils/cookies";
+import styles from "./message-form.module.css"
 
 interface IMessageForm {
   type: string;
@@ -24,7 +25,9 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
   const [ error, setError ] = useState<string | null>(null);
   const [ showEmojiPicker, setShowEmojiPicker ] = useState<boolean>(false);
   const [ cursorPosition, setCursorPosition ] = useState<number | null>(null);
-  const [ files, setFiles ] = useState<(File)[]>([])
+  const [ files, setFiles ] = useState<(File)[]>([]);
+  const [ progress, setProgress ] = useState<number>(0);
+
   const chatId = router.query.id;
   const token = getToken();
 
@@ -97,6 +100,12 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
         'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${token}`,
         },
+        onUploadProgress: ((progressEvent: AxiosProgressEvent) => { 
+          if (progressEvent && progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+            setProgress(percent);
+          }
+        })
       });
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -111,6 +120,9 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
       } else {
         setError("Произошла неизвестная ошибка"); 
       }
+    }
+    finally {
+      setProgress(0);
     }
   }
 
@@ -181,6 +193,13 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
             ))}
           </FilePreviewScroll>
         }
+        { progress > 0 && 
+          <div className={styles['progressbar__background']}>
+            <div style={{width: `${progress}%`}} className={styles['progressbar']}>
+            </div>
+          </div>
+        }
+
         <input type="file" ref={fileInputRef} multiple onChange={handleFileChange}/>
         <textarea
           onChange={(event) => setMessage(event.target.value)}
@@ -189,11 +208,12 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
           style={{ whiteSpace: 'pre-wrap' }}
           ref={textareaRef}
         ></textarea>
+
         <button type="button" onClick={toggleEmojiPicker}>
           emoji
         </button>
         <button
-          disabled={!verifyCorrectSymbols({ message: message }) && files.length === 0}
+          disabled={progress > 0 || (!verifyCorrectSymbols({ message: message }) && files.length === 0)}
           type="submit"
         >
           Ok

@@ -1,0 +1,12 @@
+.progressbar__background {
+    width: 200px;
+    height: 20px;
+    background-color: gray;
+    border-radius: 10px;
+}
+
+.progressbar {
+    height: 100%;
+    background-color: blueviolet;
+    border-radius: inherit;
+}

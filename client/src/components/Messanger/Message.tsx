@@ -6,7 +6,7 @@ import { useAuthStore } from "@/utils/store";
 import { getUserFromCookies } from "@/utils/cookies";
 import { useRouter } from "next/router";
 import { socket } from "@/config/socket";
-import MessageForm from "./MessageForm";
+import MessageForm from "./MessageForm/MessageForm";
 import PhotoCollage from "../PhotoCollage";
 import FileDownload from "./FileDownload";
 import FileProvider from "./FileProvider";

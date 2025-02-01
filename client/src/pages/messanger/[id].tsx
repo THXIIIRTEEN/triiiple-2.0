@@ -1,4 +1,4 @@
-import MessageForm from "@/components/Messanger/MessageForm";
+import MessageForm from "@/components/Messanger/MessageForm/MessageForm";
 import Protected from "@/components/Protected";
 import { IMessage } from "@/types/user";
 import { getToken, getUserFromCookies } from "@/utils/cookies";

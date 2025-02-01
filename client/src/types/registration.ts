@@ -5,6 +5,7 @@ export interface UserData {
     tag?: string;
     email: string;
     password: string;
+    publicKey?: string
 }
 
 export interface ServerError {
@@ -13,7 +14,6 @@ export interface ServerError {
         message?: string;
     }[];
 }
-
 
 export interface AuthorizationInputProps {
     name: string;

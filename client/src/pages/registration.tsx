@@ -8,6 +8,7 @@ import { ServerError, UserData } from '@/types/registration';
 import HCaptchaComponent from "@/components/HCaptchaComponent";
 import { handleVerifyCaptcha } from "@/utils/captcha";
 import { useRouter } from 'next/router';
+import { exportPublicKey, generateKeyPair } from '@/utils/crypto';
 
 const RegistrationPage: React.FC = () => {
 
@@ -54,12 +55,21 @@ const RegistrationPage: React.FC = () => {
     setShowCaptcha(true)
   }
 
+  const createNewKeysForUser = async () => {
+    const { publicKey } = await generateKeyPair();
+    const publicKeyExport = await exportPublicKey(publicKey);
+    return publicKeyExport;
+  }
+
   const onCaptchaVerified = async (token: string) => {
     const isCaptchaVerified = await handleVerifyCaptcha(token, setServerError);
 
     if (verifyCorrectSymbols(formValues) && isCaptchaVerified) {
       clearInputs();
       const convertedUserData = convertData(formValues);
+      const publicKey = await createNewKeysForUser();
+
+      convertedUserData.publicKey = publicKey;
 
       try {
         const response = await axios.post(`${process.env.API_URI!}/users/registration`, convertedUserData);
