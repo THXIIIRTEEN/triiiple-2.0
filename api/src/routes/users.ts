@@ -9,13 +9,5 @@ userRouter.post('/users/login', checkAuthorizedUser, sendEmailConfirmationAuthor
 userRouter.post('/users/verification', verifyCode);
 userRouter.post('/avatar/upload', uploadAvatar, changeUserAvatar);
 userRouter.post('/avatar', getProfilePicture);
-// userRouter.get('/auth/vk', passport.authenticate('vkontakte', {
-//     scope: ['friends', 'email'] // Здесь указываются необходимые разрешения
-// }));
-
-// userRouter.get('/auth/vk/callback', passport.authenticate('vkontakte', {
-//     successRedirect: '/',      // Переадресация после успешной авторизации
-//     failureRedirect: '/login', // Переадресация в случае неудачи
-// }));
 
 export { userRouter };

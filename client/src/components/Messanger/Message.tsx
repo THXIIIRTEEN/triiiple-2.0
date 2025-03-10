@@ -25,7 +25,7 @@ const Message: React.FC<IMessage> = ({
 
   const [profile, setProfile] = useState(user);
   const [editMode, setEditMode] = useState<boolean>(false);
-  const [ mediaFiles, setMediaFiles ] = useState<IFile[]>([])
+  const [ mediaFiles, setMediaFiles ] = useState<IFile[]>([]);
 
   const router = useRouter();
   const chatId = router.query.id;
@@ -99,7 +99,7 @@ const Message: React.FC<IMessage> = ({
       {!editMode ? (
         <p>{renderMessageWithEmojis(text)}</p>
       ) : (
-        <MessageForm type="edit" user={user} value={text} messageId={_id} />
+        <MessageForm type="edit" user={user!} value={text} messageId={_id} />
       )}
       {files?.map(
         (file) =>

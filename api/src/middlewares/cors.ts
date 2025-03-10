@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 
 function cors(req: Request, res: Response, next: NextFunction): void {
   const allowedCors: string[] = [
-    process.env.FRONTEND_URL || 'http://test.mydomain.com',
+    process.env.FRONTEND_URL || 'https://test.mydomain.com',
   ];
 
   const { origin } = req.headers;

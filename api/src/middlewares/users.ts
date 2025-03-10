@@ -6,6 +6,7 @@ import Verification from '../database/schemes/verification';
 import jwtLibrary from 'jsonwebtoken';
 import User from '../database/schemes/users';
 import { IUser } from '../types/IUser';
+import { CustomRequest } from '../types/requests';
 
 const secret = process.env.SECRET_KEY as string;
 interface ErrorMessage {
@@ -31,7 +32,7 @@ const checkIfEmailExist = async (req: Request, res: Response): Promise<ErrorMess
     return null;
 };
 
-const createNewUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const createNewUser = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
         const userData = {
             username: req.body.username,
@@ -58,8 +59,8 @@ const createNewUser = async (req: Request, res: Response, next: NextFunction): P
         }
 
         const user = new Users(userData);
-        await user.save();
-        res.status(200).json({ message: 'Пользователь создан успешно' });
+        const userId = await user.save() as IUser;
+        req.userId = userId._id as string;
         next();
     } catch (error) {
         console.log(`Возникла ошибка при создании пользователя: ${error}`);
@@ -79,7 +80,7 @@ const generateVerificationCode = (): string => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-const sendEmailConfirmation = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const sendEmailConfirmation = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
     const confirmationToken = await generateConfirmationToken(req.body.email);
     const message = {
         from: process.env.EMAIL_USER,
@@ -88,7 +89,8 @@ const sendEmailConfirmation = async (req: Request, res: Response, next: NextFunc
         text: `Please confirm your registration by clicking the following link: ${process.env.BACKEND_URL}/verify/${req.body.username}/${confirmationToken}`,
     };
     mailer(message);
-    next();
+    const userId = req.userId
+    res.status(200).json({ userId });
 };
 
 const sendEmailConfirmationAuthorization = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -160,7 +162,7 @@ const verifyCode = async (req: Request, res: Response, next: NextFunction): Prom
     if (existingCode && user) {
         await Verification.findByIdAndDelete(existingCode._id);
         const token = createJWTToken(user, req, res);
-        res.status(200).json({ message: 'Аутентификация прошла успешно', token: token });
+        res.status(200).json({ message: 'Аутентификация прошла успешно', token: token, userId: user._id });
     } else {
         res.status(400).json({ message: 'Неверный код пользователя' });
     }
@@ -172,5 +174,5 @@ export {
     checkAuthorizedUser,
     sendEmailConfirmationAuthorization,
     verifyCode,
-    generateConfirmationToken,
+    generateConfirmationToken
 };

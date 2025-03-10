@@ -14,6 +14,7 @@ import { IFileSchema } from "../database/schemes/file";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { slugify } from 'transliteration';
 import iconv from 'iconv-lite';
+import { decryptData, encryptData } from "../utils/crypto";
 
 const fixEncoding = (text: string): string => {
     return iconv.decode(Buffer.from(text, 'binary'), 'utf-8');
@@ -44,17 +45,21 @@ export const createNewChatRoom = async (req: Request, res: Response): Promise<vo
 interface INewMessageDataType {
     author: string;
     chatId: string;
-    text: string
+    text: string;
+    hmac: string;
+    salt: string
 }
 
 export const createNewMessage = async (msg: INewMessageDataType) => {
     const { author, chatId, text } = msg;
 
-    let message = new Message({ author: author, text: text});
+    const { ciphertext } = await encryptData(text);
+    let message = new Message({ chatId: chatId, author: author, text: ciphertext });
     message = await message.save();
 
     await ChatRoom.findByIdAndUpdate(chatId, {$push: {messages: message}});
-
+    const { plaintext } = await decryptData(message.text)
+    message.text = Buffer.from(plaintext, 'base64').toString('utf-8');
     return message.populate({
         path: 'author',
         select: 'profile username'
@@ -63,25 +68,32 @@ export const createNewMessage = async (msg: INewMessageDataType) => {
 
 export const getMessagesFromChatRoom = async (req: Request, res: Response) => {
     try {
-        const { chatId } = req.body;
+        const { chatId, skip, limit } = req.body;
+        const messages = await Message.find({ chatId: chatId })
+            .sort({ date: -1 }) 
+            .skip(Number(skip) || 0)
+            .limit(Number(limit))
+            .populate('author', 'profile username')
+            .populate('files');
+        const chat = await ChatRoom.findById(chatId).select('messages');
 
-        const chat = await ChatRoom.findById(chatId)
-        .select('messages')
-        .populate({
-            path: 'messages', 
-            populate: [
-                {
-                    path: 'author', 
-                    select: 'profile username'
-                },
-                {
-                    path: 'files'
+        if (!chat) {
+            res.status(400).json({ message: 'Чат не найден'});
+            return;
+        }
+
+        if (messages) {
+            for (let message of messages as any[]) {
+                if (message.text) {
+                    const { plaintext } = await decryptData(message.text);
+                    message.text = Buffer.from(plaintext, 'base64').toString('utf-8');
                 }
-            ]
-        });
-        res.status(200).json({ chat });
+            }
+        }
+        res.status(200).json({ chat: { ...chat.toObject(), messages } });
     }
     catch (error) {
+        console.log(error)
         res.status(400).json({ message: `Произошла ошибка при получении сообщений: ${error}`})
     }
 }
@@ -116,11 +128,13 @@ const deleteFile = async (fileUrl: string) => {
             await s3Client.send(deleteFolderCommand);
         } 
         else {
-            throw new Error(`Папка пуста или не существует`);
+            console.log(`Папка пуста или не существует`);
+            return;
         }
-      } catch (err) {
-        throw new Error(`Ошибка при удалении файла: ${err}`);
-      } 
+    } catch (err) {
+        console.log(`Ошибка при удалении файла: ${err}`);
+        return;
+    } 
 }
 
 export const deleteMessage = async (msg: IMsgDelete) => {
@@ -177,11 +191,9 @@ export const createNewMessageWithFiles = async (req: CustomRequest, res: Respons
             }
 
             const messageData = JSON.parse(req.body.message);
-
-            let message = new Message({
-                author: messageData.author,
-                text: messageData.text,
-            });
+            const { ciphertext } = await encryptData(messageData.text);
+        
+            let message = new Message({ author: messageData.author, text: ciphertext });
 
             message = await message.save();
             req.message = message;
@@ -269,6 +281,9 @@ export const addFilesToMessage = async (req: CustomRequest, res: Response, next:
             res.status(404).send("Сообщение не найдено.");
             return;
         }
+
+        const { plaintext } = await decryptData(message.text)
+        message.text = Buffer.from(plaintext, 'base64').toString('utf-8');
 
         req.message = await message.populate ([{
             path: 'author', 

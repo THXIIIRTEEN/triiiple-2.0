@@ -9,6 +9,7 @@ import "../globals.css"
 import { initializeEmojiData } from "@/utils/emojiInit";
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
+
   const { user, setUser } = useAuthStore();
   const router = useRouter();
 

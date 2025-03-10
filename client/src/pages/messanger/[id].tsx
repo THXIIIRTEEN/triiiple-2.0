@@ -4,7 +4,7 @@ import { IMessage } from "@/types/user";
 import { getToken, getUserFromCookies } from "@/utils/cookies";
 import { useAuthStore } from "@/utils/store";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import Message from "@/components/Messanger/Message";
 import { socket } from "@/config/socket";
@@ -15,33 +15,78 @@ const Messanger: React.FC = () => {
 
     const user = useAuthStore(state => state.user);
     const [ profile, setProfile ] = useState(user);  
-    const [ messageArray, setMessageArray ] = useState<IMessage[]>([])
+    const [ messageArray, setMessageArray ] = useState<IMessage[]>([]);
+    const [loading, setLoading] = useState(false);
     const token = getToken();
     const chatId = router.query.id;
+
+    const limit = 2;
+
+    useEffect(() => {
+        window.scrollTo({ top: document.body.scrollHeight });
+    }, [messageArray]); 
+      
+    const handleGetMessages = useCallback(async (limit: number, skip?: number, ) => {
+        if (chatId) {
+            const response = await axios.post(`${process.env.API_URI}/get-messages`, {chatId, limit, skip}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            response.data.chat.messages.reverse()
+            return response;
+        }
+    }, [chatId, token]);
+
+    const handleGetMoreMessages = useCallback(async (skip: number, limit: number) => {
+        setLoading(true)
+        const response = await handleGetMessages(skip, limit);
+        if (response && response.data.chat?.messages.length > 0) {
+            setMessageArray((messages) => [...response.data.chat?.messages, ...messages]);
+        }
+        setLoading(false)
+    }, [handleGetMessages])
+
+    const firstMessageRef = useRef<HTMLButtonElement | null>(null); 
+
+    useEffect(() => {
+
+        const messageRef = firstMessageRef.current
+        
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !loading) {
+                    handleGetMoreMessages(limit, messageArray.length)
+                }
+            },
+            { root: null, rootMargin: "0px", threshold: 0.1 }
+        );
     
+        if (messageRef) observer.observe(messageRef);
+    
+        return () => {
+            if (messageRef) observer.unobserve(messageRef);
+        };
+    }, [messageArray, loading, handleGetMoreMessages]);
+
     useEffect(() => {
         if (!user) {
             setProfile(getUserFromCookies())
         }
     }, [user, profile]);
 
-    const url = new URL('https://triiiple.storage.yandexcloud.net/chats/6766f6f3c64b580ea2031da7/message/678fd8611d2e209794f42d70/files/photo_2024-08-18_23-06-10.jpg');
-    const bucketName = url.hostname
-    console.log(bucketName)
-
     useEffect(() => {
         if (profile && profile.id) {
-            const handleGetMessages = async () => {
-                const response = await axios.post(`${process.env.API_URI}/get-messages`, {chatId: chatId}, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-                setMessageArray(response.data.chat?.messages);
-            };
-            handleGetMessages();
+            const importMessageFromResponse = async () => {
+                const response = await handleGetMessages(limit);
+                if (response) {
+                    setMessageArray(response.data.chat?.messages);
+                }
+            }
+            importMessageFromResponse();
         }
-    }, [profile, token, chatId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [profile, token, chatId, handleGetMessages])
 
     useEffect(() => {
         if (chatId) {
@@ -116,12 +161,17 @@ const Messanger: React.FC = () => {
 
     return (
         <Protected>
+            <button onClick={() => handleGetMoreMessages(limit, messageArray.length)} ref={firstMessageRef}>
+                Подгрузить ещё сообщения
+            </button>
             {   messageArray &&
                 messageArray.map((message: IMessage) => (
                     <Message key={message._id} {...message} />
                 ))
             }
-            <MessageForm type="send" user={profile}/>
+            {   profile &&
+                <MessageForm type="send" user={profile}/>
+            }
         </Protected>
     );
 }

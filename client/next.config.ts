@@ -3,10 +3,10 @@ import { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
-    const apiUri = isDev ? 'http://localhost:80' : process.env.API_URI;
+    const apiUri = isDev ? 'http://localhost' : process.env.API_URI;
     const vkDomains = 'https://id.vk.com https://vk.com https://login.vk.com';
     const discordDomain = 'https://cdn.discordapp.com';
-    const websocketUri = isDev ? 'ws://localhost:80' : process.env.WEBSOCKET_URL;
+    const websocketUri = isDev ? 'ws://localhost' : process.env.WEBSOCKET_URL;
     const cdnJsdelivr = 'https://cdn.jsdelivr.net';
     const yandexCloudDomain = 'https://triiiple.storage.yandexcloud.net';
 
@@ -93,6 +93,7 @@ const nextConfig: NextConfig = {
     DISCORD_SECRET: process.env.DISCORD_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    AES_SECRET: process.env.AES_SECRET
   },
 
   async redirects() {

@@ -31,7 +31,8 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
   chatRooms: {
     type: [Schema.Types.ObjectId],
     default: [],
-    required: false
+    required: false,
+    ref: 'User'
   },
   created_at: {
     type: Date,

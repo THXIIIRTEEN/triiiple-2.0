@@ -20,18 +20,17 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ id }) => {
       } else {
         const handleGetAvatar = async (): Promise<void> => {
           try {
-            const response = await axios.post(
-              `${process.env.API_URI}/avatar`,
-              { userId: id },
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-
-            if (response && response.data.user.profile) {
-
+            if (token) {
+              const response = await axios.post(
+                `${process.env.API_URI}/avatar`,
+                { userId: id },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+              if (response && response.data.user.profile) {
                 const imageUrl = response.data.user.profile;
                 const url = new URL(imageUrl);  
                 const hostname = url.hostname;  
@@ -56,6 +55,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ id }) => {
                     };
                     reader.readAsDataURL(imageBlob);
                 }
+            }
             }
           } catch (error) {
             console.error("Error fetching avatar:", error);

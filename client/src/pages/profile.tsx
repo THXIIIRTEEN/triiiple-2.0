@@ -2,6 +2,7 @@ import AvatarInput from "@/components/AvatarInput";
 import Protected from "@/components/Protected";
 import UserAvatar from "@/components/UserAvatar";
 import { getUserFromCookies, removeToken } from "@/utils/cookies";
+import { deletePrivateKey } from "@/utils/crypto";
 import { useAuthStore } from "@/utils/store";
 import { useEffect, useState } from "react";
 
@@ -21,6 +22,7 @@ const ProfilePage: React.FC = () => {
     const handleLogout = () => {
         logout();
         removeToken();
+        deletePrivateKey();
         window.location.reload();
     }
 

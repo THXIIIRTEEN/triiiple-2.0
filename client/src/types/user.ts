@@ -1,6 +1,6 @@
 export interface IUser {
     _id?: string;
-    id?: string;
+    id: string;
     email?: string;
     username?: string;
     password?: string;
@@ -20,5 +20,5 @@ export interface IMessage {
     text: string;
     date: Date;
     files?: IFile[];
-    isEdited: boolean
+    isEdited: boolean;
 }

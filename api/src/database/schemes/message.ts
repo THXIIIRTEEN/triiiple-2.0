@@ -2,14 +2,20 @@ import mongoose, { Schema } from 'mongoose';
 
 export interface IMessageSchema {
     _id?: string,
+    chatId: Schema.Types.ObjectId,
     author: Schema.Types.ObjectId,
-    text: String,
+    text: string,
     date: Date,
     files: Schema.Types.ObjectId[] | [],
-    isEdited: Boolean
+    isEdited: Boolean,
 }
 
 const messageSchema: Schema<IMessageSchema> = new Schema<IMessageSchema>({
+    chatId: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'ChatRoom'
+    },
     author: {
         type: Schema.Types.ObjectId,
         required: true,
@@ -23,7 +29,7 @@ const messageSchema: Schema<IMessageSchema> = new Schema<IMessageSchema>({
     date: {
         type: Date,
         required: true,
-        default: new Date()
+        default: () => new Date()
     },
     files: {
         type: [Schema.Types.ObjectId],

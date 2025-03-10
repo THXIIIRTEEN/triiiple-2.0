@@ -13,7 +13,7 @@ import styles from "./message-form.module.css"
 
 interface IMessageForm {
   type: string;
-  user: IUser | null;
+  user: IUser;
   value?: string;
   messageId?: string
 }
@@ -28,7 +28,7 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
   const [ files, setFiles ] = useState<(File)[]>([]);
   const [ progress, setProgress ] = useState<number>(0);
 
-  const chatId = router.query.id;
+  const chatId = router.query.id as string;
   const token = getToken();
 
   const toggleEmojiPicker = () => {
@@ -59,15 +59,15 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
     }
   }, [cursorPosition]);
 
-  const sendMessageWithoutFiles = () => {
+  const sendMessageWithoutFiles = async () => {
     socket.emit("sendMessageRequest", {
       author: user!.id,
       chatId: chatId,
-      text: message,
+      text: message
     });
     setMessage(""); 
     setError(null);
-  }
+}
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -91,7 +91,6 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
       chatId: chatId,
       text: message,
     }
-
     formData.append('message', JSON.stringify(messageData));
 
     try {
