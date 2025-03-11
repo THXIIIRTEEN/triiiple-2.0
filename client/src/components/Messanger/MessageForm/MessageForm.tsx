@@ -15,10 +15,11 @@ interface IMessageForm {
   type: string;
   user: IUser;
   value?: string;
-  messageId?: string
+  messageId?: string;
+  setEditMode?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) => {
+const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, setEditMode }) => {
   const router = useRouter();
 
   const [ message, setMessage ] = useState<string>(value ? value : "");
@@ -153,6 +154,9 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId }) =
         });
         setMessage(""); 
         setError(null);
+        if (setEditMode) {
+          setEditMode(false)
+        }
       }
     }
   }

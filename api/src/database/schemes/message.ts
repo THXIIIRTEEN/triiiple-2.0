@@ -8,6 +8,7 @@ export interface IMessageSchema {
     date: Date,
     files: Schema.Types.ObjectId[] | [],
     isEdited: Boolean,
+    isRead: Boolean
 }
 
 const messageSchema: Schema<IMessageSchema> = new Schema<IMessageSchema>({
@@ -38,6 +39,11 @@ const messageSchema: Schema<IMessageSchema> = new Schema<IMessageSchema>({
         ref: 'File'
     },
     isEdited: {
+        type: Boolean,
+        required: false,
+        default: false
+    },
+    isRead: {
         type: Boolean,
         required: false,
         default: false

@@ -1,6 +1,6 @@
 import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { createNewMessage, deleteMessage, editMessage } from '../middlewares/chat';
+import { createNewMessage, deleteMessage, editMessage, setMessageRead } from '../middlewares/chat';
 import multer from 'multer';
 
 let io: SocketIOServer;
@@ -33,8 +33,15 @@ export const initSocket = (server: HttpServer) => {
         });
         
         socket.on('editMessageRequest', async (msg) => {
+            console.log(msg)
             await editMessage(msg);
             io.to(msg.chatId).emit('editMessageResponse', msg);
+        });
+
+        socket.on('readMessageRequest', async (msg) => {
+            await setMessageRead(msg);
+            msg.isRead = true;
+            io.to(msg.chatId).emit('readMessageResponse', msg);
         });
 
         socket.on('disconnect', () => {

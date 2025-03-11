@@ -1,3 +1,5 @@
+import { LegacyRef } from "react";
+
 export interface IUser {
     _id?: string;
     id: string;
@@ -21,4 +23,6 @@ export interface IMessage {
     date: Date;
     files?: IFile[];
     isEdited: boolean;
+    isRead: boolean
+    ref: LegacyRef<HTMLDivElement | null>
 }

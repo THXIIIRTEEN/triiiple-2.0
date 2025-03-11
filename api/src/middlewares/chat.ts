@@ -165,11 +165,21 @@ interface IMsgEdit {
 export const editMessage = async (msg: IMsgEdit) => {
     const { messageId, text } = msg;
 
+    const { ciphertext } = await encryptData(text);
     await Message.findByIdAndUpdate(
         messageId,
-        { text: text, isEdited: true }
+        { text: ciphertext, isEdited: true }
     );
 };
+
+export const setMessageRead = async (msg: IMsgDelete) => {
+    const { messageId } = msg;
+
+    await Message.findByIdAndUpdate(
+        messageId,
+        { isRead: true }
+    )
+}
 
 const upload = multer({ dest: 'uploads/' });
 

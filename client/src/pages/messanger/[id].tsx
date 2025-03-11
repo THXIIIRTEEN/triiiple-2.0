@@ -1,92 +1,85 @@
+"use client"
+
 import MessageForm from "@/components/Messanger/MessageForm/MessageForm";
 import Protected from "@/components/Protected";
 import { IMessage } from "@/types/user";
 import { getToken, getUserFromCookies } from "@/utils/cookies";
 import { useAuthStore } from "@/utils/store";
 import axios from "axios";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import Message from "@/components/Messanger/Message";
 import { socket } from "@/config/socket";
+import styles from './messanger.module.css'
 
 const Messanger: React.FC = () => {
-
     const router = useRouter();
-
     const user = useAuthStore(state => state.user);
-    const [ profile, setProfile ] = useState(user);  
-    const [ messageArray, setMessageArray ] = useState<IMessage[]>([]);
+    const [profile, setProfile] = useState(user);
+    const [messageArray, setMessageArray] = useState<IMessage[]>([]);
+    const [scrolled, setScrolled] = useState(false);
     const [loading, setLoading] = useState(false);
     const token = getToken();
     const chatId = router.query.id;
+    const limit = 5;
 
-    const limit = 2;
+    const firstMessageRef = useRef<HTMLDivElement | null>(null);
+    const chatBottomRef = useRef<HTMLDivElement | null>(null);
+    const chatWrapperRef = useRef<HTMLDivElement | null>(null);
+    const lastMessageRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        window.scrollTo({ top: document.body.scrollHeight });
-    }, [messageArray]); 
-      
-    const handleGetMessages = useCallback(async (limit: number, skip?: number, ) => {
-        if (chatId) {
-            const response = await axios.post(`${process.env.API_URI}/get-messages`, {chatId, limit, skip}, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            response.data.chat.messages.reverse()
-            return response;
+        if (chatBottomRef.current && messageArray.length > 0 && !scrolled) {
+            setTimeout(() => {
+                chatBottomRef.current?.scrollIntoView({ behavior: "instant" });
+                setScrolled(true)
+            }, 0);
         }
+      }, [messageArray, scrolled]);
+
+    const handleGetMessages = useCallback(async (limit: number, skip = 0) => {
+        if (!chatId) return;
+        const response = await axios.post(`${process.env.API_URI}/get-messages`, { chatId, limit, skip }, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data.chat?.messages.reverse();
     }, [chatId, token]);
 
-    const handleGetMoreMessages = useCallback(async (skip: number, limit: number) => {
-        setLoading(true)
-        const response = await handleGetMessages(skip, limit);
-        if (response && response.data.chat?.messages.length > 0) {
-            setMessageArray((messages) => [...response.data.chat?.messages, ...messages]);
+    const handleGetMoreMessages = useCallback(async () => {
+        if (loading || !chatId) return;
+        setLoading(true);
+        const messages = await handleGetMessages(limit, messageArray.length);
+        if (messages?.length) {
+            setMessageArray(prev => [...messages, ...prev]);
         }
-        setLoading(false)
-    }, [handleGetMessages])
-
-    const firstMessageRef = useRef<HTMLButtonElement | null>(null); 
+        setLoading(false);
+    }, [loading, chatId, messageArray.length, handleGetMessages]);
 
     useEffect(() => {
+        const observer = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && scrolled) {
+                handleGetMoreMessages();
+                lastMessageRef.current?.scrollIntoView({ behavior: 'instant' })
+            }
+        }, { rootMargin: "0px", threshold: 0.1 });
 
-        const messageRef = firstMessageRef.current
-        
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && !loading) {
-                    handleGetMoreMessages(limit, messageArray.length)
-                }
-            },
-            { root: null, rootMargin: "0px", threshold: 0.1 }
-        );
-    
-        if (messageRef) observer.observe(messageRef);
-    
-        return () => {
-            if (messageRef) observer.unobserve(messageRef);
-        };
-    }, [messageArray, loading, handleGetMoreMessages]);
+        if (firstMessageRef.current) observer.observe(firstMessageRef.current);
+
+        return () => observer.disconnect();
+    }, [handleGetMoreMessages, scrolled]);
 
     useEffect(() => {
-        if (!user) {
-            setProfile(getUserFromCookies())
-        }
+        if (!profile) setProfile(getUserFromCookies());
     }, [user, profile]);
 
     useEffect(() => {
-        if (profile && profile.id) {
-            const importMessageFromResponse = async () => {
-                const response = await handleGetMessages(limit);
-                if (response) {
-                    setMessageArray(response.data.chat?.messages);
-                }
-            }
-            importMessageFromResponse();
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [profile, token, chatId, handleGetMessages])
+        const fetchMessages = async () => {
+            const messages = await handleGetMessages(limit);
+            if (messages) setMessageArray(messages);
+        };
+
+        if (profile?.id) fetchMessages();
+    }, [profile, handleGetMessages]);
 
     useEffect(() => {
         if (chatId) {
@@ -159,21 +152,39 @@ const Messanger: React.FC = () => {
         }
     }, [chatId]);
 
+    useEffect(() => {
+        if (chatId) {
+            socket.on('readMessageResponse', ({ messageId, isRead } : { messageId: string, isRead: boolean }) => {
+                setMessageArray(prev => prev.map(m => (m._id === messageId ? { ...m, isRead } : m)));
+            });
+    
+            return () => {
+                socket.off('readMessageResponse');
+                socket.disconnect();
+            };
+        }
+    }, [chatId]);
+
     return (
         <Protected>
-            <button onClick={() => handleGetMoreMessages(limit, messageArray.length)} ref={firstMessageRef}>
-                Подгрузить ещё сообщения
-            </button>
-            {   messageArray &&
-                messageArray.map((message: IMessage) => (
-                    <Message key={message._id} {...message} />
-                ))
-            }
-            {   profile &&
-                <MessageForm type="send" user={profile}/>
-            }
+            <div className={styles['message-wrapper']} ref={chatWrapperRef}>
+                <div ref={firstMessageRef}></div>
+                {messageArray.map((message, index) => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { ref: _ignored, ...messageProps } = message;
+                return (
+                    <Message
+                        key={message._id}
+                        ref={index === 0 ? lastMessageRef : null}
+                        {...messageProps}
+                    />
+                );
+                })}                
+                {profile && <MessageForm type="send" user={profile}/>}
+                <div ref={chatBottomRef}></div>
+            </div>
         </Protected>
     );
-}
+};
 
 export default Messanger;
