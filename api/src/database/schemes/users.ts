@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, SchemaTypes } from 'mongoose';
 import { IUser } from '../../types/IUser';
 import bcrypt from 'bcryptjs';
 
@@ -36,7 +36,12 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
   },
   created_at: {
     type: Date,
-    default: new Date()
+    default: () => new Date()
+  },
+  onlineStatus: {
+    type: SchemaTypes.Mixed,
+    default: () => new Date(),
+    required: false
   }
 });
 

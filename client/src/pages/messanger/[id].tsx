@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import Message from "@/components/Messanger/Message";
 import { socket } from "@/config/socket";
 import styles from './messanger.module.css'
+import UserOnlineStatus from "@/components/Messanger/UserOnlineStatus/UserOnlineStatus";
 
 const Messanger: React.FC = () => {
     const router = useRouter();
@@ -19,6 +20,8 @@ const Messanger: React.FC = () => {
     const [messageArray, setMessageArray] = useState<IMessage[]>([]);
     const [scrolled, setScrolled] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [ chatMembers, setChatMembers ] = useState<string[]>([]);
+    const [ friendId, setFriendId ] = useState<string | null>(null);
     const token = getToken();
     const chatId = router.query.id;
     const limit = 5;
@@ -54,6 +57,26 @@ const Messanger: React.FC = () => {
         }
         setLoading(false);
     }, [loading, chatId, messageArray.length, handleGetMessages]);
+
+    useEffect(() => {
+        const getChatMembers = async () => {
+            if (chatId) {
+                const response = await axios.post(`${process.env.API_URI}/get-chat-members`, {chatId});
+                setChatMembers(response.data.chat.members)
+            }
+        }
+        getChatMembers();
+    }, [chatId]);
+
+    useEffect(() => {
+        const getFriendId = async () => {
+            if (user && chatMembers && chatMembers.length === 2) {
+                const friend = chatMembers.filter((id) => id !== user.id);
+                setFriendId(friend[0])
+            }
+        }
+        getFriendId();
+    })
 
     useEffect(() => {
         const observer = new IntersectionObserver(entries => {
@@ -180,6 +203,9 @@ const Messanger: React.FC = () => {
                     />
                 );
                 })}                
+                {   user && user.id && friendId &&
+                    <UserOnlineStatus friendId={friendId} userId={user.id}/>
+                }
                 {profile && <MessageForm type="send" user={profile}/>}
                 <div ref={chatBottomRef}></div>
             </div>

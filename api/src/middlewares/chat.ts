@@ -346,3 +346,56 @@ export const sendSignedUrl = async (req: CustomRequest, res: Response) => {
         res.status(400).send({ message: `Ошибка получения файла: ${error}`})
     }
 }
+
+export const getOnlineStatus = async (req: CustomRequest, res: Response) => {
+    try {
+        const { userId } = req.body;
+        if (!userId) {
+            res.status(400).json({ message: `ID Пользователя не найден`});
+            return;
+        }
+        const user = await User.findById(userId).select('onlineStatus');
+        if (!user) {
+            res.status(400).json({ message: `Пользователь не найден`});
+            return;
+        }
+        res.status(200).json({ user });
+    }
+    catch (error) {
+        res.status(400).json({ message: `Произошла непредвиденная ошибка: ${error}`})
+    }
+}
+
+export const getChatMembers = async (req: CustomRequest, res: Response) => {
+    try {
+        const { chatId } = req.body;
+        if (!chatId) {
+            res.status(400).json({ message: `ID Чата не найден`});
+            return;
+        }
+        const chat = await ChatRoom.findById(chatId).select('members');
+        if (!chat) {
+            res.status(400).json({ message: `Пользователь не найден`});
+            return;
+        }
+        res.status(200).json({ chat });
+    }
+    catch (error) {
+        res.status(400).json({ message: `Произошла непредвиденная ошибка: ${error}`})
+    }
+}
+
+export const setUserOnline = async (userId: string, status: string) => {
+    if (status === "offline") {
+        const setStatus = Date.now();
+        const user = await User.findByIdAndUpdate(userId, {onlineStatus: setStatus}, {new: true}).select("onlineStatus");
+        return user;
+    }
+    else if (status === "online") {
+        const user = await User.findByIdAndUpdate(userId, {onlineStatus: true}, {new: true}).select("onlineStatus");
+        return user;
+    }
+    else {
+        return;
+    }
+}

@@ -49,7 +49,6 @@ const Message = forwardRef<HTMLDivElement, IMessage>(({
 
   const handleDeleteMessage = async () => {
     if (_id) {
-      console.log(_id)
       socket.emit("deleteMessageRequest", {
         messageId: _id,
         chatId: chatId

@@ -1,6 +1,6 @@
 import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { createNewMessage, deleteMessage, editMessage, setMessageRead } from '../middlewares/chat';
+import { createNewMessage, deleteMessage, editMessage, setMessageRead, setUserOnline } from '../middlewares/chat';
 import multer from 'multer';
 
 let io: SocketIOServer;
@@ -33,7 +33,6 @@ export const initSocket = (server: HttpServer) => {
         });
         
         socket.on('editMessageRequest', async (msg) => {
-            console.log(msg)
             await editMessage(msg);
             io.to(msg.chatId).emit('editMessageResponse', msg);
         });
@@ -42,6 +41,16 @@ export const initSocket = (server: HttpServer) => {
             await setMessageRead(msg);
             msg.isRead = true;
             io.to(msg.chatId).emit('readMessageResponse', msg);
+        });
+
+        socket.on('setUserOnlineRequest', async (data) => {
+            const user = await setUserOnline(data.userId, data.status);
+            io.to(data.userId).emit('setUserOnlineResponse', user);
+        });
+
+        socket.on('subscribeToOnlineStatus', ({ userId, friendId }) => {
+            socket.join(userId);
+            console.log(`Пользователь ${userId} сейчас подписан на ${friendId} онлайн статус`);
         });
 
         socket.on('disconnect', () => {

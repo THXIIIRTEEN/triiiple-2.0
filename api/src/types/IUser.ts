@@ -10,5 +10,6 @@ export interface IUser extends Document {
   verified?: boolean;
   chatRooms?: Array<IChatRoomSchema>;
   created_at: Date;
+  onlineStatus: Date | boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }

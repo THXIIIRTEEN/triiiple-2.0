@@ -40,6 +40,8 @@ const Protected: React.FC<ProtectedProps> = ({ children }) => {
     sendAuthentificationToken();
   }, [router]);
 
+  
+
   if (loading) {
     return <div>Loading...</div>;
   }

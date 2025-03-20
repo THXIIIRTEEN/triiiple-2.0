@@ -7,6 +7,7 @@ import { AppProps } from 'next/app';
 import { useRouter } from "next/navigation";
 import "../globals.css"
 import { initializeEmojiData } from "@/utils/emojiInit";
+import { socket } from "@/config/socket";
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
 
@@ -28,6 +29,52 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
       }
     }
   }, [user, setUser, router]);
+
+  useEffect(() => {
+    if (user && user.id) {
+      socket.emit("setUserOnlineRequest", { 
+        userId: user.id,
+        status: "online"
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (user && user.id) {
+        socket.emit('setUserOnlineRequest', {
+          userId: user.id,
+          status: "offline",
+        });
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (user && user.id) {
+          socket.emit('setUserOnlineRequest', {
+            userId: user.id,
+            status: "offline",
+          });
+        }
+      } else {
+        if (user && user.id) {
+          socket.emit('setUserOnlineRequest', {
+            userId: user.id,
+            status: "online",
+          });
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user]);
 
   return (
     <Component {...pageProps} />
