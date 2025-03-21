@@ -115,7 +115,6 @@ const Messanger: React.FC = () => {
     
             return () => {
                 socket.off('sendMessageResponse');
-                socket.disconnect();
             };
         }
     }, [chatId]);
@@ -170,7 +169,6 @@ const Messanger: React.FC = () => {
     
             return () => {
                 socket.off('sendMessageWithFilesResponse');
-                socket.disconnect();
             };
         }
     }, [chatId]);
@@ -183,7 +181,6 @@ const Messanger: React.FC = () => {
     
             return () => {
                 socket.off('readMessageResponse');
-                socket.disconnect();
             };
         }
     }, [chatId]);

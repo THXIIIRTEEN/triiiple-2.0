@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express"
 import ChatRoom from "../database/schemes/chatRoom"
 import User from "../database/schemes/users";
-import Message from "../database/schemes/message";
+import Message, { IMessageSchema } from "../database/schemes/message";
 import { s3Client } from "../utils/s3Client";
 import { ListObjectsV2Command, PutObjectCommand, DeleteObjectsCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import fs from 'fs';
@@ -15,6 +15,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { slugify } from 'transliteration';
 import iconv from 'iconv-lite';
 import { decryptData, encryptData } from "../utils/crypto";
+import { IUser } from "../types/IUser";
 
 const fixEncoding = (text: string): string => {
     return iconv.decode(Buffer.from(text, 'binary'), 'utf-8');
@@ -203,7 +204,7 @@ export const createNewMessageWithFiles = async (req: CustomRequest, res: Respons
             const messageData = JSON.parse(req.body.message);
             const { ciphertext } = await encryptData(messageData.text);
         
-            let message = new Message({ author: messageData.author, text: ciphertext });
+            let message = new Message({ author: messageData.author, text: ciphertext, chatId: messageData.chatId });
 
             message = await message.save();
             req.message = message;
@@ -211,8 +212,10 @@ export const createNewMessageWithFiles = async (req: CustomRequest, res: Respons
 
             await ChatRoom.findByIdAndUpdate(messageData.chatId, {$push: {messages: message}});
 
+
             next();
         } catch (err) {
+            console.log(err)
             res.status(400).send(`Ошибка при создании сообщения: ${err}`);
         }
     });
@@ -316,6 +319,7 @@ export const sendMessageWithFiles = async (req: CustomRequest, res: Response) =>
         const io = getIO();
         if (req.chatId) {
             io.to(req.chatId).emit('sendMessageWithFilesResponse', req.message);
+            io.to(req.chatId).emit('addNotReadedMessage', req.message);
         }
         res.status(200).json({ message: "Сообщение успешно отправлено" });
     } catch (err) {
@@ -397,5 +401,67 @@ export const setUserOnline = async (userId: string, status: string) => {
     }
     else {
         return;
+    }
+}
+
+interface IExportData {
+    friendData: IUser,
+    notReadedMessages: number,
+    lastMessage: IMessageSchema
+}
+
+export const fetchChatData = async (req: CustomRequest, res: Response) => {
+    try {
+        const { chatId, userId } = req.body;
+        const chatData = await ChatRoom.findById(chatId)
+        .populate({
+            path: 'members',
+            select: 'username profile'
+        })
+        .populate({
+            path: 'messages',
+            options: { sort: { date: -1 }, limit: 1 }
+        });
+
+        const chatMessagesOnly = await ChatRoom.findById(chatId)
+        .populate({
+            path: 'messages',
+        });
+
+        let exportData = {} as IExportData;
+
+        if (!chatData) {
+            res.status(404).json({ message: "Чат не найден" });
+            return;
+        }
+
+        if (chatData) {
+            if (chatData.members.length === 2) {
+                const friendData = chatData.members.find((userData) => {
+                    //@ts-ignore
+                    return userData._id.toString() !== userId;
+                })
+                //@ts-ignore
+                if (friendData) exportData!.friendData = friendData;
+            }
+            const notReadedMessages = chatMessagesOnly!.messages.filter((message) => {
+                //@ts-ignore
+                return message.isRead === false;
+            })
+            exportData!.notReadedMessages = notReadedMessages.length;
+            //@ts-ignore
+            exportData!.lastMessage = chatData.messages[0] || null
+            if (exportData!.lastMessage) {
+                const { plaintext } = await decryptData(exportData!.lastMessage.text)
+                exportData!.lastMessage.text = Buffer.from(plaintext, 'base64').toString('utf-8');
+            }
+        }
+
+        if (exportData) {
+            res.status(200).json({ chatData: exportData })
+        }
+    }
+    catch (error) {
+        res.status(400).json({ message: `Произошла ошибка: ${error}`})
     }
 }

@@ -24,6 +24,7 @@ export const initSocket = (server: HttpServer) => {
 
         socket.on('sendMessageRequest', async (msg) => {
             const message = await createNewMessage(msg);
+            io.to(msg.chatId).emit('addNotReadedMessage', message);
             io.to(msg.chatId).emit('sendMessageResponse', message);
         });
 

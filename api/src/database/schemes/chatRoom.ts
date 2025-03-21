@@ -7,19 +7,17 @@ export interface IChatRoomSchema {
 }
 
 const chatRoomSchema: Schema<IChatRoomSchema> = new Schema<IChatRoomSchema>({
-    members: {
-        type: [Schema.Types.ObjectId],
-        required: true,
-        ref: 'User'
-    },
-    messages: {
-        type: [Schema.Types.ObjectId],
-        required: false,
-        default: [],
-        ref: 'Message'
-    }
+    members: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    }],
+    messages: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Message',
+        default: []
+    }]
 });
-
 const ChatRoom = mongoose.model('ChatRoom', chatRoomSchema);
 
 export default ChatRoom;

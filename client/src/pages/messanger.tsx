@@ -1,8 +1,8 @@
+import MessangerPreview from "@/components/Messanger/MessangerPreview/MessangerPreview";
 import Protected from "@/components/Protected";
 import { getToken } from "@/utils/cookies";
 import { useAuthStore } from "@/utils/store";
 import axios from "axios";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const Messanger: React.FC = () => {
@@ -27,7 +27,7 @@ const Messanger: React.FC = () => {
     return (
         <Protected>
             {messanger.map((chatRoom: string) => (
-                <Link key={chatRoom} href={`messanger/${chatRoom}`}>{chatRoom}</Link>
+                <MessangerPreview key={chatRoom} chatId={chatRoom}/>
             ))}
         </Protected>
     );

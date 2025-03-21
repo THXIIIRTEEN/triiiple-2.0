@@ -1,5 +1,5 @@
 import express from 'express';
-import { createNewChatRoom, createNewMessageWithFiles, getMessagesFromChatRoom, uploadMessageFilesToCloud, addFilesToMessage, sendMessageWithFiles, sendSignedUrl, getChatMembers, getOnlineStatus } from '../middlewares/chat';
+import { createNewChatRoom, createNewMessageWithFiles, getMessagesFromChatRoom, uploadMessageFilesToCloud, addFilesToMessage, sendMessageWithFiles, sendSignedUrl, getChatMembers, getOnlineStatus, fetchChatData } from '../middlewares/chat';
 
 const chatRouter = express.Router();
 
@@ -9,5 +9,6 @@ chatRouter.post('/send-file', createNewMessageWithFiles, uploadMessageFilesToClo
 chatRouter.post('/get-signed-url', sendSignedUrl);
 chatRouter.post('/get-chat-members', getChatMembers);
 chatRouter.post('/get-online-status', getOnlineStatus);
+chatRouter.post('/get-chat-data', fetchChatData);
 
 export default chatRouter;
