@@ -65,8 +65,11 @@ const MessangerPreview: React.FC<IMessangerPreviewProps> = ({chatId, key}) => {
             { chatData && 
                 <p>{chatData.notReadedMessages}</p>
             }
-            { chatData && 
+            { chatData && chatData.lastMessage.text &&
                 <p>{chatData.lastMessage.text}</p>
+            }
+            {   chatData && !chatData.lastMessage.text && chatData.lastMessage.files && chatData.lastMessage.files.length > 0 &&
+                <p>Файл</p>
             }
         </div>
     );

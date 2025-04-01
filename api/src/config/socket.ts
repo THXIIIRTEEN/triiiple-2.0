@@ -2,6 +2,8 @@ import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { createNewMessage, deleteMessage, editMessage, setMessageRead, setUserOnline } from '../middlewares/chat';
 import multer from 'multer';
+import { createNewPost, editPost, handleLikePost } from '../middlewares/posts';
+import { deletePost } from '../middlewares/posts';
 
 let io: SocketIOServer;
 
@@ -28,14 +30,29 @@ export const initSocket = (server: HttpServer) => {
             io.to(msg.chatId).emit('sendMessageResponse', message);
         });
 
+        socket.on('sendMessageNewsRequest', async (msg) => {
+            const message = await createNewPost(msg);
+            io.to(msg.author).emit('sendMessageNewsResponse', message);
+        });
+
         socket.on('deleteMessageRequest', async (msg) => {
             await deleteMessage(msg);
             io.to(msg.chatId).emit('deleteMessageResponse', msg);
+        });
+
+        socket.on('deleteMessageNewsRequest', async (msg) => {
+            await deletePost(msg);
+            io.to(msg.userId).emit('deleteMessageNewsResponse', msg);
         });
         
         socket.on('editMessageRequest', async (msg) => {
             await editMessage(msg);
             io.to(msg.chatId).emit('editMessageResponse', msg);
+        });
+
+        socket.on('editMessageNewsRequest', async (msg) => {
+            await editPost(msg);
+            io.to(msg.userId).emit('editMessageNewsResponse', msg);
         });
 
         socket.on('readMessageRequest', async (msg) => {
@@ -52,6 +69,11 @@ export const initSocket = (server: HttpServer) => {
         socket.on('subscribeToOnlineStatus', ({ userId, friendId }) => {
             socket.join(userId);
             console.log(`Пользователь ${userId} сейчас подписан на ${friendId} онлайн статус`);
+        });
+        
+        socket.on('likePostNewsRequest', async (data) => {
+            const postData = await handleLikePost(data.postId, data.userId);
+            io.emit('likePostNewsResponse', postData);
         });
 
         socket.on('disconnect', () => {

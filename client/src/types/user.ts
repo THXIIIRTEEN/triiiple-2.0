@@ -26,3 +26,16 @@ export interface IMessage {
     isRead: boolean
     ref: LegacyRef<HTMLDivElement | null>
 }
+
+export interface IPost {
+    _id: string;
+    groupId: IUser;
+    author: IUser;
+    text: string;
+    date: Date;
+    files?: IFile[];
+    readCount: [] | IUser[] | boolean;
+    likes: [] | IUser[];
+    comments: [] | IUser[] | boolean;
+    isLiked: boolean;
+}

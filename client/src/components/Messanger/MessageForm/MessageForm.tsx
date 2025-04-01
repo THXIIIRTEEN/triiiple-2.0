@@ -16,10 +16,11 @@ interface IMessageForm {
   user: IUser;
   value?: string;
   messageId?: string;
+  page?: 'News' | 'Chat';
   setEditMode?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, setEditMode }) => {
+const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, setEditMode, page }) => {
   const router = useRouter();
 
   const [ message, setMessage ] = useState<string>(value ? value : "");
@@ -29,8 +30,10 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
   const [ files, setFiles ] = useState<(File)[]>([]);
   const [ progress, setProgress ] = useState<number>(0);
 
-  const chatId = router.query.id as string;
+  const chatId = router.query.id as string || true;
   const token = getToken();
+
+  const currentPage = page || 'Chat';
 
   const toggleEmojiPicker = () => {
     setShowEmojiPicker(!showEmojiPicker);
@@ -61,13 +64,23 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
   }, [cursorPosition]);
 
   const sendMessageWithoutFiles = async () => {
-    socket.emit("sendMessageRequest", {
-      author: user!.id,
-      chatId: chatId,
-      text: message
-    });
-    setMessage(""); 
-    setError(null);
+    if (currentPage === "Chat") {
+      socket.emit("sendMessageRequest", {
+        author: user!.id,
+        chatId: chatId,
+        text: message
+      });
+      setMessage(""); 
+      setError(null);
+    }
+    else {
+      socket.emit(`sendMessage${currentPage}Request`, {
+        author: user!.id,
+        text: message
+      });
+      setMessage(""); 
+      setError(null);
+    }
 }
 
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -95,18 +108,34 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
     formData.append('message', JSON.stringify(messageData));
 
     try {
-      await axios.post(`${process.env.API_URI}/send-file`, formData, {
-        headers: {
-        'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${token}`,
-        },
-        onUploadProgress: ((progressEvent: AxiosProgressEvent) => { 
-          if (progressEvent && progressEvent.total) {
-            const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-            setProgress(percent);
-          }
-        })
-      });
+      if (currentPage === 'Chat') {
+        await axios.post(`${process.env.API_URI}/send-file`, formData, {
+          headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
+          },
+          onUploadProgress: ((progressEvent: AxiosProgressEvent) => { 
+            if (progressEvent && progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+              setProgress(percent);
+            }
+          })
+        });
+      }
+      else {
+        await axios.post(`${process.env.API_URI}/send-file-${currentPage}`, formData, {
+          headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
+          },
+          onUploadProgress: ((progressEvent: AxiosProgressEvent) => { 
+            if (progressEvent && progressEvent.total) {
+              const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+              setProgress(percent);
+            }
+          })
+        });
+      }
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -146,12 +175,21 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
     event.preventDefault();
     if (user && user.id) {
       if (verifyCorrectSymbols({ message: message }, setError)) {
-        socket.emit("editMessageRequest", {
-          messageId: messageId,
-          text: message,
-          chatId: chatId,
-          isEdited: true
-        });
+        if (currentPage === "Chat") {
+          socket.emit("editMessageRequest", {
+            messageId: messageId,
+            text: message,
+            chatId: chatId,
+            isEdited: true
+          });
+        }
+        else {
+          socket.emit(`editMessage${currentPage}Request`, {
+            userId: user.id,
+            messageId: messageId,
+            text: message,
+          });
+        };
         setMessage(""); 
         setError(null);
         if (setEditMode) {

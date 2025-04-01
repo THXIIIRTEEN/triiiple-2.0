@@ -17,6 +17,7 @@ import chatRouter from './routes/chat';
 import messangerRouter from './routes/messanger';
 import http from 'http';
 import { initSocket } from './config/socket';
+import postRouter from './routes/posts';
 
 const secret = process.env.SECRET_KEY || 'default_secret';  
 const port = 80;
@@ -37,7 +38,8 @@ app.use(
   captchaRouter,
   passwordRouter,
   chatRouter,
-  messangerRouter
+  messangerRouter,
+  postRouter
 );
 
 app.use(

@@ -42,6 +42,12 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
     type: SchemaTypes.Mixed,
     default: () => new Date(),
     required: false
+  },
+  posts: {
+    type: [Schema.Types.ObjectId],
+    default: [],
+    required: false,
+    ref: 'post'
   }
 });
 

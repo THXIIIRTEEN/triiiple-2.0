@@ -12,6 +12,27 @@ import { socket } from "@/config/socket";
 import { mergeRefs } from "react-merge-refs";
 import { useRouter } from "next/router";
 
+export const renderMessageWithEmojis = (message: string) => {
+  return message.split("\n").map((line, index) => (
+    <React.Fragment key={index}>
+      {line.split(" ").map((word, wordIndex) => {
+        if (word.startsWith(":") && word.endsWith(":")) {
+          return (
+            <em-emoji
+              key={wordIndex}
+              shortcodes={word}
+              size="1.25em"
+              set="twitter"
+            />
+          );
+        }
+        return <span key={wordIndex}>{word} </span>;
+      })}
+      <br />
+    </React.Fragment>
+  ));
+};
+
 const Message = forwardRef<HTMLDivElement, IMessage>(({
   _id, author, text, date, files, isEdited, isRead
 }, ref) => {
@@ -25,27 +46,6 @@ const Message = forwardRef<HTMLDivElement, IMessage>(({
   const [isMessageRead, setIsMessageRead] = useState<boolean>(isRead);
   const [mediaFiles, setMediaFiles] = useState<IFile[]>([]);
   const chatId = router.query.id;
-
-  const renderMessageWithEmojis = (message: string) => {
-    return message.split("\n").map((line, index) => (
-      <React.Fragment key={index}>
-        {line.split(" ").map((word, wordIndex) => {
-          if (word.startsWith(":") && word.endsWith(":")) {
-            return (
-              <em-emoji
-                key={wordIndex}
-                shortcodes={word}
-                size="1.25em"
-                set="twitter"
-              />
-            );
-          }
-          return <span key={wordIndex}>{word} </span>;
-        })}
-        <br />
-      </React.Fragment>
-    ));
-  };
 
   const handleDeleteMessage = async () => {
     if (_id) {
@@ -103,8 +103,6 @@ const Message = forwardRef<HTMLDivElement, IMessage>(({
       })
     }
   })
-
-  console.log(editMode)
 
   return (
     <div ref={mergeRefs([ref, messageRef])}>

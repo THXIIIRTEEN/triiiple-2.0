@@ -17,7 +17,7 @@ import iconv from 'iconv-lite';
 import { decryptData, encryptData } from "../utils/crypto";
 import { IUser } from "../types/IUser";
 
-const fixEncoding = (text: string): string => {
+export const fixEncoding = (text: string): string => {
     return iconv.decode(Buffer.from(text, 'binary'), 'utf-8');
 };
 
@@ -47,19 +47,26 @@ interface INewMessageDataType {
     author: string;
     chatId: string;
     text: string;
-    hmac: string;
-    salt: string
 }
 
 export const createNewMessage = async (msg: INewMessageDataType) => {
     const { author, chatId, text } = msg;
 
-    const { ciphertext } = await encryptData(text);
+    let ciphertext = ''; 
+    if (text) {
+        const encrypted = await encryptData(text);
+        ciphertext = encrypted.ciphertext;
+    }
+
     let message = new Message({ chatId: chatId, author: author, text: ciphertext });
     message = await message.save();
 
     await ChatRoom.findByIdAndUpdate(chatId, {$push: {messages: message}});
-    const { plaintext } = await decryptData(message.text)
+    let plaintext = ''; 
+    if (message.text) {
+        const decrypted = await decryptData(message.text);
+        plaintext = decrypted.plaintext;
+    }
     message.text = Buffer.from(plaintext, 'base64').toString('utf-8');
     return message.populate({
         path: 'author',
@@ -165,8 +172,13 @@ interface IMsgEdit {
 
 export const editMessage = async (msg: IMsgEdit) => {
     const { messageId, text } = msg;
+    
+    let ciphertext = ''; 
+    if (text) {
+        const encrypted = await encryptData(text);
+        ciphertext = encrypted.ciphertext;
+    }
 
-    const { ciphertext } = await encryptData(text);
     await Message.findByIdAndUpdate(
         messageId,
         { text: ciphertext, isEdited: true }
@@ -202,8 +214,13 @@ export const createNewMessageWithFiles = async (req: CustomRequest, res: Respons
             }
 
             const messageData = JSON.parse(req.body.message);
-            const { ciphertext } = await encryptData(messageData.text);
-        
+
+            let ciphertext = ''; 
+            if (messageData.text) {
+                const encrypted = await encryptData(messageData.text);
+                ciphertext = encrypted.ciphertext;
+            }
+
             let message = new Message({ author: messageData.author, text: ciphertext, chatId: messageData.chatId });
 
             message = await message.save();
@@ -295,7 +312,12 @@ export const addFilesToMessage = async (req: CustomRequest, res: Response, next:
             return;
         }
 
-        const { plaintext } = await decryptData(message.text)
+        let plaintext = ''; 
+        if (message.text) {
+            const decrypted = await decryptData(message.text);
+            plaintext = decrypted.plaintext;
+        }
+
         message.text = Buffer.from(plaintext, 'base64').toString('utf-8');
 
         req.message = await message.populate ([{
@@ -310,6 +332,7 @@ export const addFilesToMessage = async (req: CustomRequest, res: Response, next:
     } 
     
     catch (err) {
+        console.error(err)
         res.status(500).send("Ошибка сервера.");
     }
 }
@@ -452,7 +475,11 @@ export const fetchChatData = async (req: CustomRequest, res: Response) => {
             //@ts-ignore
             exportData!.lastMessage = chatData.messages[0] || null
             if (exportData!.lastMessage) {
-                const { plaintext } = await decryptData(exportData!.lastMessage.text)
+                let plaintext = ''; 
+                if (exportData!.lastMessage.text) {
+                    const decrypted = await decryptData(exportData!.lastMessage.text);
+                    plaintext = decrypted.plaintext;
+                }
                 exportData!.lastMessage.text = Buffer.from(plaintext, 'base64').toString('utf-8');
             }
         }
