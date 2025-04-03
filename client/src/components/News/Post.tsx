@@ -1,7 +1,7 @@
 import { IPost } from "@/types/user"
 import { formateDate } from "@/utils/date";
 import UserAvatar from "../UserAvatar";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { renderMessageWithEmojis } from "../Messanger/Message";
 import MessageForm from "../Messanger/MessageForm/MessageForm";
 import { useAuthStore } from "@/utils/store";
@@ -16,8 +16,10 @@ const Post: React.FC<IPost> = (data) => {
     const user = useAuthStore(state => state.user); 
     const [editMode, setEditMode] = useState<boolean>(false); 
     const [mediaFiles, setMediaFiles] = useState<IFile[]>([]); 
-    const [ likesCount, setLikesCount ] = useState<number>(data.likes.length);
+    const [ likesCount, setLikesCount ] = useState<number>(data.likes);
     const [ isLiked, setIsLiked ] = useState<boolean>(data.isLiked);
+    const [ readCount, setReadCount ] = useState<number>(data.readCount);
+    const [ isRead, setIsRead ] = useState<boolean>(data.isRead);
 
     const handleDeleteMessage = async () => {
         if (data._id) {
@@ -36,7 +38,46 @@ const Post: React.FC<IPost> = (data) => {
         }
     }, [data.files]);
 
-    console.log(data)
+    const postContainerRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) {
+                socket.emit("joinRoom", data._id);
+                if (!isRead) {
+                    socket.emit("addViewPostNewsRequest", {userId: user?.id, postId: data._id})
+                }
+            }
+            else {
+                socket.emit("leaveRoom", data._id);
+            }
+        });
+
+        if (postContainerRef.current) {
+            observer.observe(postContainerRef.current);
+        }
+
+        return () => {
+            socket.emit("leaveRoom", data._id);
+            observer.disconnect();
+        };
+    }, [data._id, user, isRead]);
+
+    useEffect(() => {
+        socket.on('addViewPostNewsResponse', (postData) => {
+            console.log(postData)
+            if (postData && postData.postId && postData.postId === data._id) {
+                setReadCount(postData.readCount);
+                if (user && postData.userId === user.id) {
+                    setIsRead(postData.isLiked)
+                }
+            }
+        });
+
+        return () => {
+            socket.off('addViewPostNewsResponse');
+        };
+    }, [data._id, user])
 
     const handleLikePost = () => {
         if (data._id) {
@@ -50,17 +91,19 @@ const Post: React.FC<IPost> = (data) => {
         socket.on('likePostNewsResponse', (postData) => {
             if (postData.postId === data._id) {
                 setLikesCount(postData.likesCount);
-                setIsLiked(postData.isLiked)
+                if (user && postData.userId === user.id) {
+                    setIsLiked(postData.isLiked)
+                }
             }
         });
 
         return () => {
             socket.off('likePostNewsResponse');
         };
-    }, [data._id])
+    }, [data._id, user])
 
     return (
-        <div>
+        <div ref={postContainerRef}>
             <UserAvatar id={data.author._id} /> 
             <p>{data.author.username}</p>
             <div>{mediaFiles.length > 0 && <PhotoCollage photos={mediaFiles} />}</div>
@@ -102,6 +145,7 @@ const Post: React.FC<IPost> = (data) => {
             }
             <span>{likesCount}</span>
             <button>comment</button>
+            <span>{`Просмотров: ${readCount}`}</span>
         </div>
     )
 }

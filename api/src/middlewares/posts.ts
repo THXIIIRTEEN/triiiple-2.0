@@ -33,7 +33,11 @@ export const handleGetPosts = async (req: CustomRequest, res: Response) => {
                     post.text = Buffer.from(plaintext, 'base64').toString('utf-8');
                 }
                 //@ts-ignore
-                post.isLiked = post.likes.map(id => id.toString()).includes(userId);            
+                post.isLiked = post.likes.map(id => id.toString()).includes(userId);  
+                //@ts-ignore
+                post.isRead = post.readCount.map(id => id.toString()).includes(userId);
+                post.likes = post.likes.length;
+                post.readCount = post.readCount.length;              
             }
         }
         res.status(200).json({ posts });
@@ -308,29 +312,59 @@ export const editPost = async (msg: IMsgEdit) => {
 };
 
 export const handleLikePost = async (postId: string, userId: string) => {
-    const post = await Post.findByIdAndUpdate(postId);
-    //@ts-ignore
-    if (post && !post.likes.includes(userId)) {
-        const likesCount = await Post.findByIdAndUpdate(postId, { $push: { likes: userId }}, { new: true });
-        if (likesCount) {
-            return {
-                likesCount: likesCount.likes.length,
-                //@ts-ignore
-                isLiked: likesCount.likes.includes(userId),
-                postId,
-            };
+    try {
+        const post = await Post.findByIdAndUpdate(postId);
+        //@ts-ignore
+        if (post && !post.likes.includes(userId)) {
+            const likesCount = await Post.findByIdAndUpdate(postId, { $push: { likes: userId }}, { new: true });
+            if (likesCount) {
+                return {
+                    userId,
+                    likesCount: likesCount.likes.length,
+                    //@ts-ignore
+                    isLiked: likesCount.likes.includes(userId),
+                    postId,
+                };
+            }
+        }
+        //@ts-ignore
+        else if (post && post.likes.includes(userId)) {
+            const likesCount = await Post.findByIdAndUpdate(postId, { $pull: { likes: userId }}, { new: true });
+            if (likesCount) {
+                return {
+                    userId,
+                    likesCount: likesCount.likes.length,
+                    //@ts-ignore
+                    isLiked: likesCount.likes.includes(userId),
+                    postId,
+                };
+            }
         }
     }
-    //@ts-ignore
-    else if (post && post.likes.includes(userId)) {
-        const likesCount = await Post.findByIdAndUpdate(postId, { $pull: { likes: userId }}, { new: true });
-        if (likesCount) {
-            return {
-                likesCount: likesCount.likes.length,
-                //@ts-ignore
-                isLiked: likesCount.likes.includes(userId),
-                postId,
-            };
+    catch (error) {
+        console.error(error)
+    }
+}
+
+export const handleAddView = async (postId: string, userId: string) => {
+    try {
+        const post = await Post.findByIdAndUpdate(postId);
+        //@ts-ignore
+        if (post && !post.readCount.includes(userId)) {
+            console.log(post)
+            const readCount = await Post.findByIdAndUpdate(postId, { $push: { readCount: userId }}, { new: true });
+            if (readCount) {
+                return {
+                    userId,
+                    readCount: readCount.readCount.length,
+                    //@ts-ignore
+                    isRead: readCount.readCount.includes(userId),
+                    postId,
+                };
+            }
         }
+    }
+    catch (error) {
+        console.error(error)
     }
 }

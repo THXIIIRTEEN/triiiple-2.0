@@ -10,9 +10,6 @@ interface UserOnlineStatusProps {
 
 const UserOnlineStatus: React.FC<UserOnlineStatusProps> = ({friendId, userId}) => {
     const [ onlineStatus, setOnlineStatus ] = useState<boolean>(false);
-
-    console.log(`UserId: ${userId}`)
-    console.log(`friendId: ${friendId}`)
   
     useEffect(() => {
         const getOnlineStatus = async () => {

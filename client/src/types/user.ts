@@ -34,8 +34,9 @@ export interface IPost {
     text: string;
     date: Date;
     files?: IFile[];
-    readCount: [] | IUser[] | boolean;
-    likes: [] | IUser[];
+    readCount: number;
+    likes: number;
     comments: [] | IUser[] | boolean;
     isLiked: boolean;
+    isRead: boolean
 }

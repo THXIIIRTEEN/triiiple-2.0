@@ -2,7 +2,7 @@ import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { createNewMessage, deleteMessage, editMessage, setMessageRead, setUserOnline } from '../middlewares/chat';
 import multer from 'multer';
-import { createNewPost, editPost, handleLikePost } from '../middlewares/posts';
+import { createNewPost, editPost, handleAddView, handleLikePost } from '../middlewares/posts';
 import { deletePost } from '../middlewares/posts';
 
 let io: SocketIOServer;
@@ -22,6 +22,11 @@ export const initSocket = (server: HttpServer) => {
         socket.on('joinRoom', (room) => {
             socket.join(room);
             console.log(`Пользователь присоединился к комнате: ${room}`);
+        });
+
+        socket.on('leaveRoom', (room) => {
+            socket.leave(room);
+            console.log(`Пользователь ${socket.id} вышел из комнаты: ${room}`);
         });
 
         socket.on('sendMessageRequest', async (msg) => {
@@ -73,7 +78,12 @@ export const initSocket = (server: HttpServer) => {
         
         socket.on('likePostNewsRequest', async (data) => {
             const postData = await handleLikePost(data.postId, data.userId);
-            io.emit('likePostNewsResponse', postData);
+            io.to(data.postId).emit('likePostNewsResponse', postData);
+        });
+
+        socket.on('addViewPostNewsRequest', async (data) => {
+            const postData = await handleAddView(data.postId, data.userId);
+            io.to(data.postId).emit('addViewPostNewsResponse', postData);
         });
 
         socket.on('disconnect', () => {
