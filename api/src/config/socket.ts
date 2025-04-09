@@ -2,7 +2,7 @@ import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { createNewMessage, deleteMessage, editMessage, setMessageRead, setUserOnline } from '../middlewares/chat';
 import multer from 'multer';
-import { createNewPost, editPost, handleAddView, handleLikePost } from '../middlewares/posts';
+import { createNewComment, createNewPost, editPost, handleAddView, handleLikePost } from '../middlewares/posts';
 import { deletePost } from '../middlewares/posts';
 
 let io: SocketIOServer;
@@ -84,6 +84,11 @@ export const initSocket = (server: HttpServer) => {
         socket.on('addViewPostNewsRequest', async (data) => {
             const postData = await handleAddView(data.postId, data.userId);
             io.to(data.postId).emit('addViewPostNewsResponse', postData);
+        });
+
+        socket.on('sendMessageCommentRequest', async (msg) => {
+            const message = await createNewComment(msg);
+            io.to(msg.author).emit('sendMessageCommentResponse', message);
         });
 
         socket.on('disconnect', () => {

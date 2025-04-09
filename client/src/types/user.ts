@@ -36,7 +36,17 @@ export interface IPost {
     files?: IFile[];
     readCount: number;
     likes: number;
-    comments: [] | IUser[] | boolean;
+    comments: number;
     isLiked: boolean;
+    isRead: boolean
+}
+
+export interface IComment {
+    _id?: string,
+    author: IUser,
+    text: string,
+    date: Date,
+    files: IFile[],
+    isEdited: boolean,
     isRead: boolean
 }

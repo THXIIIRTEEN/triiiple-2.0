@@ -16,11 +16,12 @@ interface IMessageForm {
   user: IUser;
   value?: string;
   messageId?: string;
-  page?: 'News' | 'Chat';
+  page?: 'News' | 'Chat' | 'Comment';
+  postId?: string;
   setEditMode?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, setEditMode, page }) => {
+const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, setEditMode, page, postId }) => {
   const router = useRouter();
 
   const [ message, setMessage ] = useState<string>(value ? value : "");
@@ -33,7 +34,7 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
   const chatId = router.query.id as string || true;
   const token = getToken();
 
-  const currentPage = page || 'Chat';
+  const currentPage = page || 'Chat' || 'Comment';
 
   const toggleEmojiPicker = () => {
     setShowEmojiPicker(!showEmojiPicker);
@@ -73,6 +74,15 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
       setMessage(""); 
       setError(null);
     }
+    else if (currentPage === "Comment") {
+      socket.emit(`sendMessage${currentPage}Request`, {
+        author: user!.id,
+        text: message,
+        postId: postId
+      });
+      setMessage(""); 
+      setError(null);
+    }
     else {
       socket.emit(`sendMessage${currentPage}Request`, {
         author: user!.id,
@@ -104,6 +114,10 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
       author: user!.id,
       chatId: chatId,
       text: message,
+    }
+    if (postId) {
+      //@ts-expect-error xdddd
+      messageData.postId = postId;
     }
     formData.append('message', JSON.stringify(messageData));
 

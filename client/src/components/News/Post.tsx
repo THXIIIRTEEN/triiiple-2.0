@@ -10,6 +10,7 @@ import FileDownload from "../Messanger/FileDownload";
 import { IFile } from "@/types/user";
 import PhotoCollage from "../PhotoCollage";
 import { socket } from "@/config/socket";
+import CommentList from "./CommentList";
 
 const Post: React.FC<IPost> = (data) => {
     const dateString = formateDate(data.date); 
@@ -20,6 +21,7 @@ const Post: React.FC<IPost> = (data) => {
     const [ isLiked, setIsLiked ] = useState<boolean>(data.isLiked);
     const [ readCount, setReadCount ] = useState<number>(data.readCount);
     const [ isRead, setIsRead ] = useState<boolean>(data.isRead);
+    const [ isCommentsVisible, setIsCommentsVisible ] = useState<boolean>(false)
 
     const handleDeleteMessage = async () => {
         if (data._id) {
@@ -65,7 +67,6 @@ const Post: React.FC<IPost> = (data) => {
 
     useEffect(() => {
         socket.on('addViewPostNewsResponse', (postData) => {
-            console.log(postData)
             if (postData && postData.postId && postData.postId === data._id) {
                 setReadCount(postData.readCount);
                 if (user && postData.userId === user.id) {
@@ -144,7 +145,10 @@ const Post: React.FC<IPost> = (data) => {
                 <button type="button" onClick={() => handleLikePost()}>like</button>
             }
             <span>{likesCount}</span>
-            <button>comment</button>
+            <button onClick={() => setIsCommentsVisible(!isCommentsVisible)}>{`comment ${data.comments}`}</button>
+            {   data._id && isCommentsVisible &&
+                <CommentList postId={data._id}/>
+            }
             <span>{`Просмотров: ${readCount}`}</span>
         </div>
     )

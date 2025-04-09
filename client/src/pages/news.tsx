@@ -50,12 +50,12 @@ const News: React.FC = () => {
 
     useEffect(() => {
         if (user) {
-            socket.on('sendMessageWithFilesResponse', (msg: IPost) => {
+            socket.on('sendPostWithFilesResponse', (msg: IPost) => {
                 setPostArray((prevPosts) => [msg, ...prevPosts]);
             });
     
             return () => {
-                socket.off('sendMessageWithFilesResponse');
+                socket.off('sendPostWithFilesResponse');
             };
         }
     }, [user]);

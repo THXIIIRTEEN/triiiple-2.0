@@ -13,11 +13,21 @@ import mime from 'mime';
 import File from "../database/schemes/file";
 import User from "../database/schemes/users";
 import { IFileSchema } from "../database/schemes/file";
+import Comment, { ICommentSchema } from "../database/schemes/comment";
+import { IMessageSchema } from "../database/schemes/message";
+
+export const decryptText = async (message: ICommentSchema | IMessageSchema | IPostSchema) => {
+    let plaintext = ''; 
+    if (message.text) {
+        const decrypted = await decryptData(message.text);
+        plaintext = decrypted.plaintext;
+    }
+    return Buffer.from(plaintext, 'base64').toString('utf-8');
+}
 
 export const handleGetPosts = async (req: CustomRequest, res: Response) => {
     try {
         const { userId, skip, limit } = req.body; 
-        console.log(userId)
         const posts = await Post.find()
             .sort({ date: -1 }) 
             .skip(Number(skip) || 0)
@@ -38,6 +48,7 @@ export const handleGetPosts = async (req: CustomRequest, res: Response) => {
                 post.isRead = post.readCount.map(id => id.toString()).includes(userId);
                 post.likes = post.likes.length;
                 post.readCount = post.readCount.length;              
+                post.comments = post.comments.length;
             }
         }
         res.status(200).json({ posts });
@@ -50,7 +61,8 @@ export const handleGetPosts = async (req: CustomRequest, res: Response) => {
 
 interface INewMessageDataType {
     author: string;
-    chatId: string;
+    chatId?: string;
+    postId?: string;
     text: string;
 }
 
@@ -67,12 +79,7 @@ export const createNewPost = async (msg: INewMessageDataType) => {
     message = await message.save();
 
     await User.findByIdAndUpdate(author, {$push: {posts: message}});
-    let plaintext = ''; 
-    if (message.text) {
-        const decrypted = await decryptData(message.text);
-        plaintext = decrypted.plaintext;
-    }
-    message.text = Buffer.from(plaintext, 'base64').toString('utf-8');
+    message.text = await decryptText(message)
     return message.populate({
         path: 'author',
         select: 'profile username'
@@ -194,14 +201,7 @@ export const addFilesToMessage = async (req: CustomRequest, res: Response, next:
             return;
         }
 
-        let plaintext = ''; 
-        if (message.text) {
-            const decrypted = await decryptData(message.text);
-            plaintext = decrypted.plaintext;
-        }
-
-        message.text = Buffer.from(plaintext, 'base64').toString('utf-8');
-
+        message.text = await decryptText(message)
         req.message = await message.populate ([{
             path: 'author', 
             select: 'profile username'
@@ -223,7 +223,7 @@ export const sendMessageWithFiles = async (req: CustomRequest, res: Response) =>
     try {
         const io = getIO(); 
         if (req.userId) {
-            io.to(req.userId).emit('sendMessageWithFilesResponse', req.message);
+            io.to(req.userId).emit('sendPostWithFilesResponse', req.message);
         }
         res.status(200).json({ message: "Сообщение успешно отправлено" });
     } catch (err) {
@@ -366,5 +366,193 @@ export const handleAddView = async (postId: string, userId: string) => {
     }
     catch (error) {
         console.error(error)
+    }
+}
+
+export const fetchComments = async (req: CustomRequest, res: Response) => {
+    try {
+        const { postId } = req.body;
+        console.log(postId)
+        const comments = await Post.findById(postId)
+            .select("comments")
+            .populate({
+                path: "comments",
+                populate: [
+                    { path: "files" },
+                    { path: "author", select: "username profile" }
+                ]
+            });
+        if (!comments) {
+            res.status(400).json({ message: "Комментарии не найдены"})
+        }
+        else if (comments) {
+            //@ts-ignore
+            for (let comment of comments.comments as any[]) { 
+                if (comment.text) {
+                    const { plaintext } = await decryptData(comment.text);
+                    comment.text = Buffer.from(plaintext, 'base64').toString('utf-8');
+                }
+            }
+            res.status(200).json({ comments: comments.comments })
+        }
+    }
+    catch (error) {
+        console.error(error)
+    }
+}
+
+export const createNewComment = async (msg: INewMessageDataType) => {
+    const { author, postId, text } = msg;
+
+    let ciphertext = ''; 
+    if (text) {
+        const encrypted = await encryptData(text);
+        ciphertext = encrypted.ciphertext;
+    }
+    let message = new Comment({ author: author, text: ciphertext });
+    message = await message.save();
+
+    await Post.findByIdAndUpdate(postId, {$push: {comments: message}});
+    message.text = await decryptText(message)
+    return message.populate({
+        path: 'author',
+        select: 'profile username'
+    });
+}
+
+export const createNewCommentWithFiles = async (req: CustomRequest, res: Response, next: NextFunction) => {
+    upload.array('files')(req, res, async (err) => {
+        try {
+            if (err) {
+                throw new Error(err);
+            }
+
+            const totalFileSizeLimit = 50 * 1024 * 1024; 
+            if (!checkTotalFileSize(req.files as Express.Multer.File[], totalFileSizeLimit)) {
+                throw new Error('Cуммарный размер файлов превышает допустимый лимит 50 МБ.');
+            }
+
+            const messageData = JSON.parse(req.body.message);
+
+            let ciphertext = ''; 
+            if (messageData.text) {
+                const encrypted = await encryptData(messageData.text); 
+                ciphertext = encrypted.ciphertext;
+            }
+            let message = new Comment({ author: messageData.author, text: ciphertext });
+            message = await message.save();
+            req.message = message;
+            req.userId = messageData.author;
+
+            await Post.findByIdAndUpdate(messageData.postId, {$push: {comments: message}});
+            next();
+        } catch (err) {
+            console.log(err)
+            res.status(400).send(`Ошибка при создании сообщения: ${err}`);
+        }
+    });
+}
+
+export const uploadCommentFilesToCloud = async (req: CustomRequest, res: Response, next: NextFunction) => {
+    try {
+        const files = req.files as Express.Multer.File[];
+        
+        if (!files || files.length === 0) {
+            throw new Error(`Файл отсутствует`);
+        }
+        
+        const messageData = JSON.parse(req.body.message);
+
+        const uploadPromises = files.map(async (file) => { 
+            const fileContent = fs.readFileSync(file.path);
+
+            const fixedName = fixEncoding(file.originalname)
+
+            const params = {
+                Bucket: 'triiiple',
+                Key: `comments/${messageData.author}/comment/${req!.message!._id}/files/${slugify(fixedName)}`, 
+                Body: fileContent,
+                ContentType: file.mimetype,
+            };
+
+            const command = new PutObjectCommand(params); 
+
+            await s3Client.send(command);
+
+            fs.unlinkSync(file.path);
+
+            const url = `https://${params.Bucket}.storage.yandexcloud.net/${params.Key}`;
+
+            let newFile = new File({
+                name: slugify(fixedName),
+                url: url,
+                type: mime.lookup(file.originalname)
+            });
+            newFile = await newFile.save();
+
+            return newFile;
+        });
+
+        const uploadedFileUrls = await Promise.all(uploadPromises);
+
+        req.fileUrlArray = uploadedFileUrls;
+        next();
+    }
+
+    catch(err) {
+        res.status(400).send(`Ошибка при загрузке файла: ${err}`)
+    }
+};
+
+export const addFilesToComment = async (req: CustomRequest, res: Response, next: NextFunction) => {
+    try {
+        if (!req.message) {
+            res.status(400).send("Сообщение не найдено.");
+            return;
+        }
+
+        if (!req.fileUrlArray || req.fileUrlArray.length === 0) {
+            res.status(400).send("URL файлов отсутствуют.");
+            return;
+        }
+
+        const message = await Comment.findByIdAndUpdate(
+            req.message._id,
+            { $push: { files: { $each: req.fileUrlArray } } }, 
+            { new: true } 
+        );
+
+        if (!message) {
+            res.status(404).send("Сообщение не найдено.");
+            return;
+        }
+
+        message.text = await decryptText(message)
+        req.message = await message.populate ([{
+            path: 'author', 
+            select: 'profile username'
+        },
+        {
+            path: 'files'
+        }
+    ]);
+        next();
+    } 
+    
+    catch (err) {
+        console.error(err)
+        res.status(500).send("Ошибка сервера.");
+    }
+}
+
+export const sendCommentWithFiles = async (req: CustomRequest, res: Response) => {
+    try {
+        const io = getIO(); 
+        if (req.userId) {
+            io.to(req.userId).emit('sendCommentWithFilesResponse', req.message);
+        }
+        res.status(200).json({ message: "Сообщение успешно отправлено" });
+    } catch (err) {
+        res.status(500).send('Ошибка при отправке сообщения');
     }
 }

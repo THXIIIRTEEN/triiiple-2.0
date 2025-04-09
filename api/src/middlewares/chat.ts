@@ -16,6 +16,7 @@ import { slugify } from 'transliteration';
 import iconv from 'iconv-lite';
 import { decryptData, encryptData } from "../utils/crypto";
 import { IUser } from "../types/IUser";
+import { decryptText } from "./posts";
 
 export const fixEncoding = (text: string): string => {
     return iconv.decode(Buffer.from(text, 'binary'), 'utf-8');
@@ -62,12 +63,7 @@ export const createNewMessage = async (msg: INewMessageDataType) => {
     message = await message.save();
 
     await ChatRoom.findByIdAndUpdate(chatId, {$push: {messages: message}});
-    let plaintext = ''; 
-    if (message.text) {
-        const decrypted = await decryptData(message.text);
-        plaintext = decrypted.plaintext;
-    }
-    message.text = Buffer.from(plaintext, 'base64').toString('utf-8');
+    message.text = await decryptText(message); 
     return message.populate({
         path: 'author',
         select: 'profile username'
@@ -312,14 +308,7 @@ export const addFilesToMessage = async (req: CustomRequest, res: Response, next:
             return;
         }
 
-        let plaintext = ''; 
-        if (message.text) {
-            const decrypted = await decryptData(message.text);
-            plaintext = decrypted.plaintext;
-        }
-
-        message.text = Buffer.from(plaintext, 'base64').toString('utf-8');
-
+        message.text = await decryptText(message)
         req.message = await message.populate ([{
             path: 'author', 
             select: 'profile username'
