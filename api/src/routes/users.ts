@@ -1,5 +1,5 @@
 import express from 'express';
-import { createNewUser, sendEmailConfirmation, checkAuthorizedUser, sendEmailConfirmationAuthorization, verifyCode } from '../middlewares/users';
+import { createNewUser, sendEmailConfirmation, checkAuthorizedUser, sendEmailConfirmationAuthorization, verifyCode, handleGetProfile, handleGetRequest } from '../middlewares/users';
 import { changeUserAvatar, getProfilePicture, uploadAvatar } from '../middlewares/avatar';
 
 const userRouter = express.Router();
@@ -9,5 +9,7 @@ userRouter.post('/users/login', checkAuthorizedUser, sendEmailConfirmationAuthor
 userRouter.post('/users/verification', verifyCode);
 userRouter.post('/avatar/upload', uploadAvatar, changeUserAvatar);
 userRouter.post('/avatar', getProfilePicture);
+userRouter.post('/get-user', handleGetProfile);
+userRouter.post('/get-request', handleGetRequest)
 
 export { userRouter };

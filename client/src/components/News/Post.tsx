@@ -13,7 +13,7 @@ import { socket } from "@/config/socket";
 import CommentList from "./CommentList";
 
 const Post: React.FC<IPost> = (data) => {
-    const dateString = formateDate(data.date); 
+    const [dateString, setDateString] = useState<string>(formateDate(data.date))
     const user = useAuthStore(state => state.user); 
     const [editMode, setEditMode] = useState<boolean>(false); 
     const [mediaFiles, setMediaFiles] = useState<IFile[]>([]); 
@@ -21,7 +21,13 @@ const Post: React.FC<IPost> = (data) => {
     const [ isLiked, setIsLiked ] = useState<boolean>(data.isLiked);
     const [ readCount, setReadCount ] = useState<number>(data.readCount);
     const [ isRead, setIsRead ] = useState<boolean>(data.isRead);
-    const [ isCommentsVisible, setIsCommentsVisible ] = useState<boolean>(false)
+    const [ isCommentsVisible, setIsCommentsVisible ] = useState<boolean>(false);
+    const [ commentCount, setCommentCount ] = useState<number>(data.comments)
+
+    useEffect(() => {
+        const dateToString = formateDate(data.date);
+        setDateString(dateToString);
+    }, [data.date]);
 
     const handleDeleteMessage = async () => {
         if (data._id) {
@@ -145,9 +151,9 @@ const Post: React.FC<IPost> = (data) => {
                 <button type="button" onClick={() => handleLikePost()}>like</button>
             }
             <span>{likesCount}</span>
-            <button onClick={() => setIsCommentsVisible(!isCommentsVisible)}>{`comment ${data.comments}`}</button>
+            <button onClick={() => setIsCommentsVisible(!isCommentsVisible)}>{`comment ${commentCount}`}</button>
             {   data._id && isCommentsVisible &&
-                <CommentList postId={data._id}/>
+                <CommentList postId={data._id} setCommentCount={setCommentCount}/>
             }
             <span>{`Просмотров: ${readCount}`}</span>
         </div>

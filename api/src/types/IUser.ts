@@ -1,4 +1,4 @@
-import { Document } from 'mongoose';
+import { Document, Schema } from 'mongoose';
 import { IChatRoomSchema } from '../database/schemes/chatRoom';
 import { IPostSchema } from '../database/schemes/posts';
 
@@ -13,5 +13,8 @@ export interface IUser extends Document {
   created_at: Date;
   onlineStatus: Date | boolean;
   posts?: Array<IPostSchema>;
+  friends?: Array<string | IUser>; 
+  requests?: Array<string | IUser>;
+  friendStatus?: boolean | "pending";
   comparePassword(candidatePassword: string): Promise<boolean>;
 }

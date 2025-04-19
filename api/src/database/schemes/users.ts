@@ -32,7 +32,7 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
     type: [Schema.Types.ObjectId],
     default: [],
     required: false,
-    ref: 'User'
+    ref: 'ChatRoom'
   },
   created_at: {
     type: Date,
@@ -47,7 +47,19 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
     type: [Schema.Types.ObjectId],
     default: [],
     required: false,
-    ref: 'post'
+    ref: 'Post'
+  },
+  friends: {
+    type: [Schema.Types.ObjectId],
+    default: [],
+    required: false,
+    ref: 'User'
+  },
+  requests: {
+    type: [Schema.Types.ObjectId],
+    default: [],
+    required: false,
+    ref: 'User'
   }
 });
 

@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 
 export interface ICommentSchema {
     _id?: string,
+    postId: Schema.Types.ObjectId,
     author: Schema.Types.ObjectId,
     text: string,
     date: Date,
@@ -11,6 +12,11 @@ export interface ICommentSchema {
 }
 
 const commentSchema: Schema<ICommentSchema> = new Schema<ICommentSchema>({
+    postId: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: 'Post'
+    },
     author: {
         type: Schema.Types.ObjectId,
         required: true,

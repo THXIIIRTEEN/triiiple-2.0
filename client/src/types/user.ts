@@ -7,6 +7,9 @@ export interface IUser {
     username?: string;
     password?: string;
     tag?: string;
+    friends?: IUser[]; 
+    requests?: IUser[];
+    friendStatus?: boolean | "pending";
 }
 
 export interface IFile {
@@ -43,6 +46,7 @@ export interface IPost {
 
 export interface IComment {
     _id?: string,
+    postId:  string,
     author: IUser,
     text: string,
     date: Date,

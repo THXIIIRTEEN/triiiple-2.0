@@ -2,8 +2,9 @@ import { Server as HttpServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { createNewMessage, deleteMessage, editMessage, setMessageRead, setUserOnline } from '../middlewares/chat';
 import multer from 'multer';
-import { createNewComment, createNewPost, editPost, handleAddView, handleLikePost } from '../middlewares/posts';
+import { createNewComment, createNewPost, deleteComment, editComment, editPost, handleAddView, handleLikePost } from '../middlewares/posts';
 import { deletePost } from '../middlewares/posts';
+import { handleAddFriend, handleRequestAction } from '../middlewares/users';
 
 let io: SocketIOServer;
 
@@ -49,6 +50,11 @@ export const initSocket = (server: HttpServer) => {
             await deletePost(msg);
             io.to(msg.userId).emit('deleteMessageNewsResponse', msg);
         });
+
+        socket.on('deleteCommentNewsRequest', async (msg) => {
+            await deleteComment(msg);
+            io.to(msg.postId).emit('deleteCommentNewsResponse', msg);
+        });
         
         socket.on('editMessageRequest', async (msg) => {
             await editMessage(msg);
@@ -60,6 +66,11 @@ export const initSocket = (server: HttpServer) => {
             io.to(msg.userId).emit('editMessageNewsResponse', msg);
         });
 
+        socket.on('editMessageCommentRequest', async (msg) => {
+            await editComment(msg);
+            io.to(msg.postId).emit('editMessageCommentResponse', msg);
+        });
+
         socket.on('readMessageRequest', async (msg) => {
             await setMessageRead(msg);
             msg.isRead = true;
@@ -69,6 +80,24 @@ export const initSocket = (server: HttpServer) => {
         socket.on('setUserOnlineRequest', async (data) => {
             const user = await setUserOnline(data.userId, data.status);
             io.to(data.userId).emit('setUserOnlineResponse', user);
+        });
+
+        socket.on('addFriendRequest', async (data) => {
+            const response = await handleAddFriend(data);
+            if (response === "pending") {
+                io.to(data.userId).emit('addFriendResponse', response);
+                io.to(data.friendId).emit('addFriendResponse', 'hasRequest')
+            }
+            else {
+                const rooms = [data.userId, data.friendId];
+                io.to(rooms).emit('addFriendResponse', response);
+            }
+        });
+
+        socket.on('friendRequestActionRequest', async (data) => {
+            const response = await handleRequestAction(data);
+            const rooms = [data.userId, data.friendId];
+            io.to(rooms).emit('friendRequestActionResponse', response);
         });
 
         socket.on('subscribeToOnlineStatus', ({ userId, friendId }) => {

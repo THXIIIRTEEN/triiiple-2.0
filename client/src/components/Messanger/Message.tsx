@@ -37,7 +37,6 @@ const Message = forwardRef<HTMLDivElement, IMessage>(({
   _id, author, text, date, files, isEdited, isRead
 }, ref) => {
   const { _id: authorId, username } = author;
-  const dateString = formateDate(date);
   const user = useAuthStore((state) => state.user);
   const router = useRouter();
 
@@ -45,7 +44,13 @@ const Message = forwardRef<HTMLDivElement, IMessage>(({
   const [editMode, setEditMode] = useState<boolean>(false);
   const [isMessageRead, setIsMessageRead] = useState<boolean>(isRead);
   const [mediaFiles, setMediaFiles] = useState<IFile[]>([]);
+  const [dateString, setDateString] = useState<string>(formateDate(date))
   const chatId = router.query.id;
+
+  useEffect(() => {
+      const dateToString = formateDate(date);
+      setDateString(dateToString);
+  }, [date]);
 
   const handleDeleteMessage = async () => {
     if (_id) {

@@ -7,6 +7,7 @@ import jwtLibrary from 'jsonwebtoken';
 import User from '../database/schemes/users';
 import { IUser } from '../types/IUser';
 import { CustomRequest } from '../types/requests';
+import mongoose from 'mongoose';
 
 const secret = process.env.SECRET_KEY as string;
 interface ErrorMessage {
@@ -167,6 +168,91 @@ const verifyCode = async (req: Request, res: Response, next: NextFunction): Prom
         res.status(400).json({ message: 'Неверный код пользователя' });
     }
 };
+
+export const handleGetProfile = async (req: Request, res: Response) => {
+    try {
+        const { profileId, userId } = req.body;
+        const user = await User.findById(profileId)
+            .select("username profile tag email")
+            .lean();
+        const userFull = await User.findById(profileId);
+        if (user && userFull) {
+            const isPending = userFull.requests?.some(id => id.toString() === userId);
+            const isFriend = userFull.friends?.some(id => id.toString() === userId);
+            user.friendStatus = isPending ? 'pending' : isFriend || false;
+        }
+        res.status(200).json({ user });
+    }
+    catch (error) {
+        console.error(error)
+    }
+}
+
+interface IFriendData {
+    userId: string;
+    friendId: string;
+    action?: boolean;
+}
+
+export const handleAddFriend = async (data: IFriendData) => {
+    try {
+        const { userId, friendId } = data;
+        const friend = await User.findById(friendId);
+        const user = await User.findById(userId);
+
+        if (!user || !friend) return null;
+    
+        const isFriend = user.friends?.some(id => id.toString() === friendId);
+        const hasRequest = user.requests?.some(id => id.toString() === userId);
+        const friendHasRequest = friend.requests?.some(id => id.toString() === userId);
+        // Отправляем или отзываем запрос в друзья
+        if (!isFriend && !hasRequest) {
+            if (!friendHasRequest) {
+            await User.findByIdAndUpdate(friendId, { $push: { requests: new mongoose.Types.ObjectId(userId) } });
+            return "pending";
+            } else {
+            await User.findByIdAndUpdate(friendId, { $pull: { requests: new mongoose.Types.ObjectId(userId) } });
+            return false;
+            }
+        }
+        // Удаление из друзей
+        if (isFriend && !hasRequest) {
+            await User.findByIdAndUpdate(friendId, { $pull: { friends: new mongoose.Types.ObjectId(userId) } });
+            await User.findByIdAndUpdate(userId, { $pull: { friends: new mongoose.Types.ObjectId(friendId) } });
+            return false;
+        }
+        return null;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+};
+
+export const handleGetRequest = async (req: Request, res: Response) => {
+    const { userId, profileId } = req.body;
+    const profile = await User.findById(userId);
+    if (!profile) {
+        res.status(400).json({ message: `Пользователь не найден` });
+        return;
+    }
+    const hasRequest = profile.requests?.some(id => id.toString() === profileId);
+    res.status(200).json({ hasRequest });
+}
+
+export const handleRequestAction = async (data: IFriendData) => {
+    const { userId, friendId, action } = data;
+
+    if (action) {
+        await User.findByIdAndUpdate(userId, {$pull: { requests: new mongoose.Types.ObjectId(friendId) }});
+        await User.findByIdAndUpdate(userId, {$push: { friends: new mongoose.Types.ObjectId(friendId) }});
+        await User.findByIdAndUpdate(friendId, {$push: { friends: new mongoose.Types.ObjectId(userId) }});
+        return true;
+    }
+    if (!action) {
+        await User.findByIdAndUpdate(userId, {$pull: { requests: new mongoose.Types.ObjectId(friendId) }})
+        return false;
+    }
+}
 
 export {
     createNewUser,

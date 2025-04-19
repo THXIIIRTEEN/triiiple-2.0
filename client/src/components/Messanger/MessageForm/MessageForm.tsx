@@ -202,6 +202,7 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
             userId: user.id,
             messageId: messageId,
             text: message,
+            ...(postId && { postId })
           });
         };
         setMessage(""); 

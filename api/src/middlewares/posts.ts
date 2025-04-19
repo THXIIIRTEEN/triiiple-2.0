@@ -67,23 +67,28 @@ interface INewMessageDataType {
 }
 
 export const createNewPost = async (msg: INewMessageDataType) => {
-    const { author, chatId, text } = msg;
+    try {
+        const { author, chatId, text } = msg;
 
-    let ciphertext = ''; 
-    if (text) {
-        const encrypted = await encryptData(text);
-        ciphertext = encrypted.ciphertext;
+        let ciphertext = ''; 
+        if (text) {
+            const encrypted = await encryptData(text);
+            ciphertext = encrypted.ciphertext;
+        }
+
+        let message = new Post({ chatId: chatId, author: author, text: ciphertext });
+        message = await message.save();
+
+        await User.findByIdAndUpdate(author, {$push: {posts: message}});
+        message.text = await decryptText(message)
+        return message.populate({
+            path: 'author',
+            select: 'profile username'
+        });
     }
-
-    let message = new Post({ chatId: chatId, author: author, text: ciphertext });
-    message = await message.save();
-
-    await User.findByIdAndUpdate(author, {$push: {posts: message}});
-    message.text = await decryptText(message)
-    return message.populate({
-        path: 'author',
-        select: 'profile username'
-    });
+    catch (error) {
+        console.error(error)
+    }
 }
 
 const upload = multer({ dest: 'uploads/' }); 
@@ -272,23 +277,28 @@ const deleteFile = async (fileUrl: string) => {
 }
 
 export const deletePost = async (msg: IMsgDelete) => {
-    const { messageId, userId } = msg;
+    try {
+        const { messageId, userId } = msg;
 
-    const message = await Post.findById(messageId).populate<{ files: IFileSchema[]}>('files'); 
+        const message = await Post.findById(messageId).populate<{ files: IFileSchema[]}>('files'); 
 
-    if (message && message?.files?.length > 0) {
-        message.files.forEach(async (file) => {
-            deleteFile(file.url);
-            await File.findByIdAndDelete(file._id)
-        });
+        if (message && message?.files?.length > 0) {
+            message.files.forEach(async (file) => {
+                deleteFile(file.url);
+                await File.findByIdAndDelete(file._id)
+            });
+        }
+
+        await Post.findByIdAndDelete(messageId);
+        await User.findByIdAndUpdate(
+            userId,
+            { $pull: { messages: messageId } },
+            { new: true }
+        );
     }
-
-    await Post.findByIdAndDelete(messageId);
-    await User.findByIdAndUpdate(
-        userId,
-        { $pull: { messages: messageId } },
-        { new: true }
-    );
+    catch (error) {
+        console.error(error)
+    }
 }
 
 interface IMsgEdit {
@@ -297,18 +307,23 @@ interface IMsgEdit {
 }
 
 export const editPost = async (msg: IMsgEdit) => {
-    const { messageId, text } = msg;
+    try {
+        const { messageId, text } = msg;
     
-    let ciphertext = ''; 
-    if (text) {
-        const encrypted = await encryptData(text);
-        ciphertext = encrypted.ciphertext;
-    }
+        let ciphertext = ''; 
+        if (text) {
+            const encrypted = await encryptData(text);
+            ciphertext = encrypted.ciphertext;
+        }
 
-    await Post.findByIdAndUpdate(
-        messageId,
-        { text: ciphertext }
-    );
+        await Post.findByIdAndUpdate(
+            messageId,
+            { text: ciphertext }
+        );
+    }
+    catch (error) {
+        console.error(error)
+    }
 };
 
 export const handleLikePost = async (postId: string, userId: string) => {
@@ -372,7 +387,6 @@ export const handleAddView = async (postId: string, userId: string) => {
 export const fetchComments = async (req: CustomRequest, res: Response) => {
     try {
         const { postId } = req.body;
-        console.log(postId)
         const comments = await Post.findById(postId)
             .select("comments")
             .populate({
@@ -402,22 +416,27 @@ export const fetchComments = async (req: CustomRequest, res: Response) => {
 }
 
 export const createNewComment = async (msg: INewMessageDataType) => {
-    const { author, postId, text } = msg;
+    try {
+        const { author, postId, text } = msg;
 
-    let ciphertext = ''; 
-    if (text) {
-        const encrypted = await encryptData(text);
-        ciphertext = encrypted.ciphertext;
+        let ciphertext = ''; 
+        if (text) {
+            const encrypted = await encryptData(text);
+            ciphertext = encrypted.ciphertext;
+        }
+        let message = new Comment({ postId: postId, author: author, text: ciphertext });
+        message = await message.save();
+
+        await Post.findByIdAndUpdate(postId, {$push: {comments: message}});
+        message.text = await decryptText(message)
+        return message.populate({
+            path: 'author',
+            select: 'profile username'
+        });
     }
-    let message = new Comment({ author: author, text: ciphertext });
-    message = await message.save();
-
-    await Post.findByIdAndUpdate(postId, {$push: {comments: message}});
-    message.text = await decryptText(message)
-    return message.populate({
-        path: 'author',
-        select: 'profile username'
-    });
+    catch (error) {
+        console.error(error)
+    }
 }
 
 export const createNewCommentWithFiles = async (req: CustomRequest, res: Response, next: NextFunction) => {
@@ -439,7 +458,7 @@ export const createNewCommentWithFiles = async (req: CustomRequest, res: Respons
                 const encrypted = await encryptData(messageData.text); 
                 ciphertext = encrypted.ciphertext;
             }
-            let message = new Comment({ author: messageData.author, text: ciphertext });
+            let message = new Comment({ postId: messageData.postId, author: messageData.author, text: ciphertext });
             message = await message.save();
             req.message = message;
             req.userId = messageData.author;
@@ -556,3 +575,51 @@ export const sendCommentWithFiles = async (req: CustomRequest, res: Response) =>
         res.status(500).send('Ошибка при отправке сообщения');
     }
 }
+
+interface ICmntDelete {
+    messageId: string,
+    postId: string
+}
+
+export const deleteComment = async (msg: ICmntDelete) => {
+    try {
+        const { messageId, postId } = msg;
+        const message = await Comment.findById(messageId).populate<{ files: IFileSchema[]}>('files'); 
+        if (message && message?.files?.length > 0) {
+            message.files.forEach(async (file) => {
+                deleteFile(file.url);
+                await File.findByIdAndDelete(file._id)
+            });
+        }
+
+        await Comment.findByIdAndDelete(messageId);
+        await Post.findByIdAndUpdate(
+            postId,
+            { $pull: { comments: messageId } },
+            { new: true }
+        );
+    }
+    catch (error) {
+        console.error(error)
+    }
+};
+
+export const editComment = async (msg: IMsgEdit) => {
+    try {
+        const { messageId, text } = msg;
+    
+        let ciphertext = ''; 
+        if (text) {
+            const encrypted = await encryptData(text);
+            ciphertext = encrypted.ciphertext;
+        }
+
+        await Comment.findByIdAndUpdate(
+            messageId,
+            { text: ciphertext, isEdited: true }
+        );
+    }
+    catch (error) {
+        console.error(error)
+    }
+};

@@ -36,6 +36,7 @@ const forgotPasswordSendEmail = async (req: ForgotPasswordRequest, res: Response
 
         const code = await generateConfirmationToken(email);
         const message = {
+            from: process.env.EMAIL_USER,
             to: email,
             subject: 'Смена пароля',
             text: `Инструкции по смене пароля: ${process.env.BACKEND_URL}/password/reset/${code}`
