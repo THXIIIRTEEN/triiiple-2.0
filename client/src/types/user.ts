@@ -2,11 +2,12 @@ import { LegacyRef } from "react";
 
 export interface IUser {
     _id?: string;
-    id: string;
+    id?: string;
     email?: string;
     username?: string;
     password?: string;
     tag?: string;
+    about_user: string;
     friends?: IUser[]; 
     requests?: IUser[];
     friendStatus?: boolean | "pending";

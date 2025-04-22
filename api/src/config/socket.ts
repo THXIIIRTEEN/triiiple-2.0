@@ -4,7 +4,7 @@ import { createNewMessage, deleteMessage, editMessage, setMessageRead, setUserOn
 import multer from 'multer';
 import { createNewComment, createNewPost, deleteComment, editComment, editPost, handleAddView, handleLikePost } from '../middlewares/posts';
 import { deletePost } from '../middlewares/posts';
-import { handleAddFriend, handleRequestAction } from '../middlewares/users';
+import { handleAddFriend, handleEditAboutMe, handleRequestAction } from '../middlewares/users';
 
 let io: SocketIOServer;
 
@@ -118,6 +118,11 @@ export const initSocket = (server: HttpServer) => {
         socket.on('sendMessageCommentRequest', async (msg) => {
             const message = await createNewComment(msg);
             io.to(msg.author).emit('sendMessageCommentResponse', message);
+        });
+
+        socket.on('sendMessageAboutUserRequest', async (data) => {
+            const user = await handleEditAboutMe(data);
+            io.to(`edit-about-me-${data.author}`).emit('sendMessageAboutUserResponse', user);
         });
 
         socket.on('disconnect', () => {

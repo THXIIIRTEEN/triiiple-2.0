@@ -254,6 +254,60 @@ export const handleRequestAction = async (data: IFriendData) => {
     }
 }
 
+export const handleEditUserData = async (req: Request, res: Response) => {
+    try {
+        const { userId, name, value } = req.body;
+        const errors: ErrorMessage[] = [];
+
+        if (name === 'username') {
+            const user = await User.findByIdAndUpdate(userId, { $set: { [name]: value} }, { new: true }).select(`${name}`);
+            const userFull = await User.findById(userId);
+            if (user && userFull) {
+                const token = createJWTToken(userFull, req, res)        
+                res.status(200).json({ user, token });
+            };
+        }
+        if (name === 'tag') {
+            const tag = await User.findOne({ tag: new RegExp(`^${value}$`, 'i') });
+            if (tag) {
+                errors.push({ name: 'tag', message: 'Пользователь с таким тэгом уже существует' });
+            }
+            if (errors.length > 0) {
+                res.status(400).json({ errors });
+                return;
+            }
+            const user = await User.findByIdAndUpdate(userId, { $set: { [name]: value} }, { new: true }).select(`${name}`);
+            const userFull = await User.findById(userId);
+            if (user && userFull) {
+                const token = createJWTToken(userFull, req, res)        
+                res.status(200).json({ user, token });
+            };
+        }
+    }
+    catch (error) {
+        console.error(error)
+    }
+};
+
+interface IAboutUserData {
+    author: string;
+    text: string
+};
+
+export const handleEditAboutMe = async (data: IAboutUserData) => {
+    const { author, text } = data;
+    const user = await User.findByIdAndUpdate(author, { $set: { about_user: text} }, { new: true }).select("about_user");
+    return user;
+};
+
+export const fetchUserAboutMe = async (req: Request, res: Response) => {
+    const { userId } = req.body;
+    const user = await User.findById(userId).select("about_user");
+    if (user) {
+        res.status(200).json({ about_user: user?.about_user});
+    }
+}
+
 export {
     createNewUser,
     sendEmailConfirmation,

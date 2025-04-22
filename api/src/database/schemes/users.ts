@@ -24,6 +24,10 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
     type: String,
     required: true,
   },
+  about_user: {
+    type: String,
+    required: false
+  },
   verified: {
     type: Boolean,
     default: false,

@@ -82,7 +82,7 @@ const RegistrationPage: React.FC = () => {
       <form method="post" autoComplete='off' onSubmit={(event) => handlePostUserData(event)}>
         <AuthorizationInput name='username' placeholder='Отображаемое имя' type='text' minLength={4} maxLength={16} value={formValues.username || ''} autoComplete='new-password' setFormValues={setFormValues} />
         <AuthorizationInput name='tag' placeholder='Имя пользователя' type='text' minLength={4} maxLength={16} value={formValues.tag || ''} autoComplete='new-password' serverError={serverError} setFormValues={setFormValues} />
-        <AuthorizationInput name='email' placeholder='Почта' type='text' value={formValues.email} autoComplete='new-password' serverError={serverError} setFormValues={setFormValues}/>
+        <AuthorizationInput name='email' placeholder='Почта' type='email' value={formValues.email} autoComplete='new-password' serverError={serverError} setFormValues={setFormValues}/>
         <AuthorizationInput name='password' placeholder='Пароль' type='password' minLength={6} maxLength={32} value={formValues.password} autoComplete='new-password' setFormValues={setFormValues}/>
         <button disabled={!verifyCorrectSymbols(formValues)} type="submit">Отправить</button>
       </form>

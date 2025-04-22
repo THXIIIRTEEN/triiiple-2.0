@@ -16,7 +16,7 @@ interface IMessageForm {
   user: IUser;
   value?: string;
   messageId?: string;
-  page?: 'News' | 'Chat' | 'Comment';
+  page?: 'News' | 'Chat' | 'Comment' | 'AboutUser';
   postId?: string;
   setEditMode?: React.Dispatch<React.SetStateAction<boolean>>
 }
@@ -30,6 +30,8 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
   const [ cursorPosition, setCursorPosition ] = useState<number | null>(null);
   const [ files, setFiles ] = useState<(File)[]>([]);
   const [ progress, setProgress ] = useState<number>(0);
+  const [ placeholder, setPlaceholder ] = useState<string>('')
+  
 
   const chatId = router.query.id as string || true;
   const token = getToken();
@@ -41,6 +43,42 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
   };
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (page === 'AboutUser') {
+      socket.connect();
+      socket.emit('joinRoom', `edit-about-me-${user.id}`);
+    }
+  }, [page, user])
+
+  useEffect(() => {
+    const fetchAboutUser = async () => {
+      try {
+        const response = await axios.post(`${process.env.API_URI}/fetch-about-user`, {userId: user.id}, { 
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response && response.status === 200) {
+          setPlaceholder(response.data.about_user);
+        }
+      }
+      catch(error) {
+        console.log(error)
+      }
+    }
+    if (page === 'AboutUser') {
+      fetchAboutUser();
+    }
+  }, [page, token, user]);
+
+  useEffect(() => {
+    socket.on('sendMessageAboutUserResponse', (data) => {
+        setPlaceholder(data.about_user)
+    });
+
+    return () => {
+        socket.off('sendMessageAboutUserResponse');
+    };
+  }, []);
 
   const handleEmojiClick = (emoji: { shortcodes: string }) => {
     if (textareaRef.current) {
@@ -255,14 +293,16 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
             </div>
           </div>
         }
-
-        <input type="file" ref={fileInputRef} multiple onChange={handleFileChange}/>
+        { currentPage !== "AboutUser" &&
+          <input type="file" ref={fileInputRef} multiple onChange={handleFileChange}/>
+        }
         <textarea
           onChange={(event) => setMessage(event.target.value)}
           value={message}
           rows={4}
           style={{ whiteSpace: 'pre-wrap' }}
           ref={textareaRef}
+          placeholder={placeholder}
         ></textarea>
 
         <button type="button" onClick={toggleEmojiPicker}>

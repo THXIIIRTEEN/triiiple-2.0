@@ -60,6 +60,7 @@ const AvatarInput: React.FC<AvatarInputProps> = ({ user }) => {
                     },
                 }).then((response) => {
                     if (response.status === 200) {
+                        sessionStorage.removeItem(`avatar-${user.id}`);
                         router.reload();
                     }
                 });

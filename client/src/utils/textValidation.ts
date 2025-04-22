@@ -1,6 +1,9 @@
 import { Dispatch, SetStateAction } from 'react';
 
-
+function isValidEmail(email: string): boolean {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
 export const verifyCorrectSymbols = (
     //@ts-expect-error Полный кошмар с типами
     dataObject, 
@@ -41,6 +44,10 @@ export const verifyCorrectSymbols = (
         }
         if (key === 'password' && value.trim().length > 32) {
             if (setError) setError(`Не должно быть длиннее 32 символов`);
+            return false;
+        }
+        if (key === 'email' && !isValidEmail(value)) {
+            if (setError) setError(`Введёное значение не является электронной почтой`);
             return false;
         }
     }

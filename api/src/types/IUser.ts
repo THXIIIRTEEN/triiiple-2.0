@@ -8,6 +8,7 @@ export interface IUser extends Document {
   tag: string;
   email: string;
   password: string;
+  about_user: string;
   verified?: boolean;
   chatRooms?: Array<IChatRoomSchema>;
   created_at: Date;
