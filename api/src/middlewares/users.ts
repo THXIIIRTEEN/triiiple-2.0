@@ -69,9 +69,9 @@ const createNewUser = async (req: CustomRequest, res: Response, next: NextFuncti
     }
 };
 
-const generateConfirmationToken = async (email: string): Promise<string> => {
+const generateConfirmationToken = async (email: string, tempEmail?: string): Promise<string> => {
     const confirmationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const confirmation = new Confirmation({ email, token: confirmationToken });
+    const confirmation = new Confirmation({ email, token: confirmationToken, tempEmail });
 
     await confirmation.save();
     return confirmationToken;
@@ -87,7 +87,7 @@ const sendEmailConfirmation = async (req: CustomRequest, res: Response, next: Ne
         from: process.env.EMAIL_USER,
         to: req.body.email,
         subject: 'Registration Confirmation',
-        text: `Please confirm your registration by clicking the following link: ${process.env.BACKEND_URL}/verify/${req.body.username}/${confirmationToken}`,
+        text: `Please confirm your registration by clicking the following link: ${process.env.BACKEND_URL}/verify/${req.body.tag}/${confirmationToken}`,
     };
     mailer(message);
     const userId = req.userId
@@ -283,6 +283,29 @@ export const handleEditUserData = async (req: Request, res: Response) => {
                 res.status(200).json({ user, token });
             };
         }
+        if (name === 'email') {
+            const email = await User.findOne({ email: value});
+            if (email) {
+                errors.push({ name: 'email', message: 'Пользователь с такой электронной почтой уже существует' });
+            }
+            if (errors.length > 0) {
+                res.status(400).json({ errors });
+                return;
+            }
+            const user = await User.findById(userId).select('email tag');
+            if (user) {
+                const confirmationToken = await generateConfirmationToken(user.email, value);
+                const message = {
+                    from: process.env.EMAIL_USER,
+                    to: user?.email,
+                    subject: 'Изменение электронной почты',
+                    text: `Пожалуйста подтвердите изменение электронной почты перейдя по следующей ссылке: ${process.env.BACKEND_URL}/change-email/${user.tag}/${confirmationToken}`,
+                };
+                mailer(message);
+                    errors.push({ name: 'email', message: 'Подтвердите смену электронной почты через письмо в вашем емейле.' });
+                    res.status(400).json({ errors });
+            }
+        }
     }
     catch (error) {
         console.error(error)
@@ -305,6 +328,14 @@ export const fetchUserAboutMe = async (req: Request, res: Response) => {
     const user = await User.findById(userId).select("about_user");
     if (user) {
         res.status(200).json({ about_user: user?.about_user});
+    }
+}
+
+export const isEmailVerified = async (req: Request, res: Response) => {
+    const { userId } = req.body;
+    const user = await User.findById(userId).select('verified');
+    if (user) {
+        res.status(200).json({ verified: user.verified })
     }
 }
 

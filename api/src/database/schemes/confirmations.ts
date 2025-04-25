@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 interface IConfirmation extends Document {
   email: string;
   token: string;
+  tempEmail?: string;
 }
 
 const confirmationSchema: Schema<IConfirmation> = new Schema({
@@ -14,6 +15,10 @@ const confirmationSchema: Schema<IConfirmation> = new Schema({
     type: String,
     required: true,
   },
+  tempEmail: {
+    type: String,
+    required: false
+  }
 });
 
 const Confirmation = mongoose.model<IConfirmation>('Confirmation', confirmationSchema);
