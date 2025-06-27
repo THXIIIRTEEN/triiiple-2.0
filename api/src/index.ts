@@ -21,7 +21,7 @@ import postRouter from './routes/posts';
 import path from 'path';
 
 const secret = process.env.SECRET_KEY || 'default_secret';  
-const port = 80;
+const port = process.env.NODE_ENV === 'production' ? 3001 : 80;
 
 const app = express();
 const server = http.createServer(app);
