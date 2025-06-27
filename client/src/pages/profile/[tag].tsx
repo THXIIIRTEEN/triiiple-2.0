@@ -18,6 +18,7 @@ import MessageForm from "@/components/Messanger/MessageForm/MessageForm";
 import News from "../news";
 import Tag from "@/components/Tag";
 import Head from "next/head";
+import { renderMessageWithEmojis } from "@/components/Messanger/Message";
 
 const ProfilePage: React.FC = () => {
     
@@ -232,7 +233,7 @@ const ProfilePage: React.FC = () => {
                         <p className={styles.aboutUserTitle}>Обо мне</p>
                         {   !placeholder ?
                             <p>Здесь пока ничего нет</p> :
-                            <p>{placeholder}</p>
+                            <p>{renderMessageWithEmojis(placeholder)}</p>
                         }
                     </div>
                     <div className={styles.friends}>
