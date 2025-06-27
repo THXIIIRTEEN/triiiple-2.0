@@ -4,10 +4,11 @@ const nextConfig: NextConfig = {
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,
-      use: ["@svgr/webpack"],
+      use: ['@svgr/webpack'],
     });
     return config;
   },
+
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
     const apiUri = isDev ? 'http://localhost' : process.env.API_URI;
@@ -15,36 +16,24 @@ const nextConfig: NextConfig = {
       'https://id.vk.com',
       'https://vk.com',
       'https://login.vk.com',
-      'https://*.userapi.com'
+      'https://*.userapi.com',
     ];
     const discordDomain = 'https://cdn.discordapp.com';
     const websocketUri = isDev ? 'ws://localhost' : process.env.WEBSOCKET_URL;
     const cdnJsdelivr = 'https://cdn.jsdelivr.net';
     const yandexCloudDomain = 'https://triiiple.storage.yandexcloud.net';
 
-    const csp = isDev
-      ? `
-          default-src 'self' ${apiUri};
-          script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.hcaptcha.com ${apiUri} https://accounts.google.com https://unpkg.com ${vkDomains.join(' ')} ${discordDomain};
-          style-src 'self' 'unsafe-inline' https://*.hcaptcha.com ${apiUri} https://accounts.google.com;
-          img-src 'self' blob: data: https://*.hcaptcha.com https://*.googleusercontent.com https://twemoji.maxcdn.com ${vkDomains.join(' ')} ${discordDomain} ${cdnJsdelivr};
-          connect-src 'self' https://*.hcaptcha.com https://lh3.googleusercontent.com https://*.googleusercontent.com ${apiUri} ${vkDomains.join(' ')} ${discordDomain} ${websocketUri} ${yandexCloudDomain};
-          font-src 'self' https://*.hcaptcha.com;
-          object-src 'none';
-          frame-src https://*.hcaptcha.com ${vkDomains.join(' ')} ${discordDomain};
-          media-src 'self' ${yandexCloudDomain};
-        `
-      : `
-          default-src 'self' https://your-production-domain.com; // Замените на ваш продакшн домен
-          script-src 'self' 'unsafe-inline' https://*.hcaptcha.com https://accounts.google.com https://unpkg.com ${vkDomains.join(' ')} ${discordDomain};
-          style-src 'self' 'unsafe-inline' https://*.hcaptcha.com https://accounts.google.com;
-          img-src 'self' blob: data: https://*.hcaptcha.com https://*.googleusercontent.com https://twemoji.maxcdn.com ${vkDomains.join(' ')} ${discordDomain} ${cdnJsdelivr};
-          connect-src 'self' https://*.hcaptcha.com https://lh3.googleusercontent.com https://*.googleusercontent.com ${vkDomains.join(' ')} ${discordDomain} ${yandexCloudDomain};
-          font-src 'self' https://*.hcaptcha.com;
-          object-src 'none';
-          frame-src https://*.hcaptcha.com ${vkDomains.join(' ')} ${discordDomain};
-          media-src 'self' ${yandexCloudDomain};
-        `;
+    const csp = `
+      default-src 'self' ${apiUri};
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.hcaptcha.com ${apiUri} https://accounts.google.com https://unpkg.com ${vkDomains.join(' ')} ${discordDomain};
+      style-src 'self' 'unsafe-inline' https://*.hcaptcha.com ${apiUri} https://accounts.google.com;
+      img-src 'self' blob: data: https://*.hcaptcha.com https://*.googleusercontent.com https://twemoji.maxcdn.com ${vkDomains.join(' ')} ${discordDomain} ${cdnJsdelivr};
+      connect-src 'self' https://*.hcaptcha.com https://lh3.googleusercontent.com https://*.googleusercontent.com ${apiUri} ${vkDomains.join(' ')} ${discordDomain} ${websocketUri} ${yandexCloudDomain};
+      font-src 'self' https://*.hcaptcha.com;
+      object-src 'none';
+      frame-src https://*.hcaptcha.com ${vkDomains.join(' ')} ${discordDomain};
+      media-src 'self' ${yandexCloudDomain};
+    `;
 
     return [
       {
@@ -87,8 +76,8 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'twemoji.maxcdn.com'
-      }
+        hostname: 'twemoji.maxcdn.com',
+      },
     ],
   },
 
@@ -106,7 +95,7 @@ const nextConfig: NextConfig = {
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     AES_SECRET: process.env.AES_SECRET,
-    FRONTEND_URL: process.env.FRONTEND_URL
+    FRONTEND_URL: process.env.FRONTEND_URL,
   },
 
   async redirects() {
@@ -115,17 +104,24 @@ const nextConfig: NextConfig = {
         source: '/old-route',
         destination: '/new-route',
         permanent: true,
-      }
+      },
     ];
   },
 
   async rewrites() {
-    return [
-      {
-        source: '/auth/:path*',
-        destination: 'http://localhost:3000/auth/:path*'
-      },
-    ];
+    return process.env.NODE_ENV === 'development'
+      ? [
+          {
+            source: '/auth/:path*',
+            destination: 'http://localhost:3000/auth/:path*',
+          },
+        ]
+      : [
+          {
+            source: '/auth/:path*',
+            destination: 'https://triiiple.ru/auth/:path*',
+          },
+      ];
   },
 };
 
