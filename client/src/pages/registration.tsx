@@ -126,7 +126,7 @@ const RegistrationPage: React.FC = () => {
 
         <div className={styles.inputs}>
           <div className={styles.section}>
-            <p className={styles.subTitle}>Имя пользователя</p>
+            <p className={styles.subTitle}>Тэг пользователя</p>
             <AuthorizationInput name='tag' placeholder='Имя пользователя' type='text' minLength={4} maxLength={16} value={formValues.tag || ''} autoComplete='new-password' serverError={serverError} setFormValues={setFormValues} setServerError={setServerError} />
           </div>
           <div className={styles.section}>
