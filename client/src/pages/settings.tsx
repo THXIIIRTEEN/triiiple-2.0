@@ -10,6 +10,7 @@ import Protected from "@/components/Protected";
 import Header from "@/components/Header/Header";
 import styles from "./styles/settings.module.scss"
 import Sidebar from "@/components/Sidebar/Sidebar";
+import Head from "next/head";
 
 const SettingsPage: React.FC = () => {
 
@@ -30,6 +31,10 @@ const SettingsPage: React.FC = () => {
 
     return (
         <>
+            <Head>
+                <title>Настройки</title>
+                <meta name="description" content="Настйроки triiiple"/>
+            </Head>
             <Protected>
                 <Header/>
                     <div className={styles.page}>

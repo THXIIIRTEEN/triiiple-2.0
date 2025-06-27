@@ -16,6 +16,7 @@ import Sidebar from "@/components/Sidebar/Sidebar";
 import UserAvatar from "@/components/UserAvatar";
 import Username from "@/components/Username";
 import Link from "next/link";
+import Head from "next/head";
 
 const Messanger: React.FC = () => {
     const router = useRouter();
@@ -293,6 +294,10 @@ const Messanger: React.FC = () => {
 
     return (
         <Protected>
+            <Head>
+                <title>Мессенджер</title>
+                <meta name="description" content="Чат с пользователем"/>
+            </Head>
             <div className={styles.page}>
                 <Sidebar currentPage="messanger"/>
                 <div className={styles.chatPage}>

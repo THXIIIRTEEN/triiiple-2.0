@@ -9,6 +9,7 @@ import "../globals.css"
 import { initializeEmojiData } from "@/utils/emojiInit";
 import { socket } from "@/config/socket";
 import { Inter } from 'next/font/google';
+import Head from "next/head";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -83,9 +84,14 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   }, [user]);
 
   return (
-    <div className={inter.variable}>
-      <Component {...pageProps} />
-    </div>
+    <>
+      <Head>
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+      </Head>
+      <div className={inter.variable}>
+        <Component {...pageProps} />
+      </div>
+    </>
   );
 }
 

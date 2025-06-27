@@ -15,6 +15,7 @@ import OauthBlock from '@/components/OauthBlock/OauthBlock';
 import Logo from "@/assets/Logo.svg"
 import { getToken } from '@/utils/cookies';
 import { useAuthStore } from '@/utils/store';
+import Head from 'next/head';
 
 const RegistrationPage: React.FC = () => {
 
@@ -113,6 +114,11 @@ const RegistrationPage: React.FC = () => {
   const captchaRef = useRef<HCaptcha | null>(null); 
   
   return (
+    <>
+    <Head>
+      <title>Регистрация</title>
+      <meta name="description" content="Регистрация triiiple"/>
+    </Head>
     <div className={styles.background}>
       <Logo className={styles.logo}/>
       <form className={styles.form} method="post" autoComplete='off' onSubmit={(event) => handlePostUserData(event)}>
@@ -166,6 +172,7 @@ const RegistrationPage: React.FC = () => {
       </svg>
       <OauthBlock/>
     </div>
+    </>
   );
 }
 

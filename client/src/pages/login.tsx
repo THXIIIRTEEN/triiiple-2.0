@@ -14,6 +14,7 @@ import Logo from "@/assets/Logo.svg"
 import { getToken } from "@/utils/cookies";
 import { useRouter } from "next/router";
 import { useAuthStore } from "@/utils/store";
+import Head from "next/head";
 
 const LoginPage: React.FC = () => {
     const token = getToken(); 
@@ -100,6 +101,11 @@ const LoginPage: React.FC = () => {
     }, [token, router, user]);
 
     return (
+        <>
+        <Head>
+            <title>Вход</title>
+            <meta name="description" content="Вход в triiiple"/>
+        </Head>
         <div className={styles.background}>
             <Logo className={styles.logo}/>
             <form className={styles.form} method="post" onSubmit={handlePostUserData}>
@@ -156,6 +162,7 @@ const LoginPage: React.FC = () => {
             </svg>
             <OauthBlock/>
         </div>
+        </>
     );
 }
 

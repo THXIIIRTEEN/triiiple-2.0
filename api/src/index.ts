@@ -18,6 +18,7 @@ import messangerRouter from './routes/messanger';
 import http from 'http';
 import { initSocket } from './config/socket';
 import postRouter from './routes/posts';
+import path from 'path';
 
 const secret = process.env.SECRET_KEY || 'default_secret';  
 const port = 80;
@@ -56,7 +57,7 @@ app.use(
   })
 );
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 
 app.use('/auth', oauthRouter);

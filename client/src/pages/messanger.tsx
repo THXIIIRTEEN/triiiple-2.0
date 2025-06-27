@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import styles from './styles/messanger.module.scss'
 import Sidebar from "@/components/Sidebar/Sidebar";
 import Header from "@/components/Header/Header";
+import Head from "next/head";
 
 const Messanger: React.FC = () => {
     const user = useAuthStore(state => state.user);
@@ -28,17 +29,23 @@ const Messanger: React.FC = () => {
     }, [user, token]);
 
     return (
-        <Protected>
-            <Header/>
-            <div className={styles.page}>
-                <Sidebar currentPage="messanger"/>
-                <div className={styles.previews}>
-                    {messanger.map((chatRoom: string) => (
-                    <MessangerPreview key={chatRoom} chatId={chatRoom}/>
-                    ))}
+        <>
+            <Head>
+                <title>Мессенджер</title>
+                <meta name="description" content="Мессанджер triiiple"/>
+            </Head>
+            <Protected>
+                <Header/>
+                <div className={styles.page}>
+                    <Sidebar currentPage="messanger"/>
+                    <div className={styles.previews}>
+                        {messanger.map((chatRoom: string) => (
+                        <MessangerPreview key={chatRoom} chatId={chatRoom}/>
+                        ))}
+                    </div>
                 </div>
-            </div>
-        </Protected>
+            </Protected>
+        </>
     );
 }
 

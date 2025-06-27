@@ -6,6 +6,7 @@ import styles from './styles/friends.module.scss';
 import { useState } from "react";
 import FriendsPage from "@/components/Friends/FriendsPage";
 import RequestsPage from "@/components/Friends/RequestsPage";
+import Head from "next/head";
 
 const Friends: React.FC = () => {
 
@@ -13,7 +14,11 @@ const Friends: React.FC = () => {
     const [ currentMode, setCurrentMode ] = useState<string | null>("friends");
     
     return (
-        <>
+        <>  
+            <Head>
+                <title>Друзья</title>
+                <meta name="description" content="Мои друзья"/>
+            </Head>
             <Protected>
                 <Header/>
                 <div className={styles.page}>

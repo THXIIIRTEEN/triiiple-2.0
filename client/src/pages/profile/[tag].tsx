@@ -17,7 +17,7 @@ import FriendsList from "@/components/Friends/FriendsList";
 import MessageForm from "@/components/Messanger/MessageForm/MessageForm";
 import News from "../news";
 import Tag from "@/components/Tag";
-
+import Head from "next/head";
 
 const ProfilePage: React.FC = () => {
     
@@ -188,6 +188,11 @@ const ProfilePage: React.FC = () => {
     }, [profileId, token])
 
     return (
+        <>
+        <Head>
+            <title>Профиль</title>
+            <meta name="description" content="Профиль в triiiple"/>
+        </Head>
         <Protected>  
             <Header/>
             <div className={styles.page}>
@@ -264,6 +269,7 @@ const ProfilePage: React.FC = () => {
                 </div>
             </div>
         </Protected>
+        </>
     )
 }
 

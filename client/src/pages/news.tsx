@@ -12,6 +12,7 @@ import Protected from "@/components/Protected";
 import Header from "@/components/Header/Header";
 import styles from "./styles/news.module.scss";
 import Sidebar from "@/components/Sidebar/Sidebar";
+import Head from "next/head";
 
 interface INewsProps {
     page?: string;
@@ -179,6 +180,10 @@ const News: React.FC<INewsProps> = ({page, profileId}) => {
             }
             { !page &&
                 <Protected>
+                    <Head>
+                        <title>Новости</title>
+                        <meta name="description" content="Новости triiiple"/>
+                    </Head>
                     <Header/>
                     <div className={styles.page}>
                         <Sidebar currentPage="news"/>

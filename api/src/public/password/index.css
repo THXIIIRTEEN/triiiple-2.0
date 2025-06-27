@@ -9,3 +9,53 @@
 .invisible {
     display: none !important;
 }
+
+#error-message {
+    color: rgb(226, 34, 13);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+h1 {
+    font-family: 'Inter';
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+}
+
+* {
+    font-family: 'Inter' !important;
+}
+
+input {
+    padding: 0.5rem;
+    border-radius: 0.625rem;
+    border: solid 0.1rem black;
+}
+
+button {
+    background-color: black;
+    padding: 0.5rem;
+    color: white;
+    border-radius: 0.625rem;
+    border: none;
+    transition: 0.1s;
+    cursor: pointer;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
