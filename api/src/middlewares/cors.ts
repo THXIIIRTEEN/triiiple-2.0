@@ -2,25 +2,27 @@ import { Request, Response, NextFunction } from 'express';
 
 function cors(req: Request, res: Response, next: NextFunction): void {
   const allowedCors: string[] = [
+    'https://triiiple.ru',
     process.env.FRONTEND_URL || 'https://test.mydomain.com',
   ];
 
-  const { origin } = req.headers;
+  const origin = req.headers.origin;
 
   if (origin && allowedCors.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin); // Указание источника
-    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE'); // Разрешаем методы
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Разрешаем заголовки
-    res.setHeader('Access-Control-Allow-Credentials', 'true'); // Разрешаем cookies
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    console.warn(`CORS: blocked origin ${origin}`);
   }
 
-  // Обработка OPTIONS запросов (preflight)
   if (req.method === 'OPTIONS') {
-    res.status(204).end(); // Отправляем статус успешного preflight запроса
+    res.status(204).end();
     return;
   }
 
-  next(); // Переход к следующему middleware
+  next();
 }
 
 export default cors;
