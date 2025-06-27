@@ -34,8 +34,8 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
 
     const handleDeleteNotification = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
-        await deleteNotification(notification._id);
         setNotificationsArray((prev: IMessage[]) => {return prev.filter((msg) => msg._id !== _id)})
+        await deleteNotification(notification._id);
     }
 
     const ref = useRef<HTMLDivElement>(null); 

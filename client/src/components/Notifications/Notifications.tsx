@@ -150,7 +150,7 @@ const Notifications: React.FC = () => {
                                     />
                                 ))
                         ) : (
-                            <p>Здесь пока ничего нет</p>
+                            <p className={styles.nothing}>Здесь пока ничего нет</p>
                         )}
                     </div>
                 }
