@@ -185,7 +185,7 @@ const EditDataInput: React.FC<IEditDataInputProps> = ({name, placeholder, type, 
         <>
             {   user &&
                 <div>
-                    <form>
+                    <form className={styles.form}>
                         <AuthorizationInput name={name} onFocus={name === "password" ? handleShowPasswordInputs : undefined} placeholder={isPasswordEdit && name === "password" ? "Введите старый пароль" : inputPlaceholder} type={type} value={value} autoComplete={autoComplete} setFormValues={setFormValues} serverError={serverError}/>
                         {   name === "password" && isPasswordEdit &&
                             <>
