@@ -9,6 +9,7 @@ import { useRouter } from "next/router";
 import MessangerPreview from "../Messanger/MessangerPreview/MessangerPreview";
 import { getToken } from "@/utils/cookies";
 import axios from "axios";
+import Username from "../Username";
 
 interface ISidebarProps {
     currentPage: string;
@@ -67,7 +68,7 @@ const Sidebar: React.FC<ISidebarProps> = ({currentPage}) => {
                     }
                 </div>
                 <UserAvatar id={user.id} className={styles.avatar}/>
-                <p className={styles.username}>{user.username}</p>
+                { user.tag && <Username className={styles.username} username={user.username} tag={user.tag}/>}
                 {user && user.tag && <Tag className={styles.tag} tag={user.tag}/>}
 
                 <ul className={styles.list}>
