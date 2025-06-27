@@ -1,0 +1,141 @@
+@use '../../styles/variables.scss' as *;
+@use '../../styles/mixins.scss' as *;
+
+.page {
+    @include page;
+    overflow-y: hidden;
+    height: 100vh;
+    overflow-x: hidden;
+}
+
+.chatPage {
+    width: 100%;
+    height: 100%;
+    margin-top: calc(2.1875rem + 1.25rem);
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.chatContainer {
+    width: 100%;
+    max-width: 100vw;
+    position: relative;
+    min-width: 26.3125rem;
+    top: 0%;
+    overflow-y: auto;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.chatWrapper {
+    width: 26rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.75rem;
+    box-sizing: border-box;
+    margin-bottom: 5rem;
+    margin-top: 3.25rem;
+}
+
+.form {
+    @include bento;
+    width: 26rem;
+    box-sizing: border-box;
+    position: fixed;
+    bottom: 1rem;
+    margin-top: auto;
+}
+
+.noMessages {
+    position: fixed;
+    width: 26rem;
+}
+
+.header {
+    @include bento;
+    width: 100%;
+    height: 2.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    z-index: 300;
+    border-radius: 0%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0%;
+    // background: rgba(255, 255, 255, 0.5); 
+    // backdrop-filter: blur(10px);         
+    // -webkit-backdrop-filter: blur(10px); 
+    // border: 1px solid rgba(255, 255, 255, 0.2);
+    // box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    a {
+        width: 2rem;
+        height: 2rem;
+    }
+    .headerAvatar {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.625rem;
+    }
+
+    div {
+        display: flex;
+        flex-direction: column;
+
+        p {
+            color: $text-color;
+            font-size: 0.4375rem;
+            font-weight: $main-font-accent-weight;
+        }
+
+        .username {
+            color: $title-color;
+            font-size: $subtitle-size;
+            font-weight: $title-font-weight;
+        }
+    }
+}
+
+.commentsEnd {
+    position: relative;
+    height: 0px;
+    width: 100%;
+    bottom: 0;
+}
+
+.isSending {
+    @include bento;
+    background-color: $main-color;
+    border-radius: 100%;
+    width: 1.25rem;
+    height: 1.25rem;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0rem;
+    z-index: 50;
+    padding: 0%;
+    border: 4px solid rgba(0,0,0,0.0);
+    border-top-color: $title-color;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

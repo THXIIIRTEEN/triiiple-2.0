@@ -1,0 +1,125 @@
+@use '../../styles/variables.scss' as *;
+@use '../../styles/mixins.scss' as *;
+
+.block {
+    @include bento;
+    position: relative;
+    flex-direction: row;
+    box-sizing: border-box;
+    max-height: 3.9375rem;
+    gap: 0.5rem;
+    padding: 0.625rem;
+    width: 14.6875rem;
+}
+
+.profile {
+    width: 3.9375rem;
+    height: 3.9375rem;
+    border-radius: 0.625rem 0 0 0.625rem;
+}
+
+.profileBlock {
+    width: 3.9375rem;
+    height: 3.9375rem;
+    border-radius: 0.625rem 0 0 0.625rem;
+    margin-left: -0.625rem;
+    margin-top: -0.625rem;
+    cursor: pointer;
+    position: relative;
+}
+
+.profileLink {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0.625rem 0 0 0.625rem;
+}
+
+.username {
+    font-size: $subtitle-size;
+    font-weight: $subtitle-weight;
+    color: $title-color;
+}
+
+.tag {
+    font-size: $main-font-size;
+    font-weight: $main-font-weight;
+    color: $text-color;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.tag:hover {
+    text-decoration: underline;
+}
+
+.userInfo {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.5625rem;
+
+  button {
+    background-color: $title-color;
+    border-radius: 0.3125rem;
+    color: $main-color;
+    font-size: $main-font-size;
+    font-weight: $main-font-weight;
+    border: none;
+    padding: 0.25rem 0.625rem;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover {
+    background-color: $accent-color;
+    color: $title-color;
+  }
+}
+
+.closeButton {
+    border: none;
+    background: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+
+    svg {
+        width: 100%;
+        height: 100%;
+    }
+}
+.closeButton:hover {
+    background-color: $accent-color;
+    border-radius: 0.625rem;
+}
+
+.sign {
+    font-size: $subtitle-size;
+    font-weight: $main-font-weight;
+    color: $text-color;
+    transform: translateY(-50%);
+    top: 50%;
+    left: 50%;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.4rem;
+
+    button {
+        font-size: 0.4rem;
+    }
+}

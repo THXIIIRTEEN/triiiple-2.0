@@ -8,6 +8,12 @@ import { useRouter } from "next/navigation";
 import "../globals.css"
 import { initializeEmojiData } from "@/utils/emojiInit";
 import { socket } from "@/config/socket";
+import { Inter } from 'next/font/google';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
 
@@ -16,7 +22,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
 
   useEffect(() => {
     initializeEmojiData();
-  }, []);
+  }, [Component, pageProps]);
 
   useEffect(() => {
     const token = getToken();
@@ -77,7 +83,9 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   }, [user]);
 
   return (
-    <Component {...pageProps} />
+    <div className={inter.variable}>
+      <Component {...pageProps} />
+    </div>
   );
 }
 

@@ -13,6 +13,7 @@ declare namespace NodeJS {
       DISCORD_SECRET: string;
       NEXTAUTH_URL: string;
       NEXTAUTH_SECRET: string;
-      AES_SECRET: string
+      AES_SECRET: string;
+      FRONTEND_URL: string;
     }
 }

@@ -5,9 +5,11 @@ import { getToken } from "@/utils/cookies";
 
 interface UserAvatarProps {
   id: string | undefined;
+  className?: string;
+  onMouseEnter?: React.MouseEventHandler<HTMLImageElement>;
 }
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ id }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ id, className, onMouseEnter }) => {
   const [image, setImage] = useState<string | null>(null);
   const token = getToken();
 
@@ -75,7 +77,11 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ id }) => {
 
   return (
     <>
-        {image && <Image src={image} alt="zzz" width={400} height={400} />}
+      {image ? 
+      <Image className={className} onMouseEnter={onMouseEnter} src={image} alt="profile" width={400} height={400} /> 
+      : 
+      <Image className={className} onMouseEnter={onMouseEnter} src={'/noProfile.png'} alt="profile" width={400} height={400} /> 
+      }
     </>
   );
 };

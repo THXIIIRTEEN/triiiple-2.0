@@ -1,0 +1,96 @@
+@use "../../styles/variables.scss" as *;
+@use "../../styles/mixins.scss" as *;
+
+.background {
+    @include background;
+}
+
+.form {
+    @include form;
+}
+
+.title {
+    @include boldText;
+    font-size: $title-font-size;
+    text-align: center;
+    margin-bottom: 1.1rem;
+}
+
+.subTitle {
+    @include boldText;
+    font-size: $form-subtitle-size;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4625rem;
+    width: inherit;
+}
+
+.inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.71875rem;
+    width: 100%
+}
+
+.button {
+    @include button;
+    @include scale-on-hover(1.02);
+    font-size: $main-font-size;
+    color: $main-color;
+
+    margin-top: 1.5625rem;
+    padding: 0.5rem 2.34375rem;
+    align-self: center;
+    background: $title-color;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.1875rem;
+}
+
+.button:disabled {
+    background-color: $accent-color;
+    border: none;
+    color: $title-color;
+}
+
+.link {
+    color: $title-color;
+    font-size: $main-font-size;
+    font-weight: $main-font-weight;
+    text-decoration: underline;
+    align-self: center;
+    margin-top: 0.4625rem;
+    @include scale-on-hover(1.02);
+}
+
+.buttonBlock {
+    display: flex;
+    flex-direction: column;
+}
+
+.captchaBlock {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 1.71875rem;
+}
+
+.separator {
+    margin: 0px 2.15625rem;
+    height: 13.6875rem !important;
+}
+
+.logo {
+    @include logo;
+}
+
+.svg {
+    width: 0.475rem;
+    height: 0.475rem;
+}

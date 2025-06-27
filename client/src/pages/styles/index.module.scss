@@ -1,0 +1,120 @@
+@use "../../styles/variables.scss" as *;
+@use "../../styles/mixins.scss" as *;
+
+.page {
+    @include page;
+    height: 100vh;
+    overflow-y: hidden;
+
+    .header {
+        width: 100vw;
+        height: 2.1875rem;
+        background-color: $main-color;
+        position: fixed;
+        top: 0%;
+        left: 0%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 3.25rem;
+        box-sizing: border-box;
+        box-shadow: 5px 5px 13px 0 rgba(0, 0, 0, 0.05), -5px -5px 10px 0 rgba(0, 0, 0, 0.05), 5px -5px 10px 0 rgba(0, 0, 0, 0.05), -5px 5px 10px 0 rgba(0, 0, 0, 0.05);
+
+        .logo {
+            height: 100%;
+        }
+
+        div {
+            display: flex;
+            gap: 0.625rem
+        }
+
+        a {
+            @include button;
+            padding: 0.3125rem 0.875rem;
+            min-width: 4.0625rem;
+            font-size: 0.5rem;
+            font-weight: $main-font-weight;
+            color: $title-color;
+            text-decoration: none;
+            text-align: center;
+            transition: 0.1s;
+            box-shadow: none;
+
+            &:hover {
+                transform: scale(1.05);
+            }
+        }
+
+        .registration {
+            background-color: $accent-color;
+        }
+
+        .login {
+            background-color: $title-color;
+            color: $main-color;
+        }
+    }
+}
+
+.indexPage {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-direction: column;
+    position: relative;
+
+    h1 {
+        font-size: 1.125rem;
+        font-weight: $main-font-weight;
+        color: $title-color;
+        margin-bottom: 0.4375rem;
+        margin-top: 45vh;
+        transform: translateY(-50%);
+    }
+
+    p {
+        font-size: 0.5625rem;
+        color: $text-color;
+        font-weight: $main-font-weight;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    a {
+        @include button;
+        padding: 0.3125rem 0.875rem;
+        font-size: 0.5rem;
+        font-weight: $main-font-weight;
+        color: $title-color;
+        text-decoration: none;
+        text-align: center;
+        transition: 0.1s;
+        box-shadow: none;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        min-width: 4.75rem;
+
+        &:hover {
+            transform: scale(1.05);
+        }
+
+        background-color: $title-color;
+        color: $main-color;
+    }
+
+    .version {
+        text-align: center;
+        color: $text-color;
+        font-size: $main-font-size;
+        font-weight: $main-font-weight;
+        margin-bottom: 1.25rem;
+        margin-top: auto;
+    }
+}

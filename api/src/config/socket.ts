@@ -20,14 +20,20 @@ export const initSocket = (server: HttpServer) => {
     io.on('connection', (socket: Socket) => {
         console.log('Пользователь подключился');
 
-        socket.on('joinRoom', (room) => {
-            socket.join(room);
-            console.log(`Пользователь присоединился к комнате: ${room}`);
+        socket.on('joinRoom', (data) => {
+            const rooms = Array.isArray(data) ? data : [data];
+            rooms.forEach(room => {
+                socket.join(room);
+                console.log(`Пользователь присоединился к комнате: ${room}`);
+            });
         });
 
-        socket.on('leaveRoom', (room) => {
-            socket.leave(room);
-            console.log(`Пользователь ${socket.id} вышел из комнаты: ${room}`);
+        socket.on('leaveRoom', (data) => {
+            const rooms = Array.isArray(data) ? data : [data];
+            rooms.forEach(room => {
+                socket.leave(room);
+                console.log(`Пользователь ${socket.id} вышел из комнаты: ${room}`);
+            });
         });
 
         socket.on('sendMessageRequest', async (msg) => {
@@ -84,20 +90,20 @@ export const initSocket = (server: HttpServer) => {
 
         socket.on('addFriendRequest', async (data) => {
             const response = await handleAddFriend(data);
-            if (response === "pending") {
-                io.to(data.userId).emit('addFriendResponse', response);
-                io.to(data.friendId).emit('addFriendResponse', 'hasRequest')
-            }
-            else {
-                const rooms = [data.userId, data.friendId];
-                io.to(rooms).emit('addFriendResponse', response);
-            }
+            io.to(data.userId).emit('addFriendResponse', {
+                id: data.friendId,
+                status: response
+            });
+            io.to(data.friendId).emit('addFriendResponse', {
+                id: data.userId,
+                status: response === "pending" ? "hasRequest" : response
+            });
         });
 
         socket.on('friendRequestActionRequest', async (data) => {
             const response = await handleRequestAction(data);
             const rooms = [data.userId, data.friendId];
-            io.to(rooms).emit('friendRequestActionResponse', response);
+            io.to(rooms).emit('friendRequestActionResponse', {id: data.friendId, userId: data.userId, status: response});
         });
 
         socket.on('subscribeToOnlineStatus', ({ userId, friendId }) => {

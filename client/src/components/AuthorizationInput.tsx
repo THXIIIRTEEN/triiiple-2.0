@@ -3,6 +3,7 @@
 import { verifyCorrectSymbols } from '@/utils/textValidation';
 import { AuthorizationInputProps } from '@/types/registration';
 import React, { useState, ChangeEvent } from 'react';
+import styles from './styles/authorization-input.module.scss'
 
 const AuthorizationInput: React.FC<AuthorizationInputProps> = ({
     name,
@@ -13,13 +14,26 @@ const AuthorizationInput: React.FC<AuthorizationInputProps> = ({
     value,
     autoComplete,
     serverError,
-    setFormValues
+    setFormValues,
+    onFocus,
+    setServerError
 }) => {
 
     const [error, setError] = useState<string | null>(null);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
+
+        if (serverError && setServerError) {
+            setServerError(null)
+        }
+
+        if (name === 'tag') {
+            setFormValues(prevValues => ({
+                ...prevValues,
+                ['tag']: value.toLocaleLowerCase()
+            }))
+        }
 
         verifyCorrectSymbols({ [name]: value }, setError);
 
@@ -52,6 +66,8 @@ const AuthorizationInput: React.FC<AuthorizationInputProps> = ({
                 value={value}
                 autoComplete={autoComplete}
                 onChange={handleInputChange}
+                onFocus={onFocus}
+                className={`${styles.authorizationInput}`}
             />
             {error && <p className="error">{error}</p>}
             {serverErrorMessage && <p className="error">{serverErrorMessage}</p>}

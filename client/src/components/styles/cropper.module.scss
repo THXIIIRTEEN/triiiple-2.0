@@ -1,0 +1,64 @@
+@use '../../styles/variables.scss' as *;
+@use '../../styles/mixins.scss' as *;
+
+.cropper {
+    position: fixed;
+    display: block;
+    top: 0%;
+    left: 0%;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 900;
+}
+
+.cropperContent {
+    position: fixed;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 1;
+}
+
+.closeButton {
+    position: fixed;
+    right: 1rem;
+    top: 1rem;
+    z-index: 1000;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: 0.1s;
+    border-radius: 100%;
+    padding: 0rem;
+
+    &:hover {
+        background-color: rgb(52, 52, 52);
+        transform: scale(1.1)
+    }
+
+    svg {
+        width: 100% !important; 
+        height: 100% !important;
+
+        path {
+            stroke: $accent-color;
+        }
+    }
+}
+
+.submit {
+    @include button;
+    position: fixed;
+    z-index: 1000;
+    padding: 0.5rem 1rem;
+    transition: 0.2s;
+    left: 50%;
+    bottom: 15%;
+    transform: translateX(-50%);
+
+    &:hover {
+        background-color: $title-color;
+        color: $main-color;
+    }
+}

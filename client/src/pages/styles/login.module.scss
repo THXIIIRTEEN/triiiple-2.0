@@ -1,0 +1,176 @@
+@use "../../styles/variables.scss" as *;
+@use "../../styles/mixins.scss" as *;
+
+.background {
+    @include background;
+    @include laptop {
+      padding-top: 20vh;
+      padding-bottom: 20vh;
+    }
+    @include desktop {
+      padding-top: 22.5vh;
+      padding-bottom: 22.5vh;
+    }
+}
+
+.form {
+    @include form;
+}
+
+.title {
+    @include boldText;
+    font-size: $title-font-size;
+    text-align: center;
+    margin-bottom: 1.1rem;
+}
+
+.subTitle {
+    @include boldText;
+    font-size: $form-subtitle-size;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4625rem;
+    width: inherit;
+}
+
+.inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.71875rem;
+    width: 100%
+}
+
+.button {
+    @include button;
+    @include scale-on-hover(1.02);
+    font-size: $main-font-size;
+    color: $main-color;
+
+    margin-top: 1.5625rem;
+    padding: 0.5rem 2.34375rem;
+    align-self: center;
+    background: $title-color;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.1875rem;
+}
+
+.button:disabled {
+    background-color: $accent-color;
+    border: none;
+    color: $title-color;
+}
+
+.link {
+    color: $title-color;
+    font-size: $main-font-size;
+    font-weight: $main-font-weight;
+    text-decoration: underline;
+    align-self: center;
+    margin-top: 0.4625rem;
+    @include scale-on-hover(1.02);
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.forgotPassword {
+    align-self: flex-start;
+    margin-top: 0.1875rem !important;
+}
+
+.buttonBlock {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1rem;
+}
+
+.captchaBlock {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+}
+
+.separator {
+    margin: 0px 2.15625rem;
+    height: 13.6875rem !important;
+}
+
+.logo {
+    @include logo;
+}
+
+.svg {
+    width: 0.475rem;
+    height: 0.475rem;
+}
+
+.overlay {
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    z-index: 1;
+    justify-content: center;
+    align-items: center;
+}
+
+.emailAlert {
+    background-color: white;
+    width: 17.5rem;
+    height: 12.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.625rem;
+    box-shadow: 0.0625rem 0.125rem 0.25rem 0 rgba(0, 0, 0, 0.1);
+    padding: 1.7625rem 1.71875rem;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.textAlert {
+    font-size: $main-font-size;
+    font-weight: $main-font-weight;
+    color: $text-color;
+    text-align: center;
+    width: 70%;
+    margin-bottom: 1rem
+}
+
+.titleAlert {
+    @include boldText;
+    font-size: $title-font-size;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.closeIcon {
+    width: 100%;
+    height: 100%;
+}
+
+.closeButton {
+    border: none;
+    background: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+}

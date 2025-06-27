@@ -1,7 +1,7 @@
 import { IFile } from "@/types/user";
 import { useEffect, useRef, useState } from "react";
 import { Dispatch, SetStateAction } from "react";
-import styles from "./media-carousel.module.css"
+import styles from "./media-carousel.module.scss"
 
 interface IMediaCarouselProps {
     children: JSX.Element;
@@ -54,13 +54,21 @@ const MediaCarousel: React.FC<IMediaCarouselProps> = ({ children, files, current
     }
 
     return (
-        <> 
+        <div className={styles.background}>  
             <div className={styles['popover']}>
                 <div className={styles['popover__block']} ref={popover}>
                     <div className={styles['popover__top']}>
-                        <button onClick={handleClickPrevious}>previous</button>
+                        <button onClick={handleClickPrevious} className={styles.button}>
+                            <svg width="14" height="20" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13 1L2 10L13 19" stroke="black" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
                         { children }
-                        <button onClick={handleClickNext}>next</button>
+                        <button onClick={handleClickNext} className={styles.button}>
+                            <svg width="14" height="20" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L12 10L1 19" stroke="black" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
                     </div>
                     <div className={styles['popover__bottom']}> 
                         {   files.map((file) => {
@@ -74,7 +82,7 @@ const MediaCarousel: React.FC<IMediaCarouselProps> = ({ children, files, current
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     )
 }
 

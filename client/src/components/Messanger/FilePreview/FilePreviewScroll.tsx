@@ -1,4 +1,4 @@
-import styles from "./FilePreviewScroll.module.css"
+import styles from "./FilePreviewScroll.module.scss"
 
 interface FilePreviewScrollProps {
     children: React.ReactNode;

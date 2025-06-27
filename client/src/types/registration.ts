@@ -5,7 +5,7 @@ export interface UserData {
     tag?: string;
     email: string;
     password: string;
-    publicKey?: string
+    secondPassword?: string;
 }
 
 export interface ServerError {
@@ -24,5 +24,7 @@ export interface AuthorizationInputProps {
     value: string;
     autoComplete: string;
     serverError?: ServerError | null | string;
-    setFormValues: Dispatch<SetStateAction<UserData>>
+    setFormValues: Dispatch<SetStateAction<UserData>>;
+    onFocus?: React.FocusEventHandler<HTMLInputElement>;
+    setServerError?: Dispatch<SetStateAction<ServerError | string | null>>
 }

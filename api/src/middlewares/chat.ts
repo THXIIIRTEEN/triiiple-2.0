@@ -17,6 +17,7 @@ import iconv from 'iconv-lite';
 import { decryptData, encryptData } from "../utils/crypto";
 import { IUser } from "../types/IUser";
 import { decryptText } from "./posts";
+import { promises as fsPromises } from 'fs';
 
 export const fixEncoding = (text: string): string => {
     return iconv.decode(Buffer.from(text, 'binary'), 'utf-8');
@@ -25,6 +26,16 @@ export const fixEncoding = (text: string): string => {
 export const createNewChatRoom = async (req: Request, res: Response): Promise<void> => {
     try {
         const { members } = req.body;
+
+        const chatCheck = await ChatRoom.findOne({
+            members: { $all: members },
+            $expr: { $eq: [{ $size: "$members" }, 2] }
+        });
+
+        if (chatCheck) {
+            res.status(200).json({ message: chatCheck._id });
+            return;
+        }
 
         let chatRoom = new ChatRoom({ members });
         chatRoom = await chatRoom.save();
@@ -37,7 +48,11 @@ export const createNewChatRoom = async (req: Request, res: Response): Promise<vo
         }));
 
         await User.bulkWrite(bulkOps);
-        res.status(200).json({ message: 'Чат создан успешно' });
+
+        const io = getIO();
+        io.to(members).emit('createChatRoomResponse', chatRoom._id);
+        
+        res.status(200).json({ message: chatRoom._id });
     }
     catch (error) {
         res.status(400).json({ message: `Произошла ошибка во время создания чата: ${error}`})
@@ -66,7 +81,7 @@ export const createNewMessage = async (msg: INewMessageDataType) => {
     message.text = await decryptText(message); 
     return message.populate({
         path: 'author',
-        select: 'profile username'
+        select: 'profile username tag'
     });
 }
 
@@ -77,7 +92,7 @@ export const getMessagesFromChatRoom = async (req: Request, res: Response) => {
             .sort({ date: -1 }) 
             .skip(Number(skip) || 0)
             .limit(Number(limit))
-            .populate('author', 'profile username')
+            .populate('author', 'profile username tag')
             .populate('files');
         const chat = await ChatRoom.findById(chatId).select('messages');
 
@@ -87,12 +102,14 @@ export const getMessagesFromChatRoom = async (req: Request, res: Response) => {
         }
 
         if (messages) {
-            for (let message of messages as any[]) {
+            await Promise.all(
+                messages.map(async (message: any) => {
                 if (message.text) {
                     const { plaintext } = await decryptData(message.text);
                     message.text = Buffer.from(plaintext, 'base64').toString('utf-8');
                 }
-            }
+                })
+            );
         }
         res.status(200).json({ chat: { ...chat.toObject(), messages } });
     }
@@ -146,11 +163,11 @@ export const deleteMessage = async (msg: IMsgDelete) => {
 
     const message = await Message.findById(messageId).populate<{ files: IFileSchema[]}>('files');
 
-    if (message && message?.files?.length > 0) {
-        message.files.forEach(async (file) => {
-            deleteFile(file.url);
-            await File.findByIdAndDelete(file._id)
-        });
+    if (message?.files?.length) {
+        await Promise.all(message.files.map(async (file) => {
+            await deleteFile(file.url);
+            await File.findByIdAndDelete(file._id);
+        }));
     }
 
     await Message.findByIdAndDelete(messageId);
@@ -311,7 +328,7 @@ export const addFilesToMessage = async (req: CustomRequest, res: Response, next:
         message.text = await decryptText(message)
         req.message = await message.populate ([{
             path: 'author', 
-            select: 'profile username'
+            select: 'profile username tag'
         },
         {
             path: 'files'
@@ -428,7 +445,7 @@ export const fetchChatData = async (req: CustomRequest, res: Response) => {
         const chatData = await ChatRoom.findById(chatId)
         .populate({
             path: 'members',
-            select: 'username profile'
+            select: 'username profile tag'
         })
         .populate({
             path: 'messages',
@@ -458,7 +475,7 @@ export const fetchChatData = async (req: CustomRequest, res: Response) => {
             }
             const notReadedMessages = chatMessagesOnly!.messages.filter((message) => {
                 //@ts-ignore
-                return message.isRead === false;
+                return message.isRead === false && message.author.toString() !== userId;
             })
             exportData!.notReadedMessages = notReadedMessages.length;
             //@ts-ignore

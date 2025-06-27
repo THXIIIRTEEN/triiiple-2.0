@@ -22,6 +22,7 @@ export interface IFile {
 
 export interface IMessage {
     _id: string;
+    chatId: string;
     author: IUser;
     text: string;
     date: Date;
@@ -42,16 +43,7 @@ export interface IPost {
     likes: number;
     comments: number;
     isLiked: boolean;
-    isRead: boolean
+    isRead: boolean;
+    ref: LegacyRef<HTMLDivElement | null>
 }
 
-export interface IComment {
-    _id?: string,
-    postId:  string,
-    author: IUser,
-    text: string,
-    date: Date,
-    files: IFile[],
-    isEdited: boolean,
-    isRead: boolean
-}

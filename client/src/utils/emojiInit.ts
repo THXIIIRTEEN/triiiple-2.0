@@ -4,6 +4,7 @@ import { init } from 'emoji-mart';
 export const initializeEmojiData = async () => {
   try {
     await init({ data: emojiData });
+    return true;
   } catch (error) {
     console.error("Error initializing emoji data:", error);
   }

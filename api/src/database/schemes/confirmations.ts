@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 interface IConfirmation extends Document {
   email: string;
   token: string;
-  tempEmail?: string;
+  tempData?: string;
 }
 
 const confirmationSchema: Schema<IConfirmation> = new Schema({
@@ -15,7 +15,7 @@ const confirmationSchema: Schema<IConfirmation> = new Schema({
     type: String,
     required: true,
   },
-  tempEmail: {
+  tempData: {
     type: String,
     required: false
   }

@@ -15,6 +15,7 @@ import User from "../database/schemes/users";
 import { IFileSchema } from "../database/schemes/file";
 import Comment, { ICommentSchema } from "../database/schemes/comment";
 import { IMessageSchema } from "../database/schemes/message";
+import mongoose from "mongoose";
 
 export const decryptText = async (message: ICommentSchema | IMessageSchema | IPostSchema) => {
     let plaintext = ''; 
@@ -27,29 +28,73 @@ export const decryptText = async (message: ICommentSchema | IMessageSchema | IPo
 
 export const handleGetPosts = async (req: CustomRequest, res: Response) => {
     try {
-        const { userId, skip, limit } = req.body; 
-        const posts = await Post.find()
+        const { userId, profileId, skip, limit, currentMode } = req.body; 
+
+        let posts = await Post.find()
             .sort({ date: -1 }) 
             .skip(Number(skip) || 0)
             .limit(Number(limit))
-            .populate('author', 'profile username')
+            .populate('author', 'profile username tag')
             .populate('files')
             .lean();
 
-        if (posts) {
-            for (let post of posts as any[]) { 
+        if (currentMode === "news") {
+            const currentUser = await User.findById(userId).select('friends');
+            if (currentUser) {
+                //@ts-ignore
+                const authorIds = [...currentUser.friends].map(id => new mongoose.Types.ObjectId(id));
+                posts = await Post.find({ author: { $in: authorIds } })
+                    .sort({ date: -1 })
+                    .skip(Number(skip) || 0)
+                    .limit(Number(limit))
+                    .populate('author', 'profile username tag')
+                    .populate('files')
+                    .lean();
+                }
+        }
+        if (currentMode === "recommendations") {
+            const currentUser = await User.findById(userId).select('friends');
+            if (currentUser) {
+                //@ts-ignore
+                const authorIds = [userId, ...currentUser.friends].map(id => new mongoose.Types.ObjectId(id));
+                posts = await Post.find({ author: { $nin: authorIds } })
+                    .sort({ date: -1 })
+                    .skip(Number(skip) || 0)
+                    .limit(Number(limit))
+                    .populate('author', 'profile username tag')
+                    .populate('files')
+                    .lean();
+                }
+        }
+        if (profileId) {
+            posts = posts.filter((post) => {
+                //@ts-ignore
+                const author = post.author as { _id: string }; 
+                return author._id.toString() === profileId;
+            });
+        }
+        if (posts?.length) {
+            posts = await Promise.all(
+                posts.map(async (post: any) => {
+
                 if (post.text) {
                     const { plaintext } = await decryptData(post.text);
                     post.text = Buffer.from(plaintext, 'base64').toString('utf-8');
                 }
-                //@ts-ignore
-                post.isLiked = post.likes.map(id => id.toString()).includes(userId);  
-                //@ts-ignore
-                post.isRead = post.readCount.map(id => id.toString()).includes(userId);
-                post.likes = post.likes.length;
-                post.readCount = post.readCount.length;              
-                post.comments = post.comments.length;
-            }
+
+                const likes = post.likes?.map((id: any) => id.toString()) ?? [];
+                const reads = post.readCount?.map((id: any) => id.toString()) ?? [];
+
+                return {
+                    ...post,
+                    isLiked: likes.includes(userId),
+                    isRead: reads.includes(userId),
+                    likes: likes.length,
+                    readCount: reads.length,
+                    comments: post.comments?.length ?? 0,
+                };
+                })
+            );
         }
         res.status(200).json({ posts });
     }
@@ -83,7 +128,7 @@ export const createNewPost = async (msg: INewMessageDataType) => {
         message.text = await decryptText(message)
         return message.populate({
             path: 'author',
-            select: 'profile username'
+            select: 'profile username tag'
         });
     }
     catch (error) {
@@ -209,7 +254,7 @@ export const addFilesToMessage = async (req: CustomRequest, res: Response, next:
         message.text = await decryptText(message)
         req.message = await message.populate ([{
             path: 'author', 
-            select: 'profile username'
+            select: 'profile username tag'
         },
         {
             path: 'files'
@@ -386,28 +431,32 @@ export const handleAddView = async (postId: string, userId: string) => {
 
 export const fetchComments = async (req: CustomRequest, res: Response) => {
     try {
-        const { postId } = req.body;
-        const comments = await Post.findById(postId)
+        const { postId, limit, skip } = req.body;
+        const post = await Post.findById(postId)
             .select("comments")
             .populate({
                 path: "comments",
+                options: { sort: { date: -1 }, skip, limit, },
                 populate: [
                     { path: "files" },
-                    { path: "author", select: "username profile" }
+                    { path: "author", select: "username profile tag" }
                 ]
             });
-        if (!comments) {
+        
+        if (!post) {
             res.status(400).json({ message: "Комментарии не найдены"})
         }
-        else if (comments) {
-            //@ts-ignore
-            for (let comment of comments.comments as any[]) { 
+        const comments = post?.comments;
+        if (comments) {
+            await Promise.all(
+                comments.map(async (comment: any) => {
                 if (comment.text) {
                     const { plaintext } = await decryptData(comment.text);
                     comment.text = Buffer.from(plaintext, 'base64').toString('utf-8');
                 }
-            }
-            res.status(200).json({ comments: comments.comments })
+                })
+            );
+            res.status(200).json({ comments: comments })
         }
     }
     catch (error) {
@@ -431,7 +480,7 @@ export const createNewComment = async (msg: INewMessageDataType) => {
         message.text = await decryptText(message)
         return message.populate({
             path: 'author',
-            select: 'profile username'
+            select: 'profile username tag'
         });
     }
     catch (error) {
@@ -549,7 +598,7 @@ export const addFilesToComment = async (req: CustomRequest, res: Response, next:
         message.text = await decryptText(message)
         req.message = await message.populate ([{
             path: 'author', 
-            select: 'profile username'
+            select: 'profile username tag'
         },
         {
             path: 'files'

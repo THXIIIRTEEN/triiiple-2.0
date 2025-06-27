@@ -4,7 +4,7 @@ import { LegacyRef } from 'react';
 
 type HCaptchaComponentProps = {
     onVerify: (token: string) => void;
-    ref: LegacyRef<HCaptcha>
+    ref: LegacyRef<HCaptcha>;
 }
 
 const HCaptchaComponent = React.forwardRef<HCaptcha, HCaptchaComponentProps>(
@@ -15,6 +15,7 @@ const HCaptchaComponent = React.forwardRef<HCaptcha, HCaptchaComponentProps>(
   
     return (
         <HCaptcha
+            size='normal'
             ref={ref}
             onVerify={handleVerificationSuccess}
             sitekey={process.env.CAPTCHA_SITE_KEY!}

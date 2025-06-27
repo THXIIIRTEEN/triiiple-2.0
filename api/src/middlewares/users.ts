@@ -8,6 +8,8 @@ import User from '../database/schemes/users';
 import { IUser } from '../types/IUser';
 import { CustomRequest } from '../types/requests';
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import Fuse from 'fuse.js';
 
 const secret = process.env.SECRET_KEY as string;
 interface ErrorMessage {
@@ -36,7 +38,6 @@ const checkIfEmailExist = async (req: Request, res: Response): Promise<ErrorMess
 const createNewUser = async (req: CustomRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
         const userData = {
-            username: req.body.username,
             tag: req.body.tag,
             email: req.body.email,
             password: req.body.password,
@@ -69,9 +70,9 @@ const createNewUser = async (req: CustomRequest, res: Response, next: NextFuncti
     }
 };
 
-const generateConfirmationToken = async (email: string, tempEmail?: string): Promise<string> => {
+const generateConfirmationToken = async (email: string, tempData?: string): Promise<string> => {
     const confirmationToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const confirmation = new Confirmation({ email, token: confirmationToken, tempEmail });
+    const confirmation = new Confirmation({ email, token: confirmationToken, tempData });
 
     await confirmation.save();
     return confirmationToken;
@@ -160,11 +161,15 @@ const verifyCode = async (req: Request, res: Response, next: NextFunction): Prom
     const existingCode = await Verification.findOne({ code, email });
     const user = await User.findOne({ email: email });
 
+    if (user) {
+        await User.findByIdAndUpdate(user._id, { $set: { verified: true}});
+    }
     if (existingCode && user) {
         await Verification.findByIdAndDelete(existingCode._id);
         const token = createJWTToken(user, req, res);
         res.status(200).json({ message: 'Аутентификация прошла успешно', token: token, userId: user._id });
-    } else {
+    } 
+    else {
         res.status(400).json({ message: 'Неверный код пользователя' });
     }
 };
@@ -188,6 +193,20 @@ export const handleGetProfile = async (req: Request, res: Response) => {
     }
 }
 
+export const handleGetIdByTag = async (req: Request, res: Response) => {
+    try {
+        const { tag } = req.body;
+        const user = await User.findOne({ tag: tag })
+            .select("username")       
+        if (user) {
+            res.status(200).json({ user });
+        }
+    }
+    catch (error) {
+        console.error(error)
+    }
+}
+
 interface IFriendData {
     userId: string;
     friendId: string;
@@ -197,6 +216,7 @@ interface IFriendData {
 export const handleAddFriend = async (data: IFriendData) => {
     try {
         const { userId, friendId } = data;
+        
         const friend = await User.findById(friendId);
         const user = await User.findById(userId);
 
@@ -205,6 +225,7 @@ export const handleAddFriend = async (data: IFriendData) => {
         const isFriend = user.friends?.some(id => id.toString() === friendId);
         const hasRequest = user.requests?.some(id => id.toString() === userId);
         const friendHasRequest = friend.requests?.some(id => id.toString() === userId);
+
         // Отправляем или отзываем запрос в друзья
         if (!isFriend && !hasRequest) {
             if (!friendHasRequest) {
@@ -216,8 +237,8 @@ export const handleAddFriend = async (data: IFriendData) => {
             }
         }
         // Удаление из друзей
-        if (isFriend && !hasRequest) {
-            await User.findByIdAndUpdate(friendId, { $pull: { friends: new mongoose.Types.ObjectId(userId) } });
+        if (isFriend && !hasRequest) {         
+            await User.findByIdAndUpdate(friendId, { $pull: { friends: new mongoose.Types.ObjectId(userId) } }, );
             await User.findByIdAndUpdate(userId, { $pull: { friends: new mongoose.Types.ObjectId(friendId) } });
             return false;
         }
@@ -306,6 +327,33 @@ export const handleEditUserData = async (req: Request, res: Response) => {
                     res.status(400).json({ errors });
             }
         }
+        if (name === 'password') {
+            const user = await User.findById(userId).select('email tag password');
+            let { newPassword } = req.body;
+            
+
+            if (user && await user.comparePassword(value)) {
+                const salt = await bcrypt.genSalt(10);
+                newPassword = await bcrypt.hash(newPassword, salt); 
+    
+                if (user) {
+                    const confirmationToken = await generateConfirmationToken(user.email, newPassword);
+                    const message = {
+                        from: process.env.EMAIL_USER,
+                        to: user?.email,
+                        subject: 'Изменение пароля',
+                        text: `Пожалуйста подтвердите изменение пароля перейдя по следующей ссылке: ${process.env.BACKEND_URL}/change-password/${user.tag}/${confirmationToken}`,
+                    };
+                    mailer(message);
+                        errors.push({ name: 'password', message: 'Подтвердите смену электронной почты через письмо в вашем емейле.' });
+                        res.status(400).json({ errors });
+                }
+            }
+            else {
+                errors.push({ name: 'password', message: 'Неверный пользователь или пароль' });
+                res.status(400).json({ errors });
+            }
+        }
     }
     catch (error) {
         console.error(error)
@@ -336,6 +384,124 @@ export const isEmailVerified = async (req: Request, res: Response) => {
     const user = await User.findById(userId).select('verified');
     if (user) {
         res.status(200).json({ verified: user.verified })
+    }
+}
+
+export const handleVerifyEmail = async (req: Request, res: Response) => {
+    const { userId } = req.body;
+    const user = await User.findById(userId).select('email');
+    const errors: ErrorMessage[] = [];
+    if (!user) {
+        errors.push({ name: 'email', message: 'Пользователь не найден' });
+        if (errors.length > 0) {
+            res.status(400).json({ errors });
+            return;
+        }
+    }
+    if (user) {
+        const code = generateVerificationCode();
+        const email = user.email;
+
+        const verification = new Verification({ email, code });
+        await verification.save();
+
+        const message = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Код подтверждения',
+            text: `Ваш код подтверждения: ${code}`,
+        };
+        mailer(message);
+        res.status(200).json({ message: 'Введите код подтверждения, который пришёл на вашу почту' });
+    }
+}
+
+export const handleGetFriendsQuantity = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.body;
+        const user = await User.findById(userId)
+            .select("friends")
+            .lean();
+        res.status(200).json({ friends: user?.friends?.length });
+    }
+    catch (error) {
+        console.error(error)
+    }
+}
+
+export const handleGetFriends = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.body;
+        const user = await User.findById(userId)
+            .populate({
+                path: "friends",
+                select: "username tag friends" 
+            });
+        res.status(200).json({ friends: user?.friends });
+    }
+    catch (error) {
+        console.error(error)
+    }
+}
+
+export const handleGetRequests = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.body;
+        const user = await User.findById(userId)
+            .populate({
+                path: "requests",
+                select: "username tag friends" 
+            });
+        res.status(200).json({ requests: user?.requests });
+    }
+    catch (error) {
+        console.error(error)
+    }
+}
+
+export const handleGetUserData = async (req: Request, res: Response) => {
+    try {
+        const { userId, requiredData } = req.body;
+        const user = await User.findById(userId)
+            .select(requiredData);
+        res.status(200).json({ user });
+    }
+    catch (error) {
+        console.error(error)
+    }
+}
+
+export const handleSearch = async (req: Request, res: Response) => {
+    try {
+        const { name, value } = req.body;
+        let rawUsers = [] as IUser[];
+        
+        if (name === 'users') {
+            rawUsers = await User.find({}, 'username tag')
+            .limit(200)
+            .select('username tag friends requests')
+            .lean();
+        }
+
+        if (rawUsers.length === 0) {
+            res.status(200).json({ users: [] });
+            return;
+        }
+
+        if (rawUsers.length > 0) {
+            const fuse = new Fuse(rawUsers, {
+                keys: ['username', 'tag'],
+                threshold: 0.3, 
+            });
+
+            const result = fuse.search(value).map(res => res.item);
+            console.log(result);
+
+            res.status(200).json({ result });
+        }
+    }
+    catch (error) {
+        console.error(error);
     }
 }
 

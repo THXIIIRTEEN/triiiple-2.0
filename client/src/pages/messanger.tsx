@@ -4,6 +4,9 @@ import { getToken } from "@/utils/cookies";
 import { useAuthStore } from "@/utils/store";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import styles from './styles/messanger.module.scss'
+import Sidebar from "@/components/Sidebar/Sidebar";
+import Header from "@/components/Header/Header";
 
 const Messanger: React.FC = () => {
     const user = useAuthStore(state => state.user);
@@ -26,9 +29,15 @@ const Messanger: React.FC = () => {
 
     return (
         <Protected>
-            {messanger.map((chatRoom: string) => (
-                <MessangerPreview key={chatRoom} chatId={chatRoom}/>
-            ))}
+            <Header/>
+            <div className={styles.page}>
+                <Sidebar currentPage="messanger"/>
+                <div className={styles.previews}>
+                    {messanger.map((chatRoom: string) => (
+                    <MessangerPreview key={chatRoom} chatId={chatRoom}/>
+                    ))}
+                </div>
+            </div>
         </Protected>
     );
 }

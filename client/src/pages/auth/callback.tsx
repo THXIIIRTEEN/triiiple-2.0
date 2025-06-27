@@ -1,21 +1,27 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { getUserFromCookies, saveToken } from '@/utils/cookies';
+import { getUserFromCookies, removeToken, saveToken } from '@/utils/cookies';
+import { jwtDecode } from 'jwt-decode';
+import { useAuthStore } from '@/utils/store';
+import { IUser } from '@/types/user';
 
 const AuthCallback: React.FC = () => {
   const router = useRouter();
+  const { setUser } = useAuthStore(); 
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      if (!router.isReady) return;
 
       const token = router.query.token as string;
-
       try {
         if (token) {
+          removeToken();
           saveToken(token);
-          const user = getUserFromCookies();
-
+          if (token) {
+              const decodedUser = jwtDecode<IUser>(token); 
+              setUser(decodedUser); 
+          }
+          const user = getUserFromCookies(); 
           if (!user) {
             console.error('Пользователь не найден в cookies');
             return;
@@ -24,8 +30,7 @@ const AuthCallback: React.FC = () => {
             console.error('ID пользователя отсутствует');
             return;
           }
-
-          router.push('/profile');
+          router.push(`/profile/${user.tag}`);
         } else {
           console.error('No token found in query parameters');
         }
@@ -35,7 +40,7 @@ const AuthCallback: React.FC = () => {
     };
 
     handleAuthCallback();
-  }, [router.isReady, router]);
+  }, [router.isReady, router, setUser]);
 
   return <div>Authenticating...</div>;
 };

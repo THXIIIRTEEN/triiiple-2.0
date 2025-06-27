@@ -1,16 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from "axios";
 import { useRouter } from 'next/router';
-import { saveToken } from '@/utils/cookies';
+import { removeToken, saveToken } from '@/utils/cookies';
+import styles from "./styles/verification-code.module.scss"
+import { jwtDecode } from 'jwt-decode';
+import { useAuthStore } from '@/utils/store';
+import { IUser } from '@/types/user';
 interface VerificationCodeInputProps {
     email: string;
+    setIsVerified?: React.Dispatch<React.SetStateAction<boolean>>;
+    setShowVerificationInput?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({ email }) => {
+const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({ email, setIsVerified, setShowVerificationInput  }) => {
     const [code, setCode] = useState<string[]>(['', '', '', '', '', '']);
     const [isComplete, setIsComplete] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const { setUser } = useAuthStore();  
 
     const router = useRouter();
     
@@ -57,9 +64,19 @@ const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({ email }) 
                 try {
                     const response = await axios.post(`${process.env.API_URI!}/users/verification`, { code: code.join(''), email }, { withCredentials: true });
                     if (response.status === 200) {
+                        if (setIsVerified && setShowVerificationInput) {
+                            setIsVerified(false);
+                            setShowVerificationInput(false);
+                            return;
+                        }
                         const token = response.data.token;
+                        removeToken(); 
                         saveToken(token);
-                        router.push('/profile');
+                        if (token) {
+                            const decodedUser = jwtDecode<IUser>(token);  
+                            setUser(decodedUser); 
+                            router.push(`/profile/${decodedUser.tag}`);
+                        }
                     }
                     else {
                         setError('Неправильный код');
@@ -70,12 +87,13 @@ const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({ email }) 
             }
         };
         sendCode();
-    }, [isComplete, code, email, router]);
+    }, [isComplete, code, email, router, setIsVerified, setShowVerificationInput, setUser]);
 
     return (
         <div style={{ display: 'flex', gap: '8px' }}>
             {code.map((_, index) => (
                 <input
+                    className={styles.input}
                     key={index}
                     type="text"
                     maxLength={1}

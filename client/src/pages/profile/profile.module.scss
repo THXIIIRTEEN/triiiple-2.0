@@ -1,0 +1,339 @@
+@use '../../styles/variables.scss' as *;
+@use '../../styles/mixins.scss' as *;
+
+.page {
+    @include page;
+}
+
+.profilePage {
+    width: 100%;
+    height: 100%;
+    margin-top: calc(2.1875rem + 1.25rem);
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.profile {
+    width: 7.5rem;
+    height: 7.5rem;
+    box-shadow: $bento-block-shadow;
+    border-radius: 0.625rem;
+    position: relative;
+    z-index: 1;
+}
+
+.topData {
+    display: flex;
+    flex-direction: row;
+    gap: 1.25rem;
+    width: 26rem;
+}
+
+.userInfo {
+    @include bento;
+    min-width: 15.625rem;
+    position: relative;
+}
+
+.title {
+    color: $title-color;
+    font-size: $title-font-size;
+    font-weight: $title-font-weight;
+}
+
+.tag {
+    color: $text-color;
+    font-size: $main-font-size;
+    font-weight: $main-font-weight;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.avatarInput {
+    width: 7.5rem;
+    height: 7.5rem;
+    border-radius: 0.625rem;
+    background-color: rgba(0, 0, 0, 0.353);
+    position: absolute;
+    z-index: 2;
+    display: flex;
+
+    div {
+        width: 100%;
+        height: 100%;
+        padding: 1.75rem;
+        box-sizing: border-box;
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+    }
+}
+
+.profileBlock {
+    width: 7.5rem;
+    height: 7.5rem;
+    box-shadow: $bento-block-shadow;
+    border-radius: 0.625rem;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    svg {
+        width: 50%;
+        height: 50%;
+        box-shadow: none;
+    }
+}
+
+.onlineStatus {
+  font-size: $subtitle-size;
+  color: $title-color;
+  font-weight: $title-font-weight;
+  margin-top: auto;
+}
+
+.bottomData {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.25rem;
+  height: fit-content;
+  justify-content: space-between;
+  width: 26rem;
+}
+
+.aboutUser {
+    @include bento;
+    min-height: 7.5rem;
+    min-width: 15.3125rem;
+    gap: 0.25rem;
+    box-sizing: border-box;
+    flex: 1;
+    height: 100%;
+
+    p {
+        font-size: 0.5rem;
+        font-weight: $main-font-weight;
+    }
+
+    .aboutUserTitle {
+        color: $title-color;
+        font-size: $title-font-size;
+        font-weight: $title-font-weight;
+    }
+}
+
+.friends {
+    @include bento;
+    min-height: 7.5rem;
+    height: 100%;
+    width: 7.5rem;
+    box-sizing: border-box;
+
+    .friendsTitle {
+        font-size: $title-font-size;
+        font-weight: $title-font-weight;
+        color: $title-color;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .friendsTitle:hover {
+        text-decoration: underline;
+    }
+
+    .friendsText {
+        font-size: $subtitle-size;
+        font-weight: $title-font-weight;
+        color: $title-color;
+        margin-bottom: 0.75rem;
+    }
+
+    .friendsButton {
+        background-color: $title-color;
+        border: none;
+        color: $main-color;
+        width: 100%;
+        padding: 0.5625rem 0;
+        border-radius: 0.625rem;
+        margin-top: auto;
+        font-size: 0.5rem;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .friendsButton:hover {
+        background-color: $accent-color;
+        color: $title-color;
+    }
+
+    div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+.friendsList {
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.625rem;
+    box-shadow: 0.0625rem 0.125rem 0.25rem 0 rgba(0, 0, 0, 0.1);
+    padding: 1.09375rem 0.84375rem;
+    box-sizing: border-box;
+    position: relative;
+    gap: 1rem;
+    width: 33rem;
+    flex-wrap: wrap;
+    padding-top: 3rem;
+    max-height: 80vh;
+    overflow-y: auto;
+    min-height: 50vh;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.overlay {
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.inputNews {
+    @include bento;
+    width: 26rem;
+    box-sizing: border-box;
+}
+
+.messageForm {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background: #ebebeb;
+    border-radius: 0.625rem;
+    box-shadow: 0.15625rem 0.15625rem 0.40625rem 0 rgba(212, 212, 212, 0.9), -0.15625rem -0.15625rem 0.3125rem 0 rgba(255, 255, 255, 0.9), 0.15625rem -0.15625rem 0.3125rem 0 rgba(212, 212, 212, 0.2), -0.15625rem 0.15625rem 0.3125rem 0 rgba(212, 212, 212, 0.2);
+    padding: 0.1875rem 0.78125rem;
+    gap: 0.375rem;
+    min-height: 1.375rem;
+    box-sizing: border-box;
+    position: relative;
+
+    textarea {
+        border: none;
+        background: none;
+        resize: none;
+        overflow: hidden;
+        display: inline-block;
+        vertical-align: bottom;
+        min-height: 0.625rem;
+        height: 0.625rem;
+        max-height: 30vh;
+        width: 70%;
+        color: $title-color;
+        font-size: 0.5rem;
+        font-weight: $main-font-weight;
+
+        &::placeholder {
+            color: $title-color;
+            font-size: 0.5rem;
+            font-weight: $main-font-weight;
+        }
+
+        &:focus {
+            outline: none;
+            border: none;
+            box-shadow: none; 
+        }
+    }
+    button {
+        background-color: $title-color;
+        padding: 0.2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: none;
+        border-radius: 0.25rem;
+        color: $main-color;
+        font-size: $main-font-size;
+        font-weight: $main-font-weight;
+        cursor: pointer;
+        box-sizing: border-box;
+        height: 1rem;
+        transition: 0.2s;
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        &:hover {
+            background-color: $main-color;
+            color: $title-color;
+            svg {
+                path {
+                    fill: $title-color;
+                }
+            }
+        }
+    }
+    label {
+        background-color: $title-color;
+        padding: 0.2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: none;
+        border-radius: 0.25rem;
+        color: $main-color;
+        font-size: $main-font-size;
+        font-weight: $main-font-weight;
+        cursor: pointer;
+        height: 1rem;
+        max-height: 1rem !important;
+        width: 1rem;
+        box-sizing: border-box;
+        transition: 0.2s;
+
+        div {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        &:hover {
+            background-color: $main-color;
+            color: $title-color;
+            svg {
+                path {
+                    stroke: $title-color;
+                }
+            }
+        }
+    }
+}

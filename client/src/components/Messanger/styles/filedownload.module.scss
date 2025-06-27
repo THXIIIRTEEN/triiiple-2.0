@@ -1,0 +1,74 @@
+@use '../../../styles/variables.scss' as *;
+@use '../../../styles/mixins.scss' as *;
+
+.block {
+    @include bento;
+    background-color: $background-color;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    max-width: 60%;
+    min-width: 14.375rem;
+    gap: 0.25rem;
+    box-shadow: none;
+
+    svg {
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+
+    a {
+        font-size: $main-font-size;
+        font-weight: $main-font-weight;
+        color: $title-color;
+    }
+
+    button {
+        display: flex;
+        align-items: center;
+        gap: 0.15rem;
+        background-color: $title-color;
+        border: none;
+        border-radius: 0.25rem;
+        color: $main-color;
+        padding: 0.15rem;
+        font-size: $main-font-size;
+        font-weight: $main-font-weight;
+        cursor: pointer;
+        margin-left: auto;
+        transition: 0.2s;
+
+        svg {
+            width: 0.45rem;
+            height: 0.45rem;
+
+            path {
+                stroke: $main-color;
+            }
+            line {
+                stroke: $main-color;
+            }
+            polyline {
+                stroke: $main-color;
+            }
+        }
+
+        &:hover {
+            background-color: $accent-color;
+            color: $title-color;
+
+            svg {
+                path {
+                    stroke: $title-color;
+                }
+                line {
+                    stroke: $title-color;
+                }
+                polyline {
+                    stroke: $title-color;
+                }
+            }
+        }
+    }
+}

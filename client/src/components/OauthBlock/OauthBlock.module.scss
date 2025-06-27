@@ -1,0 +1,14 @@
+@use "../../styles/variables.scss" as *;
+@use "../../styles/mixins.scss" as *;
+
+.container {
+    @include form;
+    gap: 1.25rem;
+}
+
+.title {
+    @include boldText;
+    font-size: $title-font-size;
+    text-align: center;
+}
+

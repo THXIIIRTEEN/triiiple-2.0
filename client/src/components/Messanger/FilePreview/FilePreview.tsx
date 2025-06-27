@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import styles from './FilePreviewScroll.module.scss'
 
 interface FilePreviewProps {
     file: File;
@@ -36,12 +37,12 @@ const FilePreview: React.FC<FilePreviewProps> = ({ setFiles, file }) => {
     }
 
     return (
-        <div>
+        <div className={styles.file}>
             {   image &&
                 <Image src={image} alt="preview" width={200} height={200}></Image>
             }
             <p>{file?.name}</p>
-            <button type="button" onClick={() => deleteFile(file)}>delete</button>
+            <button type="button" onClick={() => deleteFile(file)}>Удалить</button>
         </div>
     )
 };

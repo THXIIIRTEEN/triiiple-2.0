@@ -1,0 +1,27 @@
+@use "../../styles/variables.scss" as *;
+@use "../../styles/mixins.scss" as *;
+
+.button {
+    box-shadow: 0.0625rem 0.125rem 0.28125rem 0 rgba(0, 0, 0, 0.1);
+    background: $background-color;
+    border-radius: 0.25rem;
+    width: 100%;
+    padding: 0.40625rem 0px;
+}
+
+.link {
+    font-size: $main-font-size;
+    font-weight: 500;
+    color: $title-color;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.1875rem;
+    @include scale-on-hover(1.02);
+}
+
+.icon {
+    width: 0.75rem;
+    height: 0.75rem;
+}

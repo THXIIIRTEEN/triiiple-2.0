@@ -2,61 +2,93 @@
 
 import MessageForm from "@/components/Messanger/MessageForm/MessageForm";
 import Protected from "@/components/Protected";
-import { IMessage } from "@/types/user";
+import { IMessage, IUser } from "@/types/user";
 import { getToken, getUserFromCookies } from "@/utils/cookies";
 import { useAuthStore } from "@/utils/store";
 import axios from "axios";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, RefObject } from "react";
 import { useRouter } from "next/router";
 import Message from "@/components/Messanger/Message";
 import { socket } from "@/config/socket";
-import styles from './messanger.module.css'
+import styles from './messanger.module.scss'
 import UserOnlineStatus from "@/components/Messanger/UserOnlineStatus/UserOnlineStatus";
+import Sidebar from "@/components/Sidebar/Sidebar";
+import UserAvatar from "@/components/UserAvatar";
+import Username from "@/components/Username";
+import Link from "next/link";
 
 const Messanger: React.FC = () => {
     const router = useRouter();
     const user = useAuthStore(state => state.user);
     const [profile, setProfile] = useState(user);
     const [messageArray, setMessageArray] = useState<IMessage[]>([]);
-    const [scrolled, setScrolled] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [ chatMembers, setChatMembers ] = useState<string[]>([]);
     const [ friendId, setFriendId ] = useState<string | null>(null);
+    const [ friendData, setFriendData ] = useState<IUser | null>(null);
+    const [ messagesFetched, setMessagesFetched ] = useState<boolean>(false);
+    const [ isScrolled, setIsScrolled ] = useState<boolean>(false);
+    const [ isVisible, setIsVisible ] = useState<boolean>(false);
+    const [ isSending, setIsSending ] = useState<boolean>(false);
+    const [ isFirstMessageVisible, setIsFirstMessageVisible ] = useState<boolean>(false);
     const token = getToken();
     const chatId = router.query.id;
-    const limit = 5;
+    const limit = 10;
 
     const firstMessageRef = useRef<HTMLDivElement | null>(null);
     const chatBottomRef = useRef<HTMLDivElement | null>(null);
-    const chatWrapperRef = useRef<HTMLDivElement | null>(null);
+    const chatWrapperRef = useRef<HTMLDivElement | null>(null); 
+    const chatWrapperContainer = useRef<HTMLDivElement | null>(null); 
     const lastMessageRef = useRef<HTMLDivElement | null>(null);
 
+    const scrollToBottomInstant = () => {
+        chatBottomRef.current?.scrollIntoView({ behavior: 'instant' });
+    };
+
     useEffect(() => {
-        if (chatBottomRef.current && messageArray.length > 0 && !scrolled) {
+        if (messagesFetched && messageArray.length > 0 && !isScrolled) {
             setTimeout(() => {
-                chatBottomRef.current?.scrollIntoView({ behavior: "instant" });
-                setScrolled(true)
-            }, 0);
+                scrollToBottomInstant();
+                setIsScrolled(true)
+            }, 100);
         }
-      }, [messageArray, scrolled]);
+    }, [messagesFetched, messageArray, isScrolled]);
 
-    const handleGetMessages = useCallback(async (limit: number, skip = 0) => {
-        if (!chatId) return;
-        const response = await axios.post(`${process.env.API_URI}/get-messages`, { chatId, limit, skip }, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        return response.data.chat?.messages.reverse();
-    }, [chatId, token]);
+    const scrollToBottom = () => {
+        chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
 
-    const handleGetMoreMessages = useCallback(async () => {
-        if (loading || !chatId) return;
-        setLoading(true);
-        const messages = await handleGetMessages(limit, messageArray.length);
-        if (messages?.length) {
-            setMessageArray(prev => [...messages, ...prev]);
+    const isLastMessageOnScreen = (lastMessageRef: RefObject<HTMLDivElement>) => { 
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true)
+                } else {
+                    setIsVisible(false)
+                }
+            }
+        )
+
+        if (lastMessageRef.current) {
+            observer.observe(lastMessageRef.current)
         }
-        setLoading(false);
-    }, [loading, chatId, messageArray.length, handleGetMessages]);
+
+        return () => {
+            if (lastMessageRef.current) {
+                observer.unobserve(lastMessageRef.current);
+            }
+            observer.disconnect();
+        };
+    };
+
+    useEffect(() => {
+        const disconnect = isLastMessageOnScreen(lastMessageRef);
+        if (isScrolled && isVisible) {
+            scrollToBottom();
+        }
+        return () => {
+            disconnect(); 
+        };
+    }, [messageArray, isScrolled, isVisible]);
 
     useEffect(() => {
         const getChatMembers = async () => {
@@ -69,6 +101,16 @@ const Messanger: React.FC = () => {
     }, [chatId]);
 
     useEffect(() => {
+        const handleGetUserData = async () => {
+            if (friendId) {
+                const response = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: friendId, requiredData: [`username`, `tag`]});
+                setFriendData(response.data.user)
+            }
+        }
+        handleGetUserData();
+    }, [friendId]);
+
+    useEffect(() => {
         const getFriendId = async () => {
             if (user && chatMembers && chatMembers.length === 2) {
                 const friend = chatMembers.filter((id) => id !== user.id);
@@ -79,30 +121,21 @@ const Messanger: React.FC = () => {
     })
 
     useEffect(() => {
-        const observer = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && scrolled) {
-                handleGetMoreMessages();
-                lastMessageRef.current?.scrollIntoView({ behavior: 'instant' })
-            }
-        }, { rootMargin: "0px", threshold: 0.1 });
-
-        if (firstMessageRef.current) observer.observe(firstMessageRef.current);
-
-        return () => observer.disconnect();
-    }, [handleGetMoreMessages, scrolled]);
-
-    useEffect(() => {
         if (!profile) setProfile(getUserFromCookies());
     }, [user, profile]);
 
     useEffect(() => {
         const fetchMessages = async () => {
-            const messages = await handleGetMessages(limit);
-            if (messages) setMessageArray(messages);
+            if (chatId && limit) {
+                const response = await axios.post(`${process.env.API_URI}/get-messages`, { chatId, limit, skip: 0 }, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (response) setMessageArray(response.data.chat?.messages);
+                setMessagesFetched(true);
+            }
         };
-
         if (profile?.id) fetchMessages();
-    }, [profile, handleGetMessages]);
+    }, [profile, chatId, token]);
 
     useEffect(() => {
         if (chatId) {
@@ -110,7 +143,7 @@ const Messanger: React.FC = () => {
             socket.emit('joinRoom', chatId);
     
             socket.on('sendMessageResponse', (msg: IMessage) => {
-                setMessageArray((prevMessages) => [...prevMessages, msg]);
+                setMessageArray((prevMessages) => [msg, ...prevMessages]);
             });
     
             return () => {
@@ -164,7 +197,7 @@ const Messanger: React.FC = () => {
     useEffect(() => {
         if (chatId) {
             socket.on('sendMessageWithFilesResponse', (msg: IMessage) => {
-                setMessageArray((prevMessages) => [...prevMessages, msg]);
+                setMessageArray((prevMessages) => [msg, ...prevMessages]);
             });
     
             return () => {
@@ -185,26 +218,128 @@ const Messanger: React.FC = () => {
         }
     }, [chatId]);
 
+    useEffect(() => {
+        setMessageArray([]);
+    }, [router]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsFirstMessageVisible(entry.isIntersecting);
+            },
+            {
+                root: null,        
+                rootMargin: "0px",
+                threshold: 0.1      
+            }
+        );
+
+        const currentElement = firstMessageRef.current;
+        if (currentElement) {
+            observer.observe(currentElement);
+        }
+
+        return () => {
+            if (currentElement) observer.unobserve(currentElement);
+            observer.disconnect();
+        };
+    }, [messageArray]);
+
+    const hasScrolledUpOnce = useRef(false);
+    const isNoMoreMessages = useRef<boolean>(false);
+
+    useEffect(() => {
+        const container = chatWrapperContainer.current;
+        if (container && isFirstMessageVisible && messagesFetched && hasScrolledUpOnce.current && !isNoMoreMessages.current) {
+            const fetchMessages = async () => {
+                const previousScrollHeight = container.scrollHeight;
+                setIsSending(true);
+
+                if (chatId && limit && messageArray.length > 0) {
+                    const response = await axios.post(`${process.env.API_URI}/get-messages`, { chatId, limit, skip: messageArray.length }, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (response) {
+                        if (response.data.chat.messages.length < limit) {
+                            isNoMoreMessages.current = true;
+                        }
+                        setMessageArray((prev) => {
+                            const existingIds = new Set(prev.map(m => m._id));
+                            const newMessages = response.data.chat.messages.filter((m: IMessage) => !existingIds.has(m._id));
+                            return [...prev, ...newMessages];
+                        });
+
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                if (container) {
+                                    const newScrollHeight = container.scrollHeight;
+                                    const delta = newScrollHeight - previousScrollHeight;
+                                    container.scrollTop = delta;
+                                    setIsSending(false);
+                                }
+                            });
+                        });
+                    }
+                }
+            };
+            
+            fetchMessages();
+        }
+        else if (isFirstMessageVisible && !hasScrolledUpOnce.current) {
+            hasScrolledUpOnce.current = true;
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isFirstMessageVisible, chatId, token, messagesFetched])
+
     return (
         <Protected>
-            <div className={styles['message-wrapper']} ref={chatWrapperRef}>
-                <div ref={firstMessageRef}></div>
-                {messageArray.map((message, index) => {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { ref: _ignored, ...messageProps } = message;
-                return (
-                    <Message
-                        key={message._id}
-                        ref={index === 0 ? lastMessageRef : null}
-                        {...messageProps}
-                    />
-                );
-                })}                
-                {   user && user.id && friendId &&
-                    <UserOnlineStatus friendId={friendId} userId={user.id}/>
-                }
-                {profile && <MessageForm type="send" user={profile}/>}
-                <div ref={chatBottomRef}></div>
+            <div className={styles.page}>
+                <Sidebar currentPage="messanger"/>
+                <div className={styles.chatPage}>
+                    <div className={styles.header}>
+                        { friendId && friendData?.tag &&
+                        <Link href={`/profile/${friendData.tag}`}>
+                            <UserAvatar className={styles.headerAvatar} id={friendId}/>
+                        </Link>
+                        }
+                        <div>
+                            {   friendData && friendData.tag &&
+                                <Username className={styles.username} username={friendData.username} tag={friendData.tag}/>
+                            }
+                            {   user && user.id && friendId &&
+                                <UserOnlineStatus friendId={friendId} userId={user.id}/>
+                            }
+                        </div>
+                    </div>
+                    <div className={styles.chatContainer} ref={chatWrapperContainer}>
+                        {   isSending &&
+                            <div className={styles.isSending}>
+
+                            </div>
+                        }
+                        <div className={styles.chatWrapper} ref={chatWrapperRef}>
+                            {[...messageArray]
+                            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                            .map((message, index) => {
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                            const { ref: _ignored, ...messageProps } = message;
+                            return (
+                                <Message
+                                    key={message._id}
+                                    ref={index === 1 ? firstMessageRef : index === messageArray.length - 1 ? lastMessageRef : null}
+                                    {...messageProps}
+                                />
+                            );
+                            })}   
+                            <div className={styles.commentsEnd} ref={chatBottomRef}></div>             
+                        </div>
+                        {profile && 
+                            <div className={`${styles.form}`}>
+                                <MessageForm type="send" user={profile}/>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </Protected>
     );

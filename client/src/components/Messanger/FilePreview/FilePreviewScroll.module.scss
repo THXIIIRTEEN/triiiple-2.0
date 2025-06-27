@@ -1,0 +1,52 @@
+@use '../../../styles/variables.scss' as *;
+@use '../../../styles/mixins.scss' as *;
+
+.container {
+    @include bento;
+    overflow-x: auto;
+    white-space: nowrap;
+    width: 26rem;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    position: absolute;
+    z-index: 30;
+    margin-left: -1.6rem;
+    box-sizing: border-box;
+    top: -13rem;
+    padding: 0.5rem;
+    background-color: $main-color;
+    border-radius: 0.625rem;
+
+    &::-webkit-scrollbar {
+        height: 0.75rem;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: $background-color;        
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: $title-color;  
+        border-radius: 0.625rem;     
+        border: 0.15rem solid $main-color;  
+    }
+}
+
+.file {
+    img {
+        border-radius: 0.625rem;
+    }
+
+    p {
+        font-size: $main-font-size;
+        font-weight: $main-font-weight;
+        color: $title-color;
+    }
+
+    button {
+        font-size: $main-font-size;
+        font-weight: $main-font-weight;
+        color: $main-color;
+        margin-top: 0.5rem;
+    }
+}

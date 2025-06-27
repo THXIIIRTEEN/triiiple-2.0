@@ -6,7 +6,7 @@ import FileProvider from "./Messanger/FileProvider";
 import MediaView from "./Messanger/MediaCarousel/MediaView";
 import MediaCarousel from "./Messanger/MediaCarousel/MediaCarousel";
 
-const PhotoCollage = ({ photos }: { photos: IFile[] }) => {
+const PhotoCollage = ({ photos, className }: { photos: IFile[], className?: string }) => {
 
   const [ currentlyMediaView, setCurrentlyMediaView ] = useState<IFile | null>(null);
 
@@ -35,7 +35,7 @@ const PhotoCollage = ({ photos }: { photos: IFile[] }) => {
 
   return (
     <div 
-      className={`${photoCollageStyles["photo-collage"]} ${photoCollageStyles[collageClass]}`}
+      className={`${photoCollageStyles["photo-collage"]} ${photoCollageStyles[collageClass]} ${className}`}
     >
       {photos.map((photo, index) => {
         if (photo.type.startsWith("video")) {

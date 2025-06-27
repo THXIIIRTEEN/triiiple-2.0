@@ -6,6 +6,7 @@ import { UserData } from "@/types/registration";
 import axios from "axios";
 import { getToken, saveToken } from "@/utils/cookies";
 import { socket } from "@/config/socket";
+import VerificationCodeInput from "../VerificationCodeInput";
 
 interface IEditDataInputProps {
     name: string;
@@ -27,12 +28,20 @@ const EditDataInput: React.FC<IEditDataInputProps> = ({name, placeholder, type, 
     const [ inputPlaceholder, setInputPlaceholder ] = useState<string>(placeholder);
     const [ serverError, setServerError ] = useState<ServerError | null | string>(null);
     const [ isVerified, setIsVerified ] = useState<boolean>(true);
+    const [ showVerificationInput, setShowVerificationInput ] = useState<boolean>(false);
+    const [ isPasswordEdit, setIsPasswordEdit ] = useState<boolean>(false);
+    const [ arePasswordSame, setArePasswordSame ] = useState<boolean>(true)
+
+    const [passwordValues, setPasswordValues] = useState({
+        newPassword: '',
+        secondNewPassword: '',
+    });
 
     useEffect(() => {
         const isEmailVerified = async () => {
             try {
                 if (user) {
-                    const response = await axios.post(`${process.env.API_URI}/edit-user-data`, {userId: user?.id}, { 
+                    const response = await axios.post(`${process.env.API_URI}/check-verified-email`, {userId: user?.id}, { 
                         headers: { Authorization: `Bearer ${token}` },
                     });
                     if (response.status == 200) {
@@ -54,7 +63,6 @@ const EditDataInput: React.FC<IEditDataInputProps> = ({name, placeholder, type, 
 
     useEffect(() => {
         socket.on('changeEmailResponse', (data) => {
-            console.log(data)
             setServerError(null);
             const token = data.token; 
             saveToken(token);
@@ -74,6 +82,32 @@ const EditDataInput: React.FC<IEditDataInputProps> = ({name, placeholder, type, 
         };
       }, [setFormValues, updateUserField, user, name]);
 
+      useEffect(() => {
+        socket.on('changePasswordResponse', (data) => {
+            setServerError(null);
+            const token = data.token; 
+            saveToken(token);
+            updateUserField('password', data.userNew.password)
+            if (name === 'password') {
+                setArePasswordSame(true);
+                setIsPasswordEdit(false);
+            }
+            setFormValues(prevValues => ({
+                ...prevValues,
+                password: ''
+            }));
+            setPasswordValues({
+                newPassword: '',
+                secondNewPassword: ''
+            });
+        });
+    
+        return () => {
+            socket.emit("leaveRoom", `edit-password-${user?.id}`)
+            socket.off('changePasswordResponse');
+        };
+      }, [setFormValues, updateUserField, user, name]);
+
     const handleEditUserData = async () => {
         const formData = {
             userId: user?.id,
@@ -84,6 +118,12 @@ const EditDataInput: React.FC<IEditDataInputProps> = ({name, placeholder, type, 
             if (name === 'email') {
                 socket.connect();
                 socket.emit('joinRoom', `edit-email-${user?.id}`);
+            }
+            if (name === 'password') {
+                socket.connect();
+                socket.emit('joinRoom', `edit-password-${user?.id}`);
+                //@ts-expect-error xuy
+                formData.newPassword = passwordValues.newPassword;
             }
             const response = await axios.post(`${process.env.API_URI}/edit-user-data`, formData, { 
                 headers: { Authorization: `Bearer ${token}` },
@@ -107,19 +147,71 @@ const EditDataInput: React.FC<IEditDataInputProps> = ({name, placeholder, type, 
             }
         }
     }
+
+    const handleVerifyEmail = async () => {
+        try {
+            if (user) {
+                const response = await axios.post(`${process.env.API_URI}/verify-email`, {userId: user?.id}, { 
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (response.status == 200) {
+                    setShowVerificationInput(!showVerificationInput);
+                }
+            }
+        }
+        catch (error) {
+            console.log(error)
+            if (axios.isAxiosError(error) && error.response) {
+                setServerError(error.response.data);
+            }
+        }
+    }
+
+    const handleShowPasswordInputs = () => {
+        setIsPasswordEdit(true)
+    }
+
+    useEffect(() => {
+        if (passwordValues.newPassword === passwordValues.secondNewPassword) {
+            setArePasswordSame(true)
+        }
+        else {
+            setArePasswordSame(false)
+        }
+    }, [passwordValues])
     
     return (
         <>
             {   user &&
                 <div>
                     <form>
-                        <AuthorizationInput name={name} placeholder={inputPlaceholder} type={type} value={value} autoComplete={autoComplete} setFormValues={setFormValues} serverError={serverError}/>
-                        {   name === "email" && !isVerified &&
-                            <button type="button">Verify</button>
+                        <AuthorizationInput name={name} onFocus={name === "password" ? handleShowPasswordInputs : undefined} placeholder={isPasswordEdit && name === "password" ? "Введите старый пароль" : inputPlaceholder} type={type} value={value} autoComplete={autoComplete} setFormValues={setFormValues} serverError={serverError}/>
+                        {   name === "password" && isPasswordEdit &&
+                            <>
+                            {/* @ts-expect-error xyi */}
+                            <AuthorizationInput name={"newPassword"} placeholder={"Введите новый пароль"} type={type} value={passwordValues.newPassword} autoComplete={autoComplete} setFormValues={setPasswordValues} serverError={serverError}/>
+                            {/* @ts-expect-error xyi */}
+                            <AuthorizationInput name={"secondNewPassword"} placeholder={"Повторите новый пароль"} type={type} value={passwordValues.secondNewPassword} autoComplete={autoComplete} setFormValues={setPasswordValues} serverError={serverError}/>
+                            </>
                         }
-                        {   value !== '' &&
+                        {   !arePasswordSame &&
+                            <span>Пароли не совпадают</span>
+                        }   
+                        {   name === "email" && !isVerified &&
+                            <button type="button" onClick={handleVerifyEmail}>Verify</button>
+                        }
+                        {   value !== '' && name === "password" && arePasswordSame &&
                             <button type="button" onClick={handleEditUserData}>Ok</button>
                         }
+                        {   value !== '' && name !== "password" &&
+                            <button type="button" onClick={handleEditUserData}>Ok</button>
+                        }
+                        {   name === "email" && showVerificationInput && user.email &&
+                            <>
+                                <p>Код подтверждения пришёл на вашу почту</p>
+                                <VerificationCodeInput email={user.email} setIsVerified={setIsVerified} setShowVerificationInput={setShowVerificationInput}/>
+                            </>
+                        }   
                     </form>
                 </div>
             }

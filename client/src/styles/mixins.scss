@@ -1,0 +1,116 @@
+@use "./variables.scss" as *;
+
+@mixin mobile {
+  @media (max-width: 767px) {
+    @content;
+  }
+}
+
+@mixin laptop {
+  @media (min-width: 1025px) and (max-width: 1600px) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: 1920px) {
+    @content;
+  }
+}
+
+@mixin form {
+    background-color: $main-color;
+    border-radius: 0.625rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 14.5rem;
+    height: 100%;
+    box-shadow: 0.0625rem 0.125rem 0.25rem 0 rgba(0, 0, 0, 0.1);
+    padding: 1.7625rem 1.71875rem;
+    box-sizing: border-box;
+}
+
+@mixin boldText {
+    color: $title-color;
+    font-weight: $title-font-weight;
+}
+
+@mixin button {
+    box-shadow: 0.0625rem 0.125rem 0.25rem 0 rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    width: min-content;
+    border: none;
+}
+
+@mixin scale-on-hover($scale: 1.1, $duration: 0.1s) {
+  transition: transform $duration ease;
+  &:hover {
+    transform: scale($scale);
+  }
+}
+
+@mixin logo {
+    position: absolute;
+    left: 5vw;
+    top: 1vh;
+    width: 2.625rem;
+    height: 1.125rem;
+}
+
+@mixin responsive-font($mobile, $laptop: null, $desktop: null) {
+  font-size: $mobile;
+
+  @if $laptop {
+    @media (min-width: 1025px) {
+      font-size: $laptop;
+    }
+  }
+
+  @if $desktop {
+    @media (min-width: 1600px) {
+      font-size: $desktop;
+    }
+  }
+}
+
+@mixin background {
+  background-color: $background-color;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  @include laptop {
+      padding-top: 10.5vh;
+      padding-bottom: 10.5vh;
+  }
+    @include desktop {
+      padding-top: 15vh;
+      padding-bottom: 15vh;
+  }
+}
+
+@mixin bento {
+  display: flex;
+  flex-direction: column;
+  background-color: $main-color;
+  padding: 1.09375rem 0.84375rem;
+  border-radius: 0.625rem;
+  box-shadow: $bento-block-shadow;
+}
+
+@mixin page {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  background-color: $background-color;
+  justify-content: center;
+}

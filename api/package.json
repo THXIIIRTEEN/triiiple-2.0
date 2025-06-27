@@ -35,6 +35,7 @@
     "express": "^4.21.2",
     "express-jwt": "^8.4.1",
     "express-session": "^1.18.1",
+    "fuse.js": "^7.1.0",
     "google-auth-library": "^9.15.0",
     "http": "^0.0.1-security",
     "iconv-lite": "^0.6.3",

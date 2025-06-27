@@ -1,13 +1,15 @@
-.popover::after {
-    content: '';
+@use '../../../styles/variables.scss' as *;
+@use '../../../styles/mixins.scss' as *;
+
+.background {
     position: fixed;
+    display: block;
     top: 0%;
     left: 0%;
-    background-color: black;
-    opacity: 50%;
+    background-color: rgba(0, 0, 0, 0.8);
     width: 100% !important;
     height: 100% !important;
-    z-index: 100;
+    z-index: 900;
 }
 
 .popover {
@@ -25,7 +27,7 @@
     height: fit-content !important;
     transform: translateX(-50%) translateY(-50%) !important;
     opacity: 1;
-    z-index: 101;
+    z-index: 1000;
 }
 
 .popover__top {
@@ -33,6 +35,7 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    gap: 1rem;
 }
 
 .popover__block div {
@@ -55,22 +58,48 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    gap: 5px;
+    gap: 0.25rem;
     width: 100% !important;
     height: fit-content;
-    margin-top: 10px;
+    margin-top: 0.3rem;
 }
 
 .popover__circle {
-    width: 15px !important;
-    height: 15px !important;
-    background-color: rgb(161, 161, 161);
-    border-radius: 1000px;
+    width: 0.4rem !important;
+    height: 0.4rem !important;
+    background-color: $text-color;
+    border-radius: 100%;
 }
 
 .popover__circle--active {
-    width: 15px !important;
-    height: 15px !important;
-    border-radius: 1000px;
-    background-color: rgb(226, 226, 226);
+    width: 0.4rem !important;
+    height: 0.4rem !important;
+    border-radius: 100%;
+    background-color: $accent-color;
+}
+
+.button {
+  background-color: $main-color;
+  box-shadow: 2px 4px 9px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 0.625rem;
+  width: 1.6875rem;
+  height: 1.6875rem;
+  border: none;
+  padding: 0.625rem;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.button:hover {
+    transform-origin: center;
+    transform: scale(1.1);
 }
