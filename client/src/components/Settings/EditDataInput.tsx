@@ -7,6 +7,7 @@ import axios from "axios";
 import { getToken, saveToken } from "@/utils/cookies";
 import { socket } from "@/config/socket";
 import VerificationCodeInput from "../VerificationCodeInput";
+import styles from "./editDataInput.module.scss"
 
 interface IEditDataInputProps {
     name: string;
@@ -198,13 +199,13 @@ const EditDataInput: React.FC<IEditDataInputProps> = ({name, placeholder, type, 
                             <span>Пароли не совпадают</span>
                         }   
                         {   name === "email" && !isVerified &&
-                            <button type="button" onClick={handleVerifyEmail}>Verify</button>
+                            <button className={styles.button} type="button" onClick={handleVerifyEmail}>Подтвердить</button>
                         }
                         {   value !== '' && name === "password" && arePasswordSame &&
-                            <button type="button" onClick={handleEditUserData}>Ok</button>
+                            <button className={styles.button} type="button" onClick={handleEditUserData}>Отправить</button>
                         }
                         {   value !== '' && name !== "password" &&
-                            <button type="button" onClick={handleEditUserData}>Ok</button>
+                            <button className={styles.button} type="button" onClick={handleEditUserData}>Отправить</button>
                         }
                         {   name === "email" && showVerificationInput && user.email &&
                             <>
