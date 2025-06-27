@@ -7,7 +7,7 @@ export interface IUser {
     username?: string;
     password?: string;
     tag?: string;
-    about_user: string;
+    about_user?: string;
     friends?: IUser[]; 
     requests?: IUser[];
     friendStatus?: boolean | "pending";
