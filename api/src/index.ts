@@ -27,7 +27,8 @@ const app = express();
 const server = http.createServer(app);
 
 connectToDatabase();
-initSocket(server)
+initSocket(server);
+app.set('trust proxy', true);
 
 app.use(cors);
 

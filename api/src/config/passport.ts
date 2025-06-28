@@ -84,7 +84,7 @@ passport.use(new DiscordStrategy({
 passport.use( new VKStrategy({
     clientID: process.env.VK_CLIENT_ID!, 
     clientSecret: process.env.VK_CLIENT_SECRET!,
-    callbackURL: `${process.env.BACKEND_URL}/auth/vk/callback`,
+    callbackURL: `${`https://api.triiiple.ru`}/auth/vk/callback`,
     //@ts-ignore
     scope: ["email", "friends", "offline"], 
     profileFields: ["email", "city", "bdate"],
