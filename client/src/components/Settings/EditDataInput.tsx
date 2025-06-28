@@ -196,7 +196,7 @@ const EditDataInput: React.FC<IEditDataInputProps> = ({name, placeholder, type, 
                             </>
                         }
                         {   !arePasswordSame &&
-                            <span>Пароли не совпадают</span>
+                            <span className={"error"}>Пароли не совпадают</span>
                         }   
                         {   name === "email" && !isVerified &&
                             <button className={styles.button} type="button" onClick={handleVerifyEmail}>Подтвердить</button>

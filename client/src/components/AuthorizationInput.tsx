@@ -16,7 +16,7 @@ const AuthorizationInput: React.FC<AuthorizationInputProps> = ({
     serverError,
     setFormValues,
     onFocus,
-    setServerError
+    setServerError,
 }) => {
 
     const [error, setError] = useState<string | null>(null);

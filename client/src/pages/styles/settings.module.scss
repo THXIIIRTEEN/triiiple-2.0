@@ -99,6 +99,14 @@
         align-items: flex-start;
         justify-content: flex-start;
         gap: 0.75rem;
+
+        p {
+            margin-top: -0.5rem;
+        }
+
+        span {
+            margin-top: -0.5rem;
+        }
     }
 }
 
