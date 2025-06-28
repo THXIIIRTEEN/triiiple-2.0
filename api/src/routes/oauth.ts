@@ -37,11 +37,9 @@ oauthRouter.get('/discord/callback', passport.authenticate('discord', { failureR
   }
 );
 //@ts-ignore
-oauthRouter.get(
-  '/vk/callback',
-  passport.authenticate('vkontakte', { failureRedirect: '/' }),
+oauthRouter.get('/vk', passport.authenticate('vkontakte', { display: 'popup' }));
+oauthRouter.get('/vk/callback', passport.authenticate('vkontakte', { failureRedirect: '/' }),
   (req, res) => {
-    // ваша логика – выдача JWT и редирект на фронтенд
     callbackRedirectFunction(req, res);
   }
 );

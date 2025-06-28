@@ -61,7 +61,7 @@ passport.use(new GoogleStrategy({
 passport.use(new DiscordStrategy({
     clientID: process.env.DISCORD_CLIENT_ID!,
     clientSecret: process.env.DISCORD_CLIENT_SECRET!,
-    callbackURL: `${process.env.DISCORD_URL}/auth/discord/callback`,
+    callbackURL: `${process.env.BACKEND_URL}/auth/discord/callback`,
 // @ts-ignore
 }, async (accessToken, refreshToken, profile, done) => {
     let user = await User.findOne({ email: profile.email });

@@ -2,13 +2,6 @@ import OauthButton from "@/components/OauthButton/OauthButton";
 import styles from "./OauthBlock.module.scss"
 
 const OauthBlock: React.FC = () => {
-    const vkLink = 
-    `https://oauth.vk.com/authorize` +
-    `?client_id=52805764` +
-    `&display=popup` +
-    `&response_type=code` +
-    `&redirect_uri=${encodeURIComponent('https://api.triiiple.ru/auth/vk/callback')}` +
-    `&scope=email,friends,offline`;
     return (
         <>
             <div className={styles.container}>
@@ -16,7 +9,7 @@ const OauthBlock: React.FC = () => {
                 <OauthButton text="Продолжить с Google" link="/auth/google" style="google"/>
                 {/* <OauthButton text="Продолжить с Discord" link="/auth/discord" style="discord"/> */}
                 <OauthButton text="Продолжить с GitHub" link="/auth/github" style="github"/> 
-                <OauthButton text="Продолжить с VK" link={vkLink} style="vk" />
+                {/* <OauthButton text="Продолжить с VK" link="/auth/vk" style="vk"/> */}
             </div>
         </>
     )
