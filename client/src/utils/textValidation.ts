@@ -38,8 +38,8 @@ export const verifyCorrectSymbols = (
             if (setError) setError(`Не должно быть короче 6 символов`);
             return false;
         }
-        if ((key === 'username' || key === 'tag') && value.trim().length > 16) {
-            if (setError) setError(`Не должно быть длиннее 16 символов`);
+        if ((key === 'username' || key === 'tag') && value.trim().length > 24) {
+            if (setError) setError(`Не должно быть длиннее 24 символов`);
             return false;
         }
         if (key === 'password' && value.trim().length > 32) {

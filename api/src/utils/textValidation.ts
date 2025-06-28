@@ -15,8 +15,8 @@ const verifyCorrectSymbols = (dataObject: Record<string, string>): boolean => {
             throw new Error(`Не должно быть короче 4 символов`);
         } else if (key === 'password' && value.trim().length < 6) {
             throw new Error(`Не должно быть короче 6 символов`);
-        } else if ((key === 'username' || key === 'tag') && value.trim().length > 16) {
-            throw new Error(`Не должно быть длиннее 16 символов`);
+        } else if ((key === 'username' || key === 'tag') && value.trim().length > 24) {
+            throw new Error(`Не должно быть длиннее 24 символов`);
         } else if (key === 'password' && value.trim().length > 32) {
             throw new Error(`Не должно быть длиннее 32 символов`);
         }
