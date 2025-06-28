@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
       script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.hcaptcha.com ${apiUri} https://accounts.google.com https://unpkg.com ${vkDomains.join(' ')} ${discordDomain};
       style-src 'self' 'unsafe-inline' https://*.hcaptcha.com ${apiUri} https://accounts.google.com;
       img-src 'self' blob: data: https://*.hcaptcha.com https://*.googleusercontent.com https://twemoji.maxcdn.com ${vkDomains.join(' ')} ${discordDomain} ${cdnJsdelivr};
-      connect-src 'self' https://*.hcaptcha.com https://lh3.googleusercontent.com https://*.googleusercontent.com ${apiUri} ${vkDomains.join(' ')} ${discordDomain} ${websocketUri} ${yandexCloudDomain};
+      connect-src 'self' https://*.hcaptcha.com https://lh3.googleusercontent.com https://*.googleusercontent.com ${apiUri} ${vkDomains.join(' ')} ${discordDomain} wss://api.triiiple.ru ${websocketUri} ${yandexCloudDomain};
       font-src 'self' https://*.hcaptcha.com;
       object-src 'none';
       frame-src https://*.hcaptcha.com ${vkDomains.join(' ')} ${discordDomain};
