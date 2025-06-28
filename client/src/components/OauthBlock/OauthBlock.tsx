@@ -4,7 +4,7 @@ import styles from "./OauthBlock.module.scss"
 const OauthBlock: React.FC = () => {
     const vkLink = 
     `https://oauth.vk.com/authorize` +
-    `?client_id=${process.env.VK_CLIENT_ID}` +
+    `?client_id=52805764` +
     `&display=popup` +
     `&response_type=code` +
     `&redirect_uri=${encodeURIComponent('https://api.triiiple.ru/auth/vk/callback')}` +
