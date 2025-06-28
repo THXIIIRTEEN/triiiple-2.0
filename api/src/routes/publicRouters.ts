@@ -13,6 +13,7 @@ export const publicRoutes = [
     '/auth/discord/callback',
     '/auth/github/callback',
     '/auth/google/callback',
+    '/auth/vk/callback',
     '/auth/callback',
     '/get-user-keys'
 ];
