@@ -15,5 +15,6 @@ declare namespace NodeJS {
       NEXTAUTH_SECRET: string;
       AES_SECRET: string;
       FRONTEND_URL: string;
+      VK_CLIENT_ID: string;
     }
 }

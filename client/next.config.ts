@@ -96,6 +96,7 @@ const nextConfig: NextConfig = {
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     AES_SECRET: process.env.AES_SECRET,
     FRONTEND_URL: process.env.FRONTEND_URL,
+    VK_CLIENT_ID: process.env.VK_CLIENT_ID,
   },
 
   async redirects() {
