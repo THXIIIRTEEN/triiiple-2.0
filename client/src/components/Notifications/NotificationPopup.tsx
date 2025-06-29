@@ -19,6 +19,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({notification, setN
     const router = useRouter();
 
     const [dateString, setDateString] = useState<string | null>(type !== 'friend' ? formateDate(date) : null); 
+    const [hovered, setHovered] = useState(false);
     
     useEffect(() => { 
         if (type !== 'friend') {
@@ -41,7 +42,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({notification, setN
     }, []);
 
     return (
-        <div className={`${styles.popup} ${isRead ? styles.isRead : ""}`} onClick={() => router.push(type !== 'friend' ? `/messanger/${chatId}` : `/profile/${tag}`)}>
+        <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} className={`${styles.popup} ${isRead ? styles.isRead : ""} ${hovered ? styles.noOpacity : ''}`} onClick={() => router.push(type !== 'friend' ? `/messanger/${chatId}` : `/profile/${tag}`)}>
             <UserAvatar id={_id}/>
             <div className={styles.text}>
                 <div>

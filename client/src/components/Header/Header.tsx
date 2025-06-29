@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Notifications from "../Notifications/Notifications";
 import styles from "./header.module.scss"
 import Category from "./Category";
@@ -11,7 +11,7 @@ const Header: React.FC = () => {
         {name: 'users', text: <p>Искать <b>{value}</b> в списке пользователей</p>},
     ];
 
-    const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
 
         if (newValue.length === 0) {
@@ -21,7 +21,8 @@ const Header: React.FC = () => {
         }
 
         setValue(newValue);
-    };
+    }, []);
+    
 
     return (
         <>

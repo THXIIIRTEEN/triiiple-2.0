@@ -235,3 +235,8 @@
     color: $text-color;
     margin: auto;
 }
+
+.noOpacity {
+    opacity: 1 !important;
+    animation: none !important;
+}

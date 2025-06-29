@@ -3,6 +3,7 @@ import styles from "./header.module.scss";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { IUser } from "@/types/user";
 import FriendBlock from "../Friends/FriendBlock";
+import { useRouter } from "next/router";
 
 interface ICategoryProps {
     category: {
@@ -51,6 +52,18 @@ const Category: React.FC<ICategoryProps> = ({category, value, setValue, setShowL
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [setShowList]);
+
+    const router = useRouter();
+
+    useEffect(() => {
+        if (value === "" && !showResults) {
+            setShowList(false);
+        }
+    }, [router, value, setShowList, showResults])
+
+    useEffect(() => {
+        setShowResults(false);
+    }, [router])
 
     return (
         <>
