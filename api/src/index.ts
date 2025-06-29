@@ -26,10 +26,10 @@ const port = process.env.NODE_ENV === 'production' ? 3001 : 80;
 const app = express();
 const server = http.createServer(app);
 
+app.use(cors);
+
 connectToDatabase();
 initSocket(server);
-
-app.use(cors);
 
 app.use(
   bodyParser.json(),
