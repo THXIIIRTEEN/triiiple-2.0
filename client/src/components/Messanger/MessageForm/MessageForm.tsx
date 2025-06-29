@@ -10,6 +10,8 @@ import FilePreviewScroll from "../FilePreview/FilePreviewScroll";
 import axios, { AxiosError, AxiosProgressEvent } from "axios";
 import { getToken } from "@/utils/cookies";
 import styles from "./message-form.module.scss"
+import { useChatStore } from "@/utils/store";
+import { useSocketEvent } from "@/utils/useSocketEvent";
 
 interface IMessageForm {
   type: string;
@@ -37,6 +39,14 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
   const chatId = router.query.id as string || true;
   const token = getToken();
 
+  const { addChatId } = useChatStore();  
+
+  useEffect(() => {
+      if (user.id && page === 'AboutUser') {
+          addChatId([`edit-about-me-${user.id}`]);
+      }
+  }, [user.id, addChatId, page]);
+
   const currentPage = page || 'Chat' || 'Comment';
 
   const toggleEmojiPicker = () => {
@@ -44,13 +54,6 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
   };
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (page === 'AboutUser') {
-      socket.connect();
-      socket.emit('joinRoom', `edit-about-me-${user.id}`);
-    }
-  }, [page, user])
 
   useEffect(() => {
     const fetchAboutUser = async () => {
@@ -71,15 +74,9 @@ const MessageForm: React.FC<IMessageForm> = ({ type, user, value, messageId, set
     }
   }, [page, token, user]);
 
-  useEffect(() => {
-    socket.on('sendMessageAboutUserResponse', (data) => {
-        setPlaceholder(data.about_user)
-    });
-
-    return () => {
-        socket.off('sendMessageAboutUserResponse');
-    };
-  }, []);
+  useSocketEvent('sendMessageAboutUserResponse', (data) => { 
+      setPlaceholder(data.about_user)
+  });
 
   const handleEmojiClick = (emoji: { shortcodes: string }) => {
     if (textareaRef.current) {

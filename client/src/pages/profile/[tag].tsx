@@ -5,7 +5,7 @@ import UserAvatar from "@/components/UserAvatar";
 import { socket } from "@/config/socket";
 import { IUser } from "@/types/user";
 import { getToken, getUserFromCookies } from "@/utils/cookies";
-import { useAuthStore } from "@/utils/store";
+import { useAuthStore, useChatStore } from "@/utils/store";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -19,6 +19,7 @@ import News from "../news";
 import Tag from "@/components/Tag";
 import Head from "next/head";
 import { renderMessageWithEmojis } from "@/components/Messanger/Message";
+import { useSocketEvent } from "@/utils/useSocketEvent";
 
 const ProfilePage: React.FC = () => {
     
@@ -137,41 +138,38 @@ const ProfilePage: React.FC = () => {
             const friends = getFriendWord(friendsQuantity);
             setfriendsWord(friends)
         }
-    }, [friendsWord, friendsQuantity])
+    }, [friendsWord, friendsQuantity]);
+
+    const { addChatId } = useChatStore();  
 
     useEffect(() => {
-        if (!user) return;
+        if (user && user.id) {
+            addChatId([user.id]);
+        }
+    }, [user, addChatId]);
 
-        socket.connect();
-        socket.emit('joinRoom', user.id);
-
-        const handleAddFriendResponse = (response: {id: string, status: "hasRequest" | "pending" | boolean}) => {
-            if (response.id === profileId) {
-                if (response.status === "hasRequest") {
-                    setHasRequest(true);
-                } else {
-                    setFriendStatus(response.status);
-                }
+    const handleAddFriendResponse = (response: {id: string, status: "hasRequest" | "pending" | boolean}) => {
+        if (response.id === profileId) {
+            if (response.status === "hasRequest") {
+                setHasRequest(true);
+            } else {
+                setFriendStatus(response.status);
             }
-        };
+        }
+    };
 
-        const handleFriendRequestActionResponse = (response: boolean) => {
-            setFriendStatus(response);
-            setHasRequest(false);
-        };
+    const handleFriendRequestActionResponse = (response: boolean) => {
+        setFriendStatus(response);
+        setHasRequest(false);
+    };
 
-        socket.on('addFriendResponse', handleAddFriendResponse);
-        socket.on('friendRequestActionResponse', handleFriendRequestActionResponse);
+    useSocketEvent('addFriendResponse', async (data) => { 
+        handleAddFriendResponse(data)
+    });
 
-        return () => {
-            if (user && user.id) {
-                socket.emit('leaveRoom', user.id);
-            }
-            socket.off('addFriendResponse', handleAddFriendResponse);
-            socket.off('friendRequestActionResponse', handleFriendRequestActionResponse);
-            socket.disconnect();
-        };
-    }, [user, profileId]);
+    useSocketEvent('friendRequestActionResponse', async (data) => { 
+        handleFriendRequestActionResponse(data)
+    });
 
     useEffect(() => {
         const handleGetFriendsQuantity = async () => {

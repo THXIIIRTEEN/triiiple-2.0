@@ -5,8 +5,8 @@ import FriendBlock from "./FriendBlock";
 import { IUser } from "@/types/user";
 import { Dispatch } from "react";
 import styles from './friends.module.scss';
-import { useAuthStore } from "@/utils/store";
-import { socket } from "@/config/socket";
+import { useAuthStore, useChatStore } from "@/utils/store";
+import { useSocketEvent } from "@/utils/useSocketEvent";
 
 interface FriendsListProps {
     profileId: string;
@@ -22,6 +22,15 @@ const FriendsPage: React.FC<FriendsListProps> = ({ profileId, className, setShow
     const hasMounted = useRef(false); 
 
     const [ friendsArray, setFriendsArray ] = useState<IUser[] | null>(null);
+
+    const { addChatId } = useChatStore();  
+
+    useEffect(() => {
+        if (profileId) {
+            addChatId([profileId]);
+        }
+    }, [profileId, addChatId]);
+
     useEffect(() => {
         const handleGetFriends = async () => {
             try {
@@ -51,29 +60,18 @@ const FriendsPage: React.FC<FriendsListProps> = ({ profileId, className, setShow
         }
     }, [profileId, setShowFriends]);
 
-    useEffect(() => {
-        if (!user) return; 
+    const handleFriendRequestActionResponse = async (response: {id: string, userId: string, status: "pending" | boolean}) => {
+        if (response.userId !== profileId && response.status === true) {
+            const res = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: response.userId, requiredData: [`username`, `tag`, `friends`]});
+            const user = res.data.user
+            setFriendsArray((prev) => [...(prev || []), user])
+        }
+    };
 
-        socket.connect(); 
-        socket.emit('joinRoom', profileId);
+    useSocketEvent('friendRequestActionResponse', async (msg) => { 
+        handleFriendRequestActionResponse(msg)
+    });
 
-        const handleFriendRequestActionResponse = async (response: {id: string, userId: string, status: "pending" | boolean}) => {
-            if (response.userId !== profileId && response.status === true) {
-                const res = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: response.userId, requiredData: [`username`, `tag`, `friends`]});
-                const user = res.data.user
-                setFriendsArray((prev) => [...(prev || []), user])
-            }
-        };
-
-        socket.on('friendRequestActionResponse', handleFriendRequestActionResponse);
-
-        return () => {
-            if (user && user.id) {
-                socket.emit('leaveRoom', profileId);
-            }
-            socket.off('friendRequestActionResponse', handleFriendRequestActionResponse);
-        };
-    }, [user, profileId]);
     return (
         <div className={className}>
             { currentPage !== "friends" &&

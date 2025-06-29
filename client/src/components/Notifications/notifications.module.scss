@@ -109,6 +109,7 @@
         margin-left: auto;
         cursor: pointer;
         transition: 0.1s;
+        border: none;
 
         &:hover {
             transform: scale(1.1);
@@ -205,6 +206,7 @@
         top: 0.25rem;
         right: 0.25rem;
         border-radius: 100%;
+        border: none;
 
         &:hover {
             background-color: $accent-color;

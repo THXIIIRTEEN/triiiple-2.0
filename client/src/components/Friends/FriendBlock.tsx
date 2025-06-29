@@ -1,7 +1,7 @@
 import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import UserAvatar from "../UserAvatar";
 import styles from './friends.module.scss'
-import { useAuthStore } from "@/utils/store";
+import { useAuthStore, useChatStore } from "@/utils/store";
 import { socket } from "@/config/socket";
 import { IUser } from "@/types/user";
 import { getToken, getUserFromCookies } from "@/utils/cookies";
@@ -9,6 +9,7 @@ import axios from "axios";
 import Username from "../Username";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useSocketEvent } from "@/utils/useSocketEvent";
 
 interface FriendBlockProps {
   _id?: string;
@@ -25,6 +26,14 @@ const FriendBlock: React.FC<FriendBlockProps> = ({_id, tag, username, setFriends
     const [ friendStatus, setFriendStatus ] = useState<boolean | "pending">(false); 
     const [ hasRequest, setHasRequest ] = useState<boolean>(false);
     const [ profile, setProfile ] = useState<IUser | null>(user?.id === profileId ? user : null);
+
+    const { addChatId } = useChatStore();  
+
+    useEffect(() => {
+        if (profileId) {
+            addChatId([profileId]);
+        }
+    }, [profileId, addChatId]);
 
     useEffect(() => {
         if (user && profileId === user.id) {
@@ -85,40 +94,30 @@ const FriendBlock: React.FC<FriendBlockProps> = ({_id, tag, username, setFriends
         }
     };
 
-    useEffect(() => {
-        if (!user) return;
-
-        socket.connect();
-        socket.emit('joinRoom', profileId);
-
-        const handleAddFriendResponse = (response: {id: string, status: "hasRequest" | "pending" | boolean}) => {
-            if (response.id === profileId) {
-                if (response.status === "hasRequest") {
-                    setHasRequest(true);
-                } else {
-                    setFriendStatus(response.status);
-                }
-            }
-        };
-
-        const handleFriendRequestActionResponse = (response: {id: string, status: "pending" | boolean}) => {
-            if (response.id === profileId) {
+    const handleAddFriendResponse = (response: {id: string, status: "hasRequest" | "pending" | boolean}) => {
+        if (response.id === profileId) {
+            if (response.status === "hasRequest") {
+                setHasRequest(true);
+            } else {
                 setFriendStatus(response.status);
-                setHasRequest(false);
             }
-        };
+        }
+    };
 
-        socket.on('addFriendResponse', handleAddFriendResponse);
-        socket.on('friendRequestActionResponse', handleFriendRequestActionResponse);
+    const handleFriendRequestActionResponse = (response: {id: string, status: "pending" | boolean}) => {
+        if (response.id === profileId) {
+            setFriendStatus(response.status);
+            setHasRequest(false);
+        }
+    };
 
-        return () => {
-            if (user && user.id) {
-                socket.emit('leaveRoom', profileId);
-            }
-            socket.off('addFriendResponse', handleAddFriendResponse);
-            socket.off('friendRequestActionResponse', handleFriendRequestActionResponse);
-        };
-    }, [user, profileId]);
+    useSocketEvent('addFriendResponse', async (msg) => { 
+        handleAddFriendResponse(msg)
+    });
+
+    useSocketEvent('friendRequestActionResponse', async (msg) => { 
+        handleFriendRequestActionResponse(msg)
+    });
 
     const router = useRouter(); 
 

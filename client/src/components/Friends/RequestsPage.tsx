@@ -5,8 +5,8 @@ import FriendBlock from "./FriendBlock";
 import { IUser } from "@/types/user";
 import { Dispatch } from "react";
 import styles from './friends.module.scss';
-import { useAuthStore } from "@/utils/store";
-import { socket } from "@/config/socket";
+import { useAuthStore, useChatStore } from "@/utils/store";
+import { useSocketEvent } from "@/utils/useSocketEvent";
 
 interface FriendsListProps {
     profileId: string;
@@ -22,6 +22,15 @@ const RequestsPage: React.FC<FriendsListProps> = ({ profileId, className, setSho
     const hasMounted = useRef(false); 
 
     const [ requestsArray, setRequestsArray ] = useState<IUser[] | null>(null);
+
+    const { addChatId } = useChatStore();  
+
+    useEffect(() => {
+        if (profileId) {
+            addChatId([profileId]);
+        }
+    }, [profileId, addChatId]);
+
     useEffect(() => {
         const handleGetFriends = async () => {
             try {
@@ -50,29 +59,19 @@ const RequestsPage: React.FC<FriendsListProps> = ({ profileId, className, setSho
             hasMounted.current = true;
         }
     }, [profileId, setShowFriends]);
-    useEffect(() => {
-        if (!user) return; 
 
-        socket.connect(); 
-        socket.emit('joinRoom', profileId);
+    const handleAddFriendResponse = async (response: {id: string, status: "hasRequest" | "pending" | boolean}) => {
+        if (response.id !== profileId && response.status === "hasRequest") {
+            const res = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: response.id, requiredData: [`username`, `tag`, `friends`]});
+            const user = res.data.user
+            setRequestsArray((prev) => [...(prev || []), user])
+        }
+    };
 
-        const handleAddFriendResponse = async (response: {id: string, status: "hasRequest" | "pending" | boolean}) => {
-            if (response.id !== profileId && response.status === "hasRequest") {
-                const res = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: response.id, requiredData: [`username`, `tag`, `friends`]});
-                const user = res.data.user
-                setRequestsArray((prev) => [...(prev || []), user])
-            }
-        };
+    useSocketEvent('addFriendResponse', async (msg) => {  
+        handleAddFriendResponse(msg)
+    });
 
-        socket.on('addFriendResponse', handleAddFriendResponse);
-
-        return () => {
-            if (user && user.id) {
-                socket.emit('leaveRoom', profileId);
-            }
-            socket.off('addFriendResponse', handleAddFriendResponse);
-        };
-    }, [user, profileId]);
     return (
         <div className={className}>
             { currentPage !== "friends" &&

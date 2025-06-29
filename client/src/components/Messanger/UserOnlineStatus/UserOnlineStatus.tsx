@@ -1,5 +1,7 @@
 import { socket } from "@/config/socket";
 import { formateDate } from "@/utils/date";
+import { useChatStore } from "@/utils/store";
+import { useSocketEvent } from "@/utils/useSocketEvent";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
@@ -10,6 +12,13 @@ interface UserOnlineStatusProps {
 
 const UserOnlineStatus: React.FC<UserOnlineStatusProps> = ({friendId, userId}) => {
     const [ onlineStatus, setOnlineStatus ] = useState<boolean>(false);
+    const { addChatId } = useChatStore();  
+    
+    useEffect(() => {
+        if (friendId && userId) {
+            addChatId([friendId, userId]);
+        }
+    }, [friendId, addChatId, userId]);
   
     useEffect(() => {
         const getOnlineStatus = async () => {
@@ -30,18 +39,14 @@ const UserOnlineStatus: React.FC<UserOnlineStatusProps> = ({friendId, userId}) =
             }
         }
         subscribeToOnlineStatus();
+        return () => {
+            socket.emit('leaveRoom', friendId)
+        }
     }, [friendId]);
 
-    useEffect(() => {
-        socket.on('setUserOnlineResponse', (user) => {
-            setOnlineStatus(user.onlineStatus);
-        });
-
-        return () => {
-            socket.off('setUserOnlineResponse');
-            socket.disconnect();
-        };
-    }, []);
+    useSocketEvent('setUserOnlineResponse', (user) => { 
+        setOnlineStatus(user.onlineStatus);
+    });
 
     return (
         <>

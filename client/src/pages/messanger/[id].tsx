@@ -4,12 +4,11 @@ import MessageForm from "@/components/Messanger/MessageForm/MessageForm";
 import Protected from "@/components/Protected";
 import { IMessage, IUser } from "@/types/user";
 import { getToken, getUserFromCookies } from "@/utils/cookies";
-import { useAuthStore } from "@/utils/store";
+import { useAuthStore, useChatStore } from "@/utils/store";
 import axios from "axios";
 import { useEffect, useRef, useState, RefObject } from "react";
 import { useRouter } from "next/router";
 import Message from "@/components/Messanger/Message";
-import { socket } from "@/config/socket";
 import styles from './messanger.module.scss'
 import UserOnlineStatus from "@/components/Messanger/UserOnlineStatus/UserOnlineStatus";
 import Sidebar from "@/components/Sidebar/Sidebar";
@@ -17,6 +16,8 @@ import UserAvatar from "@/components/UserAvatar";
 import Username from "@/components/Username";
 import Link from "next/link";
 import Head from "next/head";
+import Notifications from "@/components/Notifications/Notifications";
+import { useSocketEvent } from "@/utils/useSocketEvent";
 
 const Messanger: React.FC = () => {
     const router = useRouter();
@@ -41,9 +42,29 @@ const Messanger: React.FC = () => {
     const chatWrapperContainer = useRef<HTMLDivElement | null>(null); 
     const lastMessageRef = useRef<HTMLDivElement | null>(null);
 
+    interface IMsgDelete {
+        messageId: string,
+        chatId: string
+    }
+
+    interface IMsgEdit {
+        messageId: string,
+        text: string,
+        isEdited: true
+    }
+
     const scrollToBottomInstant = () => {
         chatBottomRef.current?.scrollIntoView({ behavior: 'instant' });
     };
+
+    const { setChatIds } = useChatStore(); 
+    
+    useEffect(() => {
+        if (chatId) {
+            //@ts-expect-error lol
+            setChatIds([chatId]);
+        }
+    }, [chatId, setChatIds]);
 
     useEffect(() => {
         if (messagesFetched && messageArray.length > 0 && !isScrolled) {
@@ -138,86 +159,33 @@ const Messanger: React.FC = () => {
         if (profile?.id) fetchMessages();
     }, [profile, chatId, token]);
 
-    useEffect(() => {
-        if (chatId) {
-            socket.connect();
-            socket.emit('joinRoom', chatId);
-    
-            socket.on('sendMessageResponse', (msg: IMessage) => {
-                setMessageArray((prevMessages) => [msg, ...prevMessages]);
-            });
-    
-            return () => {
-                socket.off('sendMessageResponse');
-            };
-        }
-    }, [chatId]);
+    useSocketEvent('sendMessageResponse', (msg) => {
+        setMessageArray((prevMessages) => [msg, ...prevMessages]);
+    });
 
-    interface IMsgDelete {
-        messageId: string,
-        chatId: string
-    }
+    useSocketEvent('sendMessageWithFilesResponse', (msg: IMessage) => {
+        setMessageArray((prevMessages) => [msg, ...prevMessages]);
+    });
 
-    useEffect(() => {
-        if (chatId) {
-            socket.on('deleteMessageResponse', (msg: IMsgDelete) => {
-                setMessageArray((prevMessages) => 
-                    prevMessages.filter((message) => 
-                        message._id !== msg.messageId
-                    )
-                );
-            });
-    
-            return () => {
-                socket.off('deleteMessageResponse');
-            };
-        }
-    }, [chatId]);
-    interface IMsgEdit {
-        messageId: string,
-        text: string,
-        isEdited: true
-    }
+    useSocketEvent('deleteMessageResponse', (msg: IMsgDelete) => {
+        setMessageArray((prevMessages) => 
+            prevMessages.filter((message) => 
+                message._id !== msg.messageId
+            )
+        );
+    });
 
-    useEffect(() => {
-        if (chatId) {
-            socket.on('editMessageResponse', (msg: IMsgEdit) => {
-                setMessageArray((prevMessages) => 
-                    prevMessages.map((message) => 
-                        message._id === msg.messageId ? { ...message, text: msg.text, isEdited: msg.isEdited } : message
-                    )
-                );
-            });
-    
-            return () => {
-                socket.off('editMessageResponse');
-            };
-        }
-    }, [chatId]);
+    useSocketEvent('editMessageResponse', (msg: IMsgEdit) => {
+        setMessageArray((prevMessages) => 
+            prevMessages.map((message) => 
+                message._id === msg.messageId ? { ...message, text: msg.text, isEdited: msg.isEdited } : message
+            )
+        );
+    });
 
-    useEffect(() => {
-        if (chatId) {
-            socket.on('sendMessageWithFilesResponse', (msg: IMessage) => {
-                setMessageArray((prevMessages) => [msg, ...prevMessages]);
-            });
-    
-            return () => {
-                socket.off('sendMessageWithFilesResponse');
-            };
-        }
-    }, [chatId]);
-
-    useEffect(() => {
-        if (chatId) {
-            socket.on('readMessageResponse', ({ messageId, isRead } : { messageId: string, isRead: boolean }) => {
-                setMessageArray(prev => prev.map(m => (m._id === messageId ? { ...m, isRead } : m)));
-            });
-    
-            return () => {
-                socket.off('readMessageResponse');
-            };
-        }
-    }, [chatId]);
+    useSocketEvent('readMessageResponse', ({ messageId, isRead } : { messageId: string, isRead: boolean }) => {
+        setMessageArray(prev => prev.map(m => (m._id === messageId ? { ...m, isRead } : m)));
+    });
 
     useEffect(() => {
         setMessageArray([]);
@@ -307,7 +275,7 @@ const Messanger: React.FC = () => {
                             <UserAvatar className={styles.headerAvatar} id={friendId}/>
                         </Link>
                         }
-                        <div>
+                        <div className={styles.content}>
                             {   friendData && friendData.tag &&
                                 <Username className={styles.username} username={friendData.username} tag={friendData.tag}/>
                             }
@@ -315,6 +283,7 @@ const Messanger: React.FC = () => {
                                 <UserOnlineStatus friendId={friendId} userId={user.id}/>
                             }
                         </div>
+                        <Notifications/>
                     </div>
                     <div className={styles.chatContainer} ref={chatWrapperContainer}>
                         {   isSending &&

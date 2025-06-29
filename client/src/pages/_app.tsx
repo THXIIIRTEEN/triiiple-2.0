@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { getToken } from "../utils/cookies";
-import { useAuthStore } from "../utils/store";
+import { useAuthStore, useChatStore } from "../utils/store";
 import { jwtDecode } from "jwt-decode";
 import { IUser } from "../types/user";
 import { AppProps } from 'next/app';
@@ -10,6 +10,7 @@ import { initializeEmojiData } from "@/utils/emojiInit";
 import { socket } from "@/config/socket";
 import { Inter } from 'next/font/google';
 import Head from "next/head";
+import SocketProvider from "@/components/SocketProvider";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -83,12 +84,15 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     };
   }, [user]);
 
+  const chatRooms = useChatStore((s) => s.chatIds); 
+
   return (
     <>
       <Head>
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
       </Head>
       <div className={inter.variable}>
+        <SocketProvider rooms={chatRooms}/>
         <Component {...pageProps} />
       </div>
     </>

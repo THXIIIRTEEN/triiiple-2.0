@@ -130,7 +130,7 @@ export const initSocket = (server: HttpServer) => {
             const user = await handleEditAboutMe(data);
             io.to(`edit-about-me-${data.author}`).emit('sendMessageAboutUserResponse', user);
         });
-
+        
         socket.on('disconnect', () => {
             console.log('Пользователь отключился');
         });

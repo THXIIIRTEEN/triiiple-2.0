@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./notifications.module.scss";
 import { openDB, IDBPDatabase  } from 'idb';
-import { socket } from "@/config/socket";
 import { IMessage } from "@/types/user";
 import axios from "axios";
-import { useAuthStore } from "@/utils/store";
+import { useAuthStore, useChatStore } from "@/utils/store";
 import Notification from "./Notification";
 import NotificationPopup from "./NotificationPopup";
+import { useSocketEvent } from "@/utils/useSocketEvent";
 
 const Notifications: React.FC = () => {
 
@@ -17,6 +17,14 @@ const Notifications: React.FC = () => {
 
     const user = useAuthStore().user;
     const dbRef = useRef<IDBPDatabase | null>(null); 
+
+    const { addChatId } = useChatStore();  
+
+    useEffect(() => {
+        if (chatRooms.length > 0) {
+            addChatId(chatRooms);
+        }
+    }, [chatRooms, addChatId]);
 
     useEffect(() => {
         const connectToDb = async () => {
@@ -48,20 +56,32 @@ const Notifications: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
-    useEffect(() => { 
-        socket.connect(); 
-        socket.emit('joinRoom', chatRooms);
+    const addMessageNotification = async (msg: IMessage) => {
+        setNotificationsArray((prevMessages) => [...prevMessages, msg]);
+    }
 
-        const addMessageNotification = async (msg: IMessage) => {
-            setNotificationsArray((prevMessages) => [...prevMessages, msg]);
+    const handleAddFriendResponse = async (response: {id: string, status: "hasRequest" | "pending" | boolean}) => {
+        if (user && response.id !== user.id && response.status === "hasRequest") {
+            const res = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: response.id, requiredData: [`username`, `tag`, `friends`]});
+            const user = res.data.user;
+            user.type = "friend";
+            user.isRead = false;
+            user.date = Date.now();
+            setNotificationsArray((prev) => [...prev, user]);
+            setNotificationPopup(user);
+            if (dbRef.current) {
+                try {
+                    await dbRef.current.put('notifications', {...user, id: user._id});
+                } 
+                catch (err) {
+                    console.error('Ошибка записи в IndexedDB:', err);
+                }
+            }
         }
+    };
 
-        socket.on('createChatRoomResponse', (id: string) => {
-            setChatRooms((prev) => [...prev, id]);
-        })
-
-        socket.on('sendMessageResponse', async (msg: IMessage) => {
-            //@ts-expect-error lol
+    useSocketEvent('sendMessageResponse', async (msg) => {
+        if (user && msg.author._id !== user.id) {
             msg.type = 'message';
             msg.isRead = false;
             addMessageNotification(msg);
@@ -73,10 +93,11 @@ const Notifications: React.FC = () => {
                     console.error('Ошибка записи в IndexedDB:', err);
                 }
             }
-        });
-        
-        socket.on('sendMessageWithFilesResponse', async (msg: IMessage) => {
-            //@ts-expect-error lol
+        }
+    });
+
+    useSocketEvent('sendMessageWithFilesResponse', async (msg) => {
+        if (user && msg.author._id !== user.id) {
             msg.type = 'message';
             msg.isRead = false;
             addMessageNotification(msg);
@@ -88,38 +109,16 @@ const Notifications: React.FC = () => {
                     console.error('Ошибка записи в IndexedDB:', err);
                 }
             }
-        });
+        }
+    });
+    
+    useSocketEvent('createChatRoomResponse', async (id: string) => {
+        setChatRooms((prev) => [...prev, id]);
+    });
 
-        const handleAddFriendResponse = async (response: {id: string, status: "hasRequest" | "pending" | boolean}) => {
-            if (user && response.id !== user.id && response.status === "hasRequest") {
-                const res = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: response.id, requiredData: [`username`, `tag`, `friends`]});
-                const user = res.data.user;
-                user.type = "friend";
-                user.isRead = false;
-                user.date = Date.now();
-                setNotificationsArray((prev) => [...prev, user]);
-                setNotificationPopup(user);
-                if (dbRef.current) {
-                    try {
-                        await dbRef.current.put('notifications', {...user, id: user._id});
-                    } 
-                    catch (err) {
-                        console.error('Ошибка записи в IndexedDB:', err);
-                    }
-                }
-            }
-        };
-
-        socket.on('addFriendResponse', handleAddFriendResponse);
-
-        return () => {
-            socket.off('sendMessageResponse');
-            socket.off('sendMessageWithFilesResponse');
-            socket.off('addFriendResponse', handleAddFriendResponse);
-            socket.emit('leaveRoom', chatRooms);
-        };
-        
-    }, [chatRooms, user]);
+    useSocketEvent('addFriendResponse', async (response) => {
+        handleAddFriendResponse(response)
+    });
 
     return (
         <>

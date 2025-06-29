@@ -1,13 +1,13 @@
 import UserAvatar from "@/components/UserAvatar";
-import { socket } from "@/config/socket";
 import { IMessage, IUser } from "@/types/user";
-import { useAuthStore } from "@/utils/store";
+import { useAuthStore, useChatStore } from "@/utils/store";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import styles from '../styles/messanger.module.scss'
 import { formateDate } from "@/utils/date";
 import Username from "@/components/Username";
 import { useRouter } from "next/router";
+import { useSocketEvent } from "@/utils/useSocketEvent";
 
 interface IMessangerPreviewProps {
     chatId: string,
@@ -27,6 +27,14 @@ const MessangerPreview: React.FC<IMessangerPreviewProps> = ({chatId, key, curren
     const user = useAuthStore(state => state.user); 
     const [dateString, setDateString] = useState<string | null>(chatData && chatData.lastMessage && formateDate(chatData!.lastMessage.date) || null);
 
+    const { addChatId } = useChatStore();  
+
+    useEffect(() => {
+        if (chatId) {
+            addChatId([chatId]);
+        }
+    }, [chatId, addChatId]);
+
     useEffect(() => {
         if (chatData && chatData.lastMessage) {
             const dateToString = formateDate(chatData!.lastMessage.date);
@@ -43,26 +51,15 @@ const MessangerPreview: React.FC<IMessangerPreviewProps> = ({chatId, key, curren
         }
         fetchChatData();
     }, [chatId, user]);
-    
-    useEffect(() => {
-        if (chatId) {
-            socket.connect();
-            socket.emit('joinRoom', chatId);
-    
-            socket.on('addNotReadedMessage', (msg) => {
-                setChatData((prevData) => ({
-                    ...prevData!, 
-                    notReadedMessages: prevData!.notReadedMessages + 1,
-                    lastMessage: msg
-                }));
-            });
-    
-            return () => {
-                socket.off('addNotReadedMessage'); 
-            };
-        }
-    }, [chatId]);
 
+    useSocketEvent('addNotReadedMessage', (msg) => { 
+        setChatData((prevData) => ({
+            ...prevData!, 
+            notReadedMessages: prevData!.notReadedMessages + 1,
+            lastMessage: msg
+        }));
+    });
+    
     const router = useRouter();
 
     const handleRedirect = () => {
