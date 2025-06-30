@@ -226,7 +226,7 @@ export const handleGetProfile = async (req: Request, res: Response) => {
     try {
         const { profileId, userId } = req.body;
         const user = await User.findById(profileId)
-            .select("username profile tag email")
+            .select("username tag")
             .lean();
         const userFull = await User.findById(profileId);
         if (user && userFull) {
