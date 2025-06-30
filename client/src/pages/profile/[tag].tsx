@@ -184,7 +184,7 @@ const ProfilePage: React.FC = () => {
             }
         }
         handleGetFriendsQuantity();
-    }, [profileId, token])
+    }, [profileId, token]);
 
     return (
         <>

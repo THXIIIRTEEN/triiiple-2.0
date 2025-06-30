@@ -121,7 +121,7 @@ const News: React.FC<INewsProps> = ({page, profileId}) => {
     const isNoMoreMessages = useRef<boolean>(false);
 
     const handleGetMoreMessages = useCallback(async () => {
-        if (loading || isNoMoreMessages.current) return;
+        if (loading || isNoMoreMessages.current || postArray.length === 0) return;
         setLoading(true);
         setIsSending(true);
         const posts = await handleGetPosts(limit, postArray.length);
@@ -149,7 +149,7 @@ const News: React.FC<INewsProps> = ({page, profileId}) => {
 
     useEffect(() => {
         setPostArray([])
-    }, [currentMode])
+    }, [currentMode]);
 
     return (
         <>  
