@@ -15,6 +15,7 @@ import styles from './styles/post.module.scss'
 import Username from "../Username";
 import Tag from "../Tag";
 import { forwardRef } from "react";
+import Link from "next/link";
 
 const Post = forwardRef<HTMLDivElement, IPost>((data, ref) => {
     const [dateString, setDateString] = useState<string>(formateDate(data.date))
@@ -117,7 +118,9 @@ const Post = forwardRef<HTMLDivElement, IPost>((data, ref) => {
     return (
         <div ref={postContainerRef} className={styles.block}>
             <div className={styles.postHead} ref={ref}>
-                <UserAvatar id={data.author._id} className={styles.profile}/> 
+                <Link className={styles.profileLink} href={`profile/${data.author.tag}`}>
+                    <UserAvatar id={data.author._id} className={styles.profile}/>
+                </Link> 
                 <div className={styles.postHeadText}>
                     { data.author.tag && <Username className={styles.username} username={data.author.username} tag={data.author.tag}/>}
                     { data.author.tag && <Tag className={styles.tag} tag={data.author.tag}/>}
