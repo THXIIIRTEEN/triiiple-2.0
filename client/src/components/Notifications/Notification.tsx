@@ -66,7 +66,7 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
                         } catch (err) {
                             console.error('Ошибка при пометке как прочитанного:', err);
                         }
-                    }, 5000);
+                    }, 1000);
 
                     observer.disconnect();
                 }
