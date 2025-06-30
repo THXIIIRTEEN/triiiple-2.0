@@ -53,11 +53,13 @@ const MessangerPreview: React.FC<IMessangerPreviewProps> = ({chatId, key, curren
     }, [chatId, user]);
 
     useSocketEvent('addNotReadedMessage', (msg) => { 
-        setChatData((prevData) => ({
+        if (user && chatId === msg.chatId) {
+            setChatData((prevData) => ({
             ...prevData!, 
-            notReadedMessages: prevData!.notReadedMessages + 1,
+            notReadedMessages: msg.author._id !== user.id ? prevData!.notReadedMessages + 1 : prevData!.notReadedMessages,
             lastMessage: msg
         }));
+        }
     });
     
     const router = useRouter();
