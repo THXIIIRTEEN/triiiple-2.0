@@ -60,6 +60,7 @@
     align-items: center;
     transition: 0.1s;
     cursor: pointer;
+    max-width: 100%;
 
     img {
         width: 2rem;
@@ -70,7 +71,7 @@
     p {
         font-size: 0.375rem;
         color: $text-color;
-        max-width: 80%;
+        max-width: 50%;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -96,8 +97,9 @@
         align-items: flex-start;
         justify-content: center;
         margin-left: 0.5rem;
-        width: 100%;
         padding-right: 0.25rem;
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .deleteButton {
@@ -163,7 +165,7 @@
     p {
         font-size: $main-font-size;
         color: $text-color;
-        max-width: 80%;
+        max-width: 50%;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
