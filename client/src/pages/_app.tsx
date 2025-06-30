@@ -39,50 +39,29 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   }, [user, setUser, router]);
 
   useEffect(() => {
+    socket.connect();
     if (user && user.id) {
-      socket.emit("setUserOnlineRequest", { 
-        userId: user.id,
-        status: "online"
-      });
+        socket.emit('setUserOnlineRequest', { userId: user.id, status: 'online' });
     }
-  }, [user]);
+  }, [user])
 
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (user && user.id) {
+    const onVisibility = () => {
+      if (user &&  user.id) {
         socket.emit('setUserOnlineRequest', {
           userId: user.id,
-          status: "offline",
+          status: document.hidden ? 'offline' : 'online',
         });
       }
     };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        if (user && user.id) {
-          socket.emit('setUserOnlineRequest', {
-            userId: user.id,
-            status: "offline",
-          });
-        }
-      } else {
-        if (user && user.id) {
-          socket.emit('setUserOnlineRequest', {
-            userId: user.id,
-            status: "online",
-          });
-        }
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('visibilitychange', onVisibility);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('visibilitychange', onVisibility);
+      socket.emit('setUserOnlineRequest', { userId: user?.id, status: 'offline' })
+      socket.disconnect();
     };
-  }, [user]);
+  }, [user, user?.id]);
 
   const chatRooms = useChatStore((s) => s.chatIds); 
 

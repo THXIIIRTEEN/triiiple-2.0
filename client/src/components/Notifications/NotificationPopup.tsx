@@ -1,5 +1,5 @@
 import styles from "./notifications.module.scss";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { IMessage } from "@/types/user";
 import UserAvatar from "../UserAvatar";
 import Username from "../Username";
@@ -20,6 +20,7 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({notification, setN
 
     const [dateString, setDateString] = useState<string | null>(type !== 'friend' ? formateDate(date) : null); 
     const [hovered, setHovered] = useState(false);
+    const timerRef = useRef<NodeJS.Timeout | null>(null); 
     
     useEffect(() => { 
         if (type !== 'friend') {
@@ -29,11 +30,10 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({notification, setN
     }, [date, type]);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            setNotificationPopup(null);
-        }, 10000);
+        startTimer();
 
-        return () => clearTimeout(timeoutId);
+        return () => clearTimer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setNotificationPopup]);
 
     useEffect(() => {
@@ -41,8 +41,21 @@ const NotificationPopup: React.FC<NotificationPopupProps> = ({notification, setN
         audio.play().catch((err) => console.error('Ошибка при воспроизведении звука:', err));
     }, []);
 
+    const startTimer = () => {
+        timerRef.current = setTimeout(() => {
+            setNotificationPopup(null);
+        }, 10000);
+    };
+
+    const clearTimer = () => {
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+            timerRef.current = null;
+        }
+    };
+
     return (
-        <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} className={`${styles.popup} ${isRead ? styles.isRead : ""} ${hovered ? styles.noOpacity : ''}`} onClick={() => router.push(type !== 'friend' ? `/messanger/${chatId}` : `/profile/${tag}`)}>
+        <div onMouseEnter={() => {setHovered(true); clearTimer();}} onMouseLeave={() => {setHovered(false); startTimer();}} className={`${styles.popup} ${isRead ? styles.isRead : ""} ${hovered ? styles.noOpacity : ''}`} onClick={() => router.push(type !== 'friend' ? `/messanger/${chatId}` : `/profile/${tag}`)}>
             <UserAvatar id={_id}/>
             <div className={styles.text}>
                 <div>

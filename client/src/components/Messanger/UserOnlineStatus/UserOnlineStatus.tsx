@@ -11,14 +11,14 @@ interface UserOnlineStatusProps {
 }
 
 const UserOnlineStatus: React.FC<UserOnlineStatusProps> = ({friendId, userId}) => {
-    const [ onlineStatus, setOnlineStatus ] = useState<boolean>(false);
+    const [ onlineStatus, setOnlineStatus ] = useState<boolean | Date>(false);
     const { addChatId } = useChatStore();  
     
     useEffect(() => {
-        if (friendId && userId) {
-            addChatId([friendId, userId]);
+        if (friendId) {
+            addChatId([friendId]);
         }
-    }, [friendId, addChatId, userId]);
+    }, [friendId, addChatId]);
   
     useEffect(() => {
         const getOnlineStatus = async () => {
@@ -45,9 +45,11 @@ const UserOnlineStatus: React.FC<UserOnlineStatusProps> = ({friendId, userId}) =
     }, [friendId]);
 
     useSocketEvent('setUserOnlineResponse', (user) => { 
-        setOnlineStatus(user.onlineStatus);
+        if (user._id === friendId) {
+            setOnlineStatus(user.onlineStatus);
+        }
     });
-
+    
     return (
         <>
             <p>{typeof onlineStatus !== 'boolean' ? `Был в сети ${formateDate(onlineStatus)}` : "Онлайн"}</p>
