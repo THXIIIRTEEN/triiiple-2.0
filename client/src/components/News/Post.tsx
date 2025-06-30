@@ -118,7 +118,7 @@ const Post = forwardRef<HTMLDivElement, IPost>((data, ref) => {
     return (
         <div ref={postContainerRef} className={styles.block}>
             <div className={styles.postHead} ref={ref}>
-                <Link className={styles.profileLink} href={`profile/${data.author.tag}`}>
+                <Link className={styles.profileLink} href={`/profile/${data.author.tag}`}>
                     <UserAvatar id={data.author._id} className={styles.profile}/>
                 </Link> 
                 <div className={styles.postHeadText}>
