@@ -122,7 +122,8 @@ const Post = forwardRef<HTMLDivElement, IPost>((data, ref) => {
                     { data.author.tag && <Username className={styles.username} username={data.author.username} tag={data.author.tag}/>}
                     { data.author.tag && <Tag className={styles.tag} tag={data.author.tag}/>}
                 </div>
-                <button className={styles.postHeadButton} onClick={() => setShowButtons(!showButtons)}>
+                { user && data.author._id === user.id &&
+                    <button className={styles.postHeadButton} onClick={() => setShowButtons(!showButtons)}>
                     { !showButtons ?
                         <svg viewBox="0 0 24 5" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 0C12.4747 0 12.9387 0.146623 13.3334 0.421326C13.728 0.696029 14.0357 1.08648 14.2173 1.54329C14.399 2.00011 14.4465 2.50277 14.3539 2.98773C14.2613 3.47268 14.0327 3.91813 13.6971 4.26777C13.3614 4.6174 12.9338 4.8555 12.4682 4.95196C12.0027 5.04842 11.5201 4.99892 11.0816 4.8097C10.643 4.62048 10.2682 4.30005 10.0045 3.88892C9.74076 3.4778 9.6 2.99445 9.6 2.5C9.6 1.83696 9.85286 1.20107 10.3029 0.732232C10.753 0.263392 11.3635 0 12 0ZM0 2.5C0 2.99445 0.140758 3.4778 0.404473 3.88892C0.668188 4.30005 1.04302 4.62048 1.48156 4.8097C1.9201 4.99892 2.40266 5.04842 2.86822 4.95196C3.33377 4.8555 3.76141 4.6174 4.09706 4.26777C4.4327 3.91813 4.66128 3.47268 4.75388 2.98773C4.84649 2.50277 4.79896 2.00011 4.61731 1.54329C4.43566 1.08648 4.12805 0.696029 3.73337 0.421326C3.33869 0.146623 2.87468 0 2.4 0C1.76348 0 1.15303 0.263392 0.702944 0.732232C0.252856 1.20107 0 1.83696 0 2.5ZM19.2 2.5C19.2 2.99445 19.3408 3.4778 19.6045 3.88892C19.8682 4.30005 20.243 4.62048 20.6816 4.8097C21.1201 4.99892 21.6027 5.04842 22.0682 4.95196C22.5338 4.8555 22.9614 4.6174 23.2971 4.26777C23.6327 3.91813 23.8613 3.47268 23.9539 2.98773C24.0465 2.50277 23.999 2.00011 23.8173 1.54329C23.6357 1.08648 23.328 0.696029 22.9334 0.421326C22.5387 0.146623 22.0747 0 21.6 0C20.9635 0 20.353 0.263392 19.9029 0.732232C19.4529 1.20107 19.2 1.83696 19.2 2.5Z" fill="#919191"/>
@@ -130,8 +131,9 @@ const Post = forwardRef<HTMLDivElement, IPost>((data, ref) => {
                         :
                         <svg className={styles.closeIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M16 8L8 16M8.00001 8L16 16" stroke="#919191" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
                     }
-                </button>
-                {user && data.author._id === user.id && showButtons && (
+                    </button>
+                }
+                { user && data.author._id === user.id && showButtons && (
                     <div className={styles.actionsBlock}>
                         <button type="button" onClick={() => setEditMode(!editMode)}>
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 25 25" fill="none">
