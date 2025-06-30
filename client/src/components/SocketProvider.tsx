@@ -22,6 +22,10 @@ const SocketProvider: React.FC<ISocketProviderProps> = ({rooms}) => {
         'sendMessageAboutUserResponse',
         'setUserOnlineResponse',
         'addNotReadedMessage',
+        'sendMessageNewsResponse',
+        'sendPostWithFilesResponse',
+        'deleteMessageNewsResponse',
+        'editMessageNewsResponse'
     ];
 
     useEffect(() => {

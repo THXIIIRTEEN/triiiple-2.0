@@ -1,18 +1,18 @@
 "use client"
 
 import { getToken } from "@/utils/cookies";
-import { useAuthStore } from "@/utils/store";
+import { useAuthStore, useChatStore } from "@/utils/store";
 import axios from "axios";
 import { useCallback, useEffect, useState, useRef } from "react";
 import Post from "@/components/News/Post";
 import { IPost } from "@/types/user";
 import MessageForm from "@/components/Messanger/MessageForm/MessageForm";
-import { socket } from "@/config/socket";
 import Protected from "@/components/Protected";
 import Header from "@/components/Header/Header";
 import styles from "./styles/news.module.scss";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import Head from "next/head";
+import { useSocketEvent } from "@/utils/useSocketEvent";
 
 interface INewsProps {
     page?: string;
@@ -28,6 +28,24 @@ const News: React.FC<INewsProps> = ({page, profileId}) => {
     const [loading, setLoading] = useState(false);
     const [ currentMode, setCurrentMode ] = useState<string | null>(page === "profile" ? null : "news");
     const [ isSending, setIsSending ] = useState<boolean>(false);
+    const { addChatId } = useChatStore();  
+
+    interface IMsgDelete {
+        messageId: string,
+        chatId: string
+    };
+
+    interface IMsgEdit {
+        messageId: string,
+        text: string,
+        isEdited: true
+    };
+
+    useEffect(() => {
+        if (user && user.id) {
+            addChatId([user.id]);
+        }
+    }, [user, addChatId]);
     
     const handleGetPosts = useCallback(async (limit: number, skip = 0) => {
         if (!user) return;
@@ -46,75 +64,29 @@ const News: React.FC<INewsProps> = ({page, profileId}) => {
         if (user?.id) fetchMessages();
     }, [user, handleGetPosts]);
 
-    useEffect(() => {
-        if (user) {
-            socket.connect();
-            socket.emit('joinRoom', user.id);
-    
-            socket.on('sendMessageNewsResponse', (msg: IPost) => {
-                setPostArray((prevPosts) => [msg, ...prevPosts]);
-            });
-    
-            return () => {
-                socket.off('sendMessageResponse');
-            };
-        }
-    }, [user]);
+    useSocketEvent('sendMessageNewsResponse', (msg: IPost) => { 
+        setPostArray((prevPosts) => [msg, ...prevPosts]);
+    });
 
-    useEffect(() => {
-        if (user) {
-            socket.on('sendPostWithFilesResponse', (msg: IPost) => {
-                setPostArray((prevPosts) => [msg, ...prevPosts]);
-            });
-    
-            return () => {
-                socket.off('sendPostWithFilesResponse');
-            };
-        }
-    }, [user]);
+    useSocketEvent('sendPostWithFilesResponse', (msg: IPost) => { 
+        setPostArray((prevPosts) => [msg, ...prevPosts]);
+    });
 
-    interface IMsgDelete {
-        messageId: string,
-        chatId: string
-    }
+    useSocketEvent('deleteMessageNewsResponse', (msg: IMsgDelete) => { 
+        setPostArray((prevPosts) => 
+            prevPosts.filter((post) => 
+                post._id !== msg.messageId
+            )
+        );
+    });
 
-    useEffect(() => {
-        if (user?.id) {
-            socket.on('deleteMessageNewsResponse', (msg: IMsgDelete) => {
-                setPostArray((prevPosts) => 
-                    prevPosts.filter((post) => 
-                        post._id !== msg.messageId
-                    )
-                );
-            });
-    
-            return () => {
-                socket.off('deleteMessageNewsResponse');
-            };
-        }
-    }, [user]);
-
-    interface IMsgEdit {
-        messageId: string,
-        text: string,
-        isEdited: true
-    }
-
-    useEffect(() => {
-        if (user?.id) {
-            socket.on('editMessageNewsResponse', (msg: IMsgEdit) => {
-                setPostArray((prevPosts) => 
-                    prevPosts.map((post) => 
-                        post._id === msg.messageId ? { ...post, text: msg.text } : post
-                    )
-                );
-            });
-    
-            return () => {
-                socket.off('editMessageNewsResponse');
-            };
-        }
-    }, [user]);
+    useSocketEvent('editMessageNewsResponse', (msg: IMsgEdit) => { 
+        setPostArray((prevPosts) => 
+            prevPosts.map((post) => 
+                post._id === msg.messageId ? { ...post, text: msg.text } : post
+            )
+        );
+    });
 
     const lastPostRef = useRef(null);
     const firstMessageRef = useRef<HTMLDivElement | null>(null);
