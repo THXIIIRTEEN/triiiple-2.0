@@ -337,7 +337,7 @@ export const deletePost = async (msg: IMsgDelete) => {
         await Post.findByIdAndDelete(messageId);
         await User.findByIdAndUpdate(
             userId,
-            { $pull: { messages: messageId } },
+            { $pull: { posts: messageId } },
             { new: true }
         );
     }
