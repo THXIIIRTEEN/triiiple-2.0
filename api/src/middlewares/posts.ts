@@ -325,6 +325,7 @@ const deleteFile = async (fileUrl: string) => {
 export const deletePost = async (msg: IMsgDelete) => {
     try {
         const { messageId, userId } = msg;
+        console.log(messageId, userId)
 
         const message = await Post.findById(messageId).populate<{ files: IFileSchema[] }>('files');
 
@@ -341,7 +342,7 @@ export const deletePost = async (msg: IMsgDelete) => {
             { new: true }
         );
     } catch (error) {
-        console.error('❌ Ошибка при удалении поста:', error);
+        console.error('Ошибка при удалении поста:', error);
     }
 };
 
