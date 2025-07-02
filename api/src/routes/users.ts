@@ -21,6 +21,6 @@ userRouter.post('/get-friends', handleGetFriends);
 userRouter.post('/get-friend-requests', handleGetRequests);
 userRouter.post('/get-user-data', handleGetUserData);
 userRouter.post('/search', handleSearch);
-userRouter.post('/get-notifications', handleGetUserData);
+userRouter.post('/notifications', handleGetNotifications); 
 
 export { userRouter };
