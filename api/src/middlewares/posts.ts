@@ -325,7 +325,6 @@ const deleteFile = async (fileUrl: string) => {
 export const deletePost = async (msg: IMsgDelete) => {
     try {
         const { messageId, userId } = msg;
-        console.log(`messageId`, userId)
 
         const message = await Post.findById(messageId).populate<{ files: IFileSchema[] }>('files');
 
@@ -337,10 +336,9 @@ export const deletePost = async (msg: IMsgDelete) => {
         }
         await Post.findByIdAndDelete(messageId);
         const result = await User.findByIdAndUpdate(
-            new mongoose.Types.ObjectId(userId),
-            { $pull: { posts: new mongoose.Types.ObjectId(messageId) } }
+            userId,
+            { $pull: { posts: messageId } }
         );
-        console.log('UpdateOne result:', result);
         return result;
     } catch (error) {
         console.error('Ошибка при удалении поста:', error);
