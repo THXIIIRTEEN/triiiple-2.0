@@ -37,6 +37,7 @@ const Post = forwardRef<HTMLDivElement, IPost>((data, ref) => {
 
     const handleDeleteMessage = () => {
         if (data._id && user) {
+            console.log(data._id, user)
             socket.emit("deleteMessageNewsRequest", {
                 messageId: data._id,
                 userId: user.id
