@@ -326,26 +326,25 @@ export const deletePost = async (msg: IMsgDelete) => {
     try {
         const { messageId, userId } = msg;
 
-        const message = await Post.findById(messageId).populate<{ files: IFileSchema[]}>('files'); 
+        const message = await Post.findById(messageId).populate<{ files: IFileSchema[] }>('files');
 
-        if (message && message?.files?.length > 0) {
-            message.files.forEach(async (file) => {
+        if (message && message.files && message.files.length > 0) {
+            for (const file of message.files) {
                 deleteFile(file.url);
-                await File.findByIdAndDelete(file._id)
-            });
+                await File.findByIdAndDelete(file._id);
+            }
         }
-
         await Post.findByIdAndDelete(messageId);
         await User.findByIdAndUpdate(
             userId,
             { $pull: { posts: messageId } },
             { new: true }
         );
+    } catch (error) {
+        console.error('❌ Ошибка при удалении поста:', error);
     }
-    catch (error) {
-        console.error(error)
-    }
-}
+};
+
 
 interface IMsgEdit {
     messageId: string,
