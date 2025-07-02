@@ -325,7 +325,7 @@ const deleteFile = async (fileUrl: string) => {
 export const deletePost = async (msg: IMsgDelete) => {
     try {
         const { messageId, userId } = msg;
-        console.log(messageId, userId)
+        console.log(`UserId:`, userId)
 
         const message = await Post.findById(messageId).populate<{ files: IFileSchema[] }>('files');
 
