@@ -30,6 +30,8 @@ const Post = forwardRef<HTMLDivElement, IPost>((data, ref) => {
     const [ commentCount, setCommentCount ] = useState<number>(data.comments);
     const [ showButtons, setShowButtons ] = useState<boolean>(false);
 
+    console.log(data)
+
     useEffect(() => {
         const dateToString = formateDate(data.date);
         setDateString(dateToString);
@@ -37,7 +39,6 @@ const Post = forwardRef<HTMLDivElement, IPost>((data, ref) => {
 
     const handleDeleteMessage = () => {
         if (data._id && user) {
-            console.log(data._id, user)
             socket.emit("deleteMessageNewsRequest", {
                 messageId: data._id,
                 userId: user.id
