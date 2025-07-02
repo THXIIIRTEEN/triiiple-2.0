@@ -13,6 +13,7 @@ import Fuse from 'fuse.js';
 import { encryptData, decryptData } from '../utils/crypto';
 import Notifications from '../database/schemes/notifications';
 import { decryptText } from './posts';
+import { verifyCorrectSymbols } from '../utils/textValidation';
 
 
 const secret = process.env.SECRET_KEY as string;
@@ -48,6 +49,14 @@ const createNewUser = async (req: CustomRequest, res: Response, next: NextFuncti
         };
 
         const errors: ErrorMessage[] = [];
+        try {
+            verifyCorrectSymbols(userData);
+        } catch (err) {
+            errors.push({
+                name: 'validation',
+                message: err instanceof Error ? err.message : 'Неверный формат данных',
+            });
+        }
 
         const tagError = await checkIfTagExist(req, res);
         if (tagError) {
@@ -68,6 +77,7 @@ const createNewUser = async (req: CustomRequest, res: Response, next: NextFuncti
         const userId = await user.save() as IUser;
         req.userId = userId._id as string;
         next();
+        
     } catch (error) {
         console.log(`Возникла ошибка при создании пользователя: ${error}`);
         res.status(400).json({ message: `Возникла ошибка при создании пользователя: ${error}` });
@@ -332,6 +342,8 @@ export const handleEditUserData = async (req: Request, res: Response) => {
         const { userId, name, value } = req.body;
         const errors: ErrorMessage[] = [];
 
+        verifyCorrectSymbols({ [name]: value});
+
         if (name === 'username') {
             const user = await User.findByIdAndUpdate(userId, { $set: { [name]: value} }, { new: true }).select(`${name}`);
             const userFull = await User.findById(userId);
@@ -460,7 +472,8 @@ export const handleEditUserData = async (req: Request, res: Response) => {
         }
     }
     catch (error) {
-        console.error(error)
+        console.error(error);
+        res.status(400).json({ message: `Возникла ошибка при создании пользователя: ${error}` })
     }
 };
 
