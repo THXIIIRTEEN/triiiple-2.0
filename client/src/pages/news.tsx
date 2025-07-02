@@ -98,7 +98,12 @@ const News: React.FC<INewsProps> = ({page, profileId}) => {
         setIsSending(true);
         const posts = await handleGetPosts(limit, postArray.length);
         if (posts?.length) {
-            setPostArray(prev => [...prev, ...posts]);
+            setPostArray(prev => {
+                const existingIds = new Set(prev.map(post => post._id));
+                //@ts-expect-error lol
+                const uniqueNewPosts = posts.filter(post => !existingIds.has(post._id));
+                return [...prev, ...uniqueNewPosts];
+            });
         }
         if (posts.length < limit) {
             isNoMoreMessages.current = true;
