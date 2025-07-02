@@ -26,13 +26,13 @@ const Notifications: React.FC = () => {
 
     useEffect(() => {
         const handleGetNotifications = async () => {
-            if (user) {
+            if (user && user.id) {
                 const res = await axios.post(`${process.env.API_URI}/get-notifications`, {userId: user.id});
                 setNotificationsArray(res.data.notifications);
             }
         };
         handleGetNotifications();
-    }, [user]);
+    }, [user, user?.id]);
 
     useEffect(() => {
         const handleGetChatRooms = async () => {
