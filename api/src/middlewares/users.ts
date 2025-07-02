@@ -674,11 +674,10 @@ export const handleGetNotifications = async (req: Request, res: Response) => {
     try {
         const { userId } = req.body; 
         const user = await User.findById(userId).select('notifications');
-        
+        let notifications = await Notifications.find({
+            _id: { $in: user?.notifications }
+        }).populate('author', 'username tag');
         if (user) {
-            let notifications = await Notifications.find({
-                _id: { $in: user.notifications }
-            }).populate('author', 'username tag');
             if (notifications && notifications.length > 0) {
                 notifications = await Promise.all(
                 notifications.map(async (notification: any) => {
@@ -695,11 +694,8 @@ export const handleGetNotifications = async (req: Request, res: Response) => {
                 })
             );
             }
-            res.status(200).json({ notifications });
         }
-        else {
-            res.status(400).json({ message: 'Пользователь не найден' });    
-        }
+        res.status(200).json({ notifications });
     }
     catch (error) {
         console.log(error)
