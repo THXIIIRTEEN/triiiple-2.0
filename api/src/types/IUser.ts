@@ -17,5 +17,6 @@ export interface IUser extends Document {
   friends?: Array<string | IUser>; 
   requests?: Array<string | IUser>;
   friendStatus?: boolean | "pending";
+  notifications?: Array<any>;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }

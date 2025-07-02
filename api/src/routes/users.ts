@@ -1,5 +1,5 @@
 import express from 'express';
-import { handleGetFriends, handleGetFriendsQuantity, createNewUser, sendEmailConfirmation, checkAuthorizedUser, handleGetIdByTag, sendEmailConfirmationAuthorization, verifyCode, handleGetProfile, handleGetRequest, handleEditUserData, fetchUserAboutMe, isEmailVerified, handleVerifyEmail, handleGetUserData, handleGetRequests, handleSearch } from '../middlewares/users';
+import { handleGetFriends, handleGetFriendsQuantity, createNewUser, sendEmailConfirmation, checkAuthorizedUser, handleGetIdByTag, sendEmailConfirmationAuthorization, verifyCode, handleGetProfile, handleGetRequest, handleEditUserData, fetchUserAboutMe, isEmailVerified, handleVerifyEmail, handleGetUserData, handleGetRequests, handleSearch, handleGetNotifications } from '../middlewares/users';
 import { changeUserAvatar, getProfilePicture, uploadAvatar } from '../middlewares/avatar';
 
 const userRouter = express.Router();
@@ -21,5 +21,6 @@ userRouter.post('/get-friends', handleGetFriends);
 userRouter.post('/get-friend-requests', handleGetRequests);
 userRouter.post('/get-user-data', handleGetUserData);
 userRouter.post('/search', handleSearch);
+userRouter.post('/get-notifications', handleGetNotifications);
 
 export { userRouter };

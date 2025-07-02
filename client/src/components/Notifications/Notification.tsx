@@ -5,7 +5,10 @@ import Username from "../Username";
 import UserAvatar from "../UserAvatar";
 import styles from "./notifications.module.scss";
 import { useRouter } from "next/router";
-import { openDB } from 'idb';
+import { useAuthStore } from "@/utils/store";
+import { socket } from "@/config/socket";
+import { useSocketEvent } from "@/utils/useSocketEvent";
+import { renderMessageWithEmojis } from "../Messanger/Message";
 
 interface NotificationProps {
     notification: IMessage;
@@ -14,10 +17,11 @@ interface NotificationProps {
 
 const Notification: React.FC<NotificationProps> = ({notification, setNotificationsArray}) => {
     //@ts-expect-error lol
-    const { author, text, date, chatId, isRead, type } = notification;
-    const { _id, username, tag } = author || notification;
+    const { _id, author, text, date, files, chatId, isRead, type } = notification;
+    const { _id: id, username, tag } = author;
     const [dateString, setDateString] = useState<string | null>(type !== 'friend' ? formateDate(date) : null); 
-    
+    const user = useAuthStore().user;
+
     const router = useRouter();
 
     useEffect(() => {
@@ -28,15 +32,22 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
     }, [date, type]);
 
     const deleteNotification = async (id: string) => {
-        const db = await openDB('app-db', 1);
-        await db.delete('notifications', id);
+        if (user) {
+            socket.emit("deleteNotificationRequest", { 
+                userId: user.id,
+                notificationId: id,
+            });        
+        }
     };
 
     const handleDeleteNotification = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
-        setNotificationsArray((prev: IMessage[]) => {return prev.filter((msg) => msg._id !== notification._id)})
         await deleteNotification(notification._id);
     }
+
+    useSocketEvent('deleteNotificationResponse', async (msg) => { 
+        setNotificationsArray((prev: IMessage[]) => {return prev.filter((n) => n._id !== msg.notificationId)})
+    });
 
     const ref = useRef<HTMLDivElement>(null); 
 
@@ -49,20 +60,10 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
                 if (entry.isIntersecting && !notification.isRead) {
                     timeoutId = setTimeout(async () => {
                         try {
-                            const db = await openDB('app-db', 1);
-                            await db.put('notifications', {
-                                ...notification,
-                                id: notification._id,
-                                isRead: true,
-                            });
-
-                            setNotificationsArray((prev) =>
-                                prev.map((msg) =>
-                                    msg._id === notification._id
-                                        ? { ...msg, isRead: true }
-                                        : msg
-                                )
-                            );
+                            if (_id && user) {
+                                socket.emit("readNotificationRequest",  { userId: user.id, notificationId: _id },
+                                );
+                            }
                         } catch (err) {
                             console.error('Ошибка при пометке как прочитанного:', err);
                         }
@@ -82,12 +83,21 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
             observer.disconnect();
             if (timeoutId) clearTimeout(timeoutId);
         };
-    }, [notification, setNotificationsArray, ref]);
+    }, [notification, setNotificationsArray, ref, _id, user]);
 
+    useSocketEvent('readNotificationResponse', async (msg) => { 
+        setNotificationsArray((prev) =>
+            prev.map((n) =>
+                n._id === msg.notificationId
+                    ? { ...n, isRead: true }
+                    : n
+            )
+        );
+    });
 
     return (
         <div ref={ref} className={`${styles.notification} ${isRead ? styles.isRead : ""}`} onClick={() => router.push(type !== 'friend' ? `/messanger/${chatId}` : `/profile/${tag}`)}>
-            <UserAvatar id={_id}/>
+            <UserAvatar id={id}/>
             <div className={styles.text}>
                 <div>
                 { tag && <Username className={styles.username} username={username} tag={tag}/>}
@@ -102,7 +112,9 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
                     </svg>
                 </button>
                 </div>
-                { type !== 'friend' ? <p>{text}</p> : <p>Отправил вам запрос дружбы</p>}
+                { type !== 'friend' && text && <p>{renderMessageWithEmojis(text)}</p>}
+                { type !== 'friend' && !text && files && ( typeof files === 'number' ? files > 0 : Array.isArray(files) && files.length > 0 ) && <p>{renderMessageWithEmojis(text)}</p>}
+                { type === 'friend' && <p>Отправил вам запрос дружбы</p>}
             </div>
         </div>
     );

@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./notifications.module.scss";
-import { openDB, IDBPDatabase  } from 'idb';
 import { IMessage } from "@/types/user";
 import axios from "axios";
 import { useAuthStore, useChatStore } from "@/utils/store";
@@ -16,31 +15,24 @@ const Notifications: React.FC = () => {
     const [ notificationPopup, setNotificationPopup ] = useState<IMessage | null>(null)
 
     const user = useAuthStore().user;
-    const dbRef = useRef<IDBPDatabase | null>(null); 
 
     const { addChatId } = useChatStore();  
 
     useEffect(() => {
-        if (chatRooms.length > 0) {
-            addChatId(chatRooms);
+        if (chatRooms.length > 0 && user && user.id) {
+            addChatId([...chatRooms, user.id]);
         }
-    }, [chatRooms, addChatId]);
+    }, [chatRooms, addChatId, user]);
 
     useEffect(() => {
-        const connectToDb = async () => {
-            const db = await openDB('app-db', 1, {
-                upgrade(db) {
-                    db.createObjectStore('notifications', { autoIncrement: true });
-                },
-            });
-            dbRef.current = db;
-
-            const saved = await db.getAll('notifications');
-            setNotificationsArray(saved as IMessage[]);
+        const handleGetNotifications = async () => {
+            if (user) {
+                const res = await axios.post(`${process.env.API_URI}/get-notifications`, {userId: user.id});
+                setNotificationsArray(res.data.notifications);
+            }
         };
-        connectToDb();
-        
-    }, []);
+        handleGetNotifications();
+    }, [user]);
 
     useEffect(() => {
         const handleGetChatRooms = async () => {
@@ -59,56 +51,25 @@ const Notifications: React.FC = () => {
     const addMessageNotification = async (msg: IMessage) => {
         setNotificationsArray((prevMessages) => [...prevMessages, msg]);
     }
-
-    const handleAddFriendResponse = async (response: {id: string, status: "hasRequest" | "pending" | boolean}) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleAddFriendResponse = async (response: {id: string, status: "hasRequest" | "pending" | boolean, notification: any}) => {
         if (user && response.id !== user.id && response.status === "hasRequest") {
-            const res = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: response.id, requiredData: [`username`, `tag`, `friends`]});
-            const user = res.data.user;
-            user.type = "friend";
-            user.isRead = false;
-            user.date = Date.now();
-            setNotificationsArray((prev) => [...prev, user]);
-            setNotificationPopup(user);
-            if (dbRef.current) {
-                try {
-                    await dbRef.current.put('notifications', {...user, id: user._id});
-                } 
-                catch (err) {
-                    console.error('Ошибка записи в IndexedDB:', err);
-                }
-            }
+            setNotificationsArray((prev) => [...prev, response.notification]);
+            setNotificationPopup(response.notification);
         }
     };
 
     useSocketEvent('sendMessageResponse', async (msg) => {
         if (user && msg.author._id !== user.id) {
-            msg.type = 'message';
-            msg.isRead = false;
-            addMessageNotification(msg);
-            setNotificationPopup(msg);
-            if (dbRef.current) {
-                try {
-                    await dbRef.current.put('notifications', {...msg, id: msg._id});
-                } catch (err) {
-                    console.error('Ошибка записи в IndexedDB:', err);
-                }
-            }
+            addMessageNotification(msg.notification);
+            setNotificationPopup(msg.notification);
         }
     });
 
     useSocketEvent('sendMessageWithFilesResponse', async (msg) => {
         if (user && msg.author._id !== user.id) {
-            msg.type = 'message';
-            msg.isRead = false;
-            addMessageNotification(msg);
-            setNotificationPopup(msg);
-            if (dbRef.current) {
-                try {
-                    await dbRef.current.put('notifications', {...msg, id: msg._id});
-                } catch (err) {
-                    console.error('Ошибка записи в IndexedDB:', err);
-                }
-            }
+            addMessageNotification(msg.notification);
+            setNotificationPopup(msg.notification);
         }
     });
     
@@ -117,7 +78,9 @@ const Notifications: React.FC = () => {
     });
 
     useSocketEvent('addFriendResponse', async (response) => {
-        handleAddFriendResponse(response)
+        if (response.notification) {
+            handleAddFriendResponse(response)
+        }
     });
 
     return (
@@ -131,7 +94,7 @@ const Notifications: React.FC = () => {
                         :
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M16 8L8 16M8.00001 8L16 16" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
                     }
-                    {   notificationsArray.filter((msg) => {return msg.isRead !== true}).length > 0 &&
+                    {   notificationsArray.filter((msg) => {return msg && msg.isRead !== true}).length > 0 &&
                         <div className={styles.marker}></div>
                     }
                 </button>
@@ -141,9 +104,9 @@ const Notifications: React.FC = () => {
                         {notificationsArray.length > 0 ? (
                             [...notificationsArray]
                                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                                .map((notification, index) => (
+                                .map((notification) => (
                                     <Notification
-                                        key={notification._id || index}
+                                        key={notification._id}
                                         setNotificationsArray={setNotificationsArray}
                                         notification={notification}
                                     />

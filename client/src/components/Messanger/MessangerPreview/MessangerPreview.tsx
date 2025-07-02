@@ -67,7 +67,6 @@ const MessangerPreview: React.FC<IMessangerPreviewProps> = ({chatId, key, curren
     const handleRedirect = () => {
         router.push(`${currentMode === "sidebarMessanger" ? `${chatId}` : `messanger/${chatId}`}`);
     }
-
     return (
         <div className={`${styles.block} ${currentMode === "sidebarMessanger" && styles.sidebarMessanger}`} key={key} onClick={() => handleRedirect()}>
             { chatData && 
@@ -86,14 +85,19 @@ const MessangerPreview: React.FC<IMessangerPreviewProps> = ({chatId, key, curren
                     }
                 </div>
                 <div className={styles.bottom}>
-                    { chatData && chatData.lastMessage && chatData.lastMessage.text ?
-                        chatData.friendData._id === chatData.lastMessage.author._id ? <p>{chatData.lastMessage.text}</p> :
-                        <p>{`Вы: ${chatData.lastMessage.text}`}</p>
-                    : 
-                    <p>Здесь пока ничего нет...</p>
-                    }
+                    {   chatData && chatData.lastMessage && chatData.lastMessage.text.trim() &&
+                        chatData.friendData._id !== chatData.lastMessage.author._id && 
+                            <p>{chatData.lastMessage.text}</p>
+                    } 
+                    {   chatData && chatData.lastMessage && chatData.lastMessage.text.trim() &&
+                        chatData.friendData._id === chatData.lastMessage.author._id && 
+                            <p>{`Вы: ${chatData?.lastMessage.text}`}</p>
+                    } 
+                    {   chatData && !chatData.lastMessage &&
+                            <p>Здесь пока ничего нет...</p>
+                    }               
                     {   chatData && chatData.lastMessage && !chatData.lastMessage.text && chatData.lastMessage.files && chatData.lastMessage.files.length > 0 &&
-                        <p>Файл</p>
+                            <p>Файл</p>
                     }
                 </div>
             </div>

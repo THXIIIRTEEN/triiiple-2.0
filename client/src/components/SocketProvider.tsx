@@ -25,7 +25,9 @@ const SocketProvider: React.FC<ISocketProviderProps> = ({rooms}) => {
         'sendMessageNewsResponse',
         'sendPostWithFilesResponse',
         'deleteMessageNewsResponse',
-        'editMessageNewsResponse'
+        'editMessageNewsResponse',
+        'readNotificationResponse',
+        'deleteNotificationResponse'
     ];
 
     useEffect(() => {

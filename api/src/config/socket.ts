@@ -4,7 +4,8 @@ import { createNewMessage, deleteMessage, editMessage, setMessageRead, setUserOn
 import multer from 'multer';
 import { createNewComment, createNewPost, deleteComment, editComment, editPost, handleAddView, handleLikePost } from '../middlewares/posts';
 import { deletePost } from '../middlewares/posts';
-import { handleAddFriend, handleEditAboutMe, handleRequestAction } from '../middlewares/users';
+import { handleAddFriend, handleDeleteNotification, handleEditAboutMe, handleReadNotification, handleRequestAction, handleSaveNotification } from '../middlewares/users';
+import ChatRoom from '../database/schemes/chatRoom';
 
 let io: SocketIOServer;
 
@@ -37,7 +38,18 @@ export const initSocket = (server: HttpServer) => {
         });
 
         socket.on('sendMessageRequest', async (msg) => {
-            const message = await createNewMessage(msg);
+            let message = await createNewMessage(msg);
+            if (!message) return;
+
+            const recipients = await ChatRoom.findById(msg.chatId).select("members");
+            if (!recipients) return;
+            const recipientsArray = recipients.members.filter((recipient) => {return recipient.toString() !== msg.author._id});
+            const notification = await handleSaveNotification(msg, recipientsArray);
+            //@ts-ignore
+            message = message.toObject();
+            //@ts-ignore
+            message.notification = notification;
+
             io.to(msg.chatId).emit('addNotReadedMessage', message);
             io.to(msg.chatId).emit('sendMessageResponse', message);
         });
@@ -83,20 +95,39 @@ export const initSocket = (server: HttpServer) => {
             io.to(msg.chatId).emit('readMessageResponse', msg);
         });
 
+        socket.on('readNotificationRequest', async (msg) => {
+            const { userId, notificationId } = msg;
+            await handleReadNotification(notificationId);
+            io.to(userId).emit('readNotificationResponse', msg);
+        });
+
+        socket.on('deleteNotificationRequest', async (msg) => {
+            const { userId, notificationId } = msg;
+            await handleDeleteNotification(userId, notificationId);
+            io.to(userId).emit('deleteNotificationResponse', msg);
+        });
+
         socket.on('setUserOnlineRequest', async (data) => {
             const user = await setUserOnline(data.userId, data.status);
             io.to(data.userId).emit('setUserOnlineResponse', user);
         });
 
         socket.on('addFriendRequest', async (data) => {
-            const response = await handleAddFriend(data);
+            let response = await handleAddFriend(data);
+            let notification = {}
+            if (response === "pending") {
+                notification = await handleSaveNotification(data, [data.friendId]);
+            }
             io.to(data.userId).emit('addFriendResponse', {
                 id: data.friendId,
                 status: response
             });
             io.to(data.friendId).emit('addFriendResponse', {
                 id: data.userId,
-                status: response === "pending" ? "hasRequest" : response
+                status: response === "pending" ? "hasRequest" : response,
+                notification: response === "pending"  
+                ? notification
+                : null
             });
         });
 

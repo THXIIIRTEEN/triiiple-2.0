@@ -16,8 +16,9 @@ import { IFileSchema } from "../database/schemes/file";
 import Comment, { ICommentSchema } from "../database/schemes/comment";
 import { IMessageSchema } from "../database/schemes/message";
 import mongoose from "mongoose";
+import { INotificationSchema } from "../database/schemes/notifications";
 
-export const decryptText = async (message: ICommentSchema | IMessageSchema | IPostSchema) => {
+export const decryptText = async (message: ICommentSchema | IMessageSchema | IPostSchema | INotificationSchema) => {
     let plaintext = ''; 
     if (message.text) {
         const decrypted = await decryptData(message.text);

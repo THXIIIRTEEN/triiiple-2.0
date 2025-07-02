@@ -7,9 +7,13 @@ import jwtLibrary from 'jsonwebtoken';
 import User from '../database/schemes/users';
 import { IUser } from '../types/IUser';
 import { CustomRequest } from '../types/requests';
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import Fuse from 'fuse.js';
+import { encryptData, decryptData } from '../utils/crypto';
+import Notifications from '../database/schemes/notifications';
+import { decryptText } from './posts';
+
 
 const secret = process.env.SECRET_KEY as string;
 interface ErrorMessage {
@@ -618,6 +622,90 @@ export const handleSearch = async (req: Request, res: Response) => {
     catch (error) {
         console.error(error);
     }
+}
+
+export const handleSaveNotification = async (msg: any, recipients: string[] | ObjectId[]) => {
+    const { author, userId, chatId, text, date, files} = msg;
+    let ciphertext = ''; 
+    if (text) {
+        const encrypted = await encryptData(text);
+        ciphertext = encrypted.ciphertext;
+    }
+    const newNotification = {
+        author: author ?? userId,
+        chatId: chatId,
+        text: ciphertext,
+        date: date ? date : Date.now(),
+        files: Array.isArray(files) ? files.length : 0,
+        type: chatId ? "message" : "friend"
+    }
+    let notification = new Notifications(newNotification);
+    notification = await notification.save();
+
+    const bulkOps = recipients.map(recipient => ({
+        updateOne: {
+            filter: { _id: recipient },
+            update: { $push: { notifications: notification._id } }
+        }
+    }));
+    await Users.bulkWrite(bulkOps);
+
+    notification.text = await decryptText(notification); 
+    return await notification.populate({
+        path: 'author',
+        select: 'username tag'
+    });
+}
+
+export const handleGetNotifications = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.body; 
+        const user = await User.findById(userId).select('notifications');
+        
+        if (user) {
+            let notifications = await Notifications.find({
+                _id: { $in: user.notifications }
+            }).populate('author', 'username tag');
+            if (notifications && notifications.length > 0) {
+                notifications = await Promise.all(
+                notifications.map(async (notification: any) => {
+                    let text = '';
+                    if (notification.text) {
+                        const { plaintext } = await decryptData(notification.text);
+                        text = Buffer.from(plaintext, 'base64').toString('utf-8');
+                    }
+
+                    return {
+                        ...notification.toObject(),
+                        text
+                    };
+                })
+            );
+            }
+            res.status(200).json({ notifications });
+        }
+        else {
+            res.status(400).json({ message: 'Пользователь не найден' });    
+        }
+    }
+    catch (error) {
+        console.log(error)
+    }
+}
+
+export const handleReadNotification = async (notificationId: string) => {
+    const msg = await Notifications.findByIdAndUpdate(notificationId, { isRead: true });
+    return msg;
+}
+
+export const handleDeleteNotification = async (userId: string, notificationId: string) => {
+    const msg = await Notifications.findByIdAndDelete(notificationId);
+    await Users.findByIdAndUpdate(
+        userId,
+        { $pull: { notifications: notificationId } },
+        { new: true }
+    );
+    return msg;
 }
 
 export {

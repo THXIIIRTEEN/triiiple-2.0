@@ -18,6 +18,7 @@ import { decryptData, encryptData } from "../utils/crypto";
 import { IUser } from "../types/IUser";
 import { decryptText } from "./posts";
 import { promises as fsPromises } from 'fs';
+import { handleSaveNotification } from "./users";
 
 export const fixEncoding = (text: string): string => {
     return iconv.decode(Buffer.from(text, 'binary'), 'utf-8');
@@ -81,7 +82,7 @@ export const createNewMessage = async (msg: INewMessageDataType) => {
     message.text = await decryptText(message); 
     return message.populate({
         path: 'author',
-        select: 'profile username tag'
+        select: 'username tag'
     });
 }
 
@@ -92,7 +93,7 @@ export const getMessagesFromChatRoom = async (req: Request, res: Response) => {
             .sort({ date: -1 }) 
             .skip(Number(skip) || 0)
             .limit(Number(limit))
-            .populate('author', 'profile username tag')
+            .populate('author', 'username tag')
             .populate('files');
         const chat = await ChatRoom.findById(chatId).select('messages');
 
@@ -347,6 +348,14 @@ export const sendMessageWithFiles = async (req: CustomRequest, res: Response) =>
     try {
         const io = getIO();
         if (req.chatId) {
+            const recipients = await ChatRoom.findById(req.chatId).select("members");
+            if (!recipients) return;
+            //@ts-ignore
+            const recipientsArray = recipients.members.filter((recipient) => {return recipient.toString() !== req.message.author._id});
+            const notification = await handleSaveNotification(req.message, recipientsArray); 
+            //@ts-ignore
+            req.message.notification = notification;
+
             io.to(req.chatId).emit('sendMessageWithFilesResponse', req.message);
             io.to(req.chatId).emit('addNotReadedMessage', req.message);
         }
@@ -357,7 +366,6 @@ export const sendMessageWithFiles = async (req: CustomRequest, res: Response) =>
 }
 
 export const sendSignedUrl = async (req: CustomRequest, res: Response) => {
-
     try {
         const fileUrl = req.body.fileUrl
 

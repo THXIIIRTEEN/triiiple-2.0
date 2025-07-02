@@ -64,6 +64,12 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
     default: [],
     required: false,
     ref: 'User'
+  },
+  notifications: {
+    type: [Schema.Types.ObjectId],
+    default: [],
+    required: false,
+    ref: 'Notifications'
   }
 });
 

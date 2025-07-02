@@ -67,6 +67,12 @@ const Messanger: React.FC = () => {
     }, [chatId, setChatIds]);
 
     useEffect(() => {
+        if (user && user.id && chatMembers.length > 0 && !chatMembers.includes(user.id)) {
+            router.push(`/profile/${user.tag}`)
+        }
+    }, [chatMembers, user, router]);
+
+    useEffect(() => {
         if (messagesFetched && messageArray.length > 0 && !isScrolled) {
             setTimeout(() => {
                 scrollToBottomInstant();
