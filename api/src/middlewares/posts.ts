@@ -341,6 +341,7 @@ export const deletePost = async (msg: IMsgDelete) => {
             { $pull: { posts: new mongoose.Types.ObjectId(messageId) } }
         );
         console.log('UpdateOne result:', result);
+        return result;
     } catch (error) {
         console.error('Ошибка при удалении поста:', error);
     }
