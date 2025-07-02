@@ -18,7 +18,6 @@ passport.use(new GitHubStrategy({
     scope: ['user:email'],
 // @ts-ignore
 }, async (accessToken, refreshToken, profile, done) => {
-    console.log(profile)
     let user = await User.findOne({ email: profile.emails?.[0]?.value });
     if (!user) {
         const userData = {
