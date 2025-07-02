@@ -134,7 +134,7 @@ const News: React.FC<INewsProps> = ({page, profileId}) => {
                 }
                 { user && !page && <MessageForm type="send" user={user} page="News"/>}
                 {postArray &&
-                [...postArray]
+                [...new Map(postArray.map(post => [post._id, post])).values()]
                     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                     .map((post, index) => {
                     const isLast = index === 0; 
