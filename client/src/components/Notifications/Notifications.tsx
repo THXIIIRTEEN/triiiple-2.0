@@ -6,6 +6,7 @@ import { useAuthStore, useChatStore } from "@/utils/store";
 import Notification from "./Notification";
 import NotificationPopup from "./NotificationPopup";
 import { useSocketEvent } from "@/utils/useSocketEvent";
+import { getToken } from "@/utils/cookies";
 
 const Notifications: React.FC = () => {
 
@@ -15,6 +16,7 @@ const Notifications: React.FC = () => {
     const [ notificationPopup, setNotificationPopup ] = useState<IMessage | null>(null)
 
     const user = useAuthStore().user;
+    const token = getToken();
 
     const { addChatId } = useChatStore();  
 
@@ -27,17 +29,26 @@ const Notifications: React.FC = () => {
     useEffect(() => {
         const handleGetNotifications = async () => {
             if (user && user.id) {
-                const res = await axios.post(`${process.env.API_URI}/get-notifications`, {userId: user.id});
+                const res = await axios.post(`${process.env.API_URI}/get-notifications`, {userId: user.id}, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                
                 setNotificationsArray(res.data.notifications);
             }
         };
         handleGetNotifications();
-    }, [user, user?.id]);
+    }, [user, user?.id, token]);
 
     useEffect(() => {
         const handleGetChatRooms = async () => {
             if (user && user.id) {
-                const res = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: user.id, requiredData: [`chatRooms`]}); 
+                const res = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: user.id, requiredData: [`chatRooms`]}, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }); 
                 const newRooms = res.data.user.chatRooms || [];
                 const updatedRooms = new Set([...newRooms, user.id]);
 
