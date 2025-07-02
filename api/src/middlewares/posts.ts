@@ -336,10 +336,11 @@ export const deletePost = async (msg: IMsgDelete) => {
             }
         }
         await Post.findByIdAndDelete(messageId);
-        await User.findByIdAndUpdate(
+        const result = await User.findByIdAndUpdate(
             new mongoose.Types.ObjectId(userId),
             { $pull: { posts: new mongoose.Types.ObjectId(messageId) } }
         );
+        console.log('UpdateOne result:', result);
     } catch (error) {
         console.error('Ошибка при удалении поста:', error);
     }
