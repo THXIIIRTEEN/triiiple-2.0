@@ -31,7 +31,9 @@ const EditDataInput: React.FC<IEditDataInputProps> = ({name, placeholder, type, 
     const [ isVerified, setIsVerified ] = useState<boolean>(true);
     const [ showVerificationInput, setShowVerificationInput ] = useState<boolean>(false);
     const [ isPasswordEdit, setIsPasswordEdit ] = useState<boolean>(false);
-    const [ arePasswordSame, setArePasswordSame ] = useState<boolean>(true)
+    const [ arePasswordSame, setArePasswordSame ] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    
 
     const [passwordValues, setPasswordValues] = useState({
         newPassword: '',
@@ -186,25 +188,25 @@ const EditDataInput: React.FC<IEditDataInputProps> = ({name, placeholder, type, 
             {   user &&
                 <div>
                     <form className={styles.form}>
-                        <AuthorizationInput name={name} onFocus={name === "password" ? handleShowPasswordInputs : undefined} placeholder={isPasswordEdit && name === "password" ? "Введите старый пароль" : inputPlaceholder} type={type} value={value} autoComplete={autoComplete} setFormValues={setFormValues} serverError={serverError}/>
+                        <AuthorizationInput setInputError={setError} name={name} onFocus={name === "password" ? handleShowPasswordInputs : undefined} placeholder={isPasswordEdit && name === "password" ? "Введите старый пароль" : inputPlaceholder} type={type} value={value} autoComplete={autoComplete} setFormValues={setFormValues} serverError={serverError}/>
                         {   name === "password" && isPasswordEdit &&
                             <>
                             {/* @ts-expect-error xyi */}
-                            <AuthorizationInput name={"newPassword"} placeholder={"Введите новый пароль"} type={type} value={passwordValues.newPassword} autoComplete={autoComplete} setFormValues={setPasswordValues} serverError={serverError}/>
+                            <AuthorizationInput setError={setError} name={"newPassword"} placeholder={"Введите новый пароль"} type={type} value={passwordValues.newPassword} autoComplete={autoComplete} setFormValues={setPasswordValues} serverError={serverError}/>
                             {/* @ts-expect-error xyi */}
-                            <AuthorizationInput name={"secondNewPassword"} placeholder={"Повторите новый пароль"} type={type} value={passwordValues.secondNewPassword} autoComplete={autoComplete} setFormValues={setPasswordValues} serverError={serverError}/>
+                            <AuthorizationInput setError={setError} name={"secondNewPassword"} placeholder={"Повторите новый пароль"} type={type} value={passwordValues.secondNewPassword} autoComplete={autoComplete} setFormValues={setPasswordValues} serverError={serverError}/>
                             </>
                         }
                         {   !arePasswordSame &&
                             <span className={"error"}>Пароли не совпадают</span>
                         }   
-                        {   name === "email" && !isVerified &&
+                        {   name === "email" && !isVerified && !error &&
                             <button className={styles.button} type="button" onClick={handleVerifyEmail}>Подтвердить</button>
                         }
-                        {   value !== '' && name === "password" && arePasswordSame &&
+                        {   value !== '' && name === "password" && arePasswordSame && !error &&
                             <button className={styles.button} type="button" onClick={handleEditUserData}>Отправить</button>
                         }
-                        {   value !== '' && name !== "password" &&
+                        {   value !== '' && name !== "password" && !error &&
                             <button className={styles.button} type="button" onClick={handleEditUserData}>Отправить</button>
                         }
                         {   name === "email" && showVerificationInput && user.email &&

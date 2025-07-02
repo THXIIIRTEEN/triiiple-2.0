@@ -26,5 +26,6 @@ export interface AuthorizationInputProps {
     serverError?: ServerError | null | string;
     setFormValues: Dispatch<SetStateAction<UserData>>;
     onFocus?: React.FocusEventHandler<HTMLInputElement>;
-    setServerError?: Dispatch<SetStateAction<ServerError | string | null>>
+    setServerError?: Dispatch<SetStateAction<ServerError | string | null>>;
+    setInputError?: Dispatch<SetStateAction<string | null>>;
 }

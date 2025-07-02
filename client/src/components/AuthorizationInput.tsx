@@ -2,7 +2,7 @@
 
 import { verifyCorrectSymbols } from '@/utils/textValidation';
 import { AuthorizationInputProps } from '@/types/registration';
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import styles from './styles/authorization-input.module.scss'
 
 const AuthorizationInput: React.FC<AuthorizationInputProps> = ({
@@ -17,9 +17,16 @@ const AuthorizationInput: React.FC<AuthorizationInputProps> = ({
     setFormValues,
     onFocus,
     setServerError,
+    setInputError
 }) => {
 
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (setInputError) {
+            setInputError(error)
+        }
+    }, [error, setInputError])
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
