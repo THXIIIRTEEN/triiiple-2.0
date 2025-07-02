@@ -65,8 +65,7 @@ export const initSocket = (server: HttpServer) => {
         });
 
         socket.on('deleteMessageNewsRequest', async (msg) => {
-            const result = await deletePost(msg);
-            console.log('Result:', result)
+            await deletePost(msg);
             io.to(msg.userId).emit('deleteMessageNewsResponse', msg);
         });
 
