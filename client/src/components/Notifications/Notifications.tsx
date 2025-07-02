@@ -29,9 +29,9 @@ const Notifications: React.FC = () => {
     useEffect(() => {
         const handleGetNotifications = async () => {
             if (user && user.id) {
-                const res = await axios.post(`${process.env.API_URI}/notifications`, {userId: user.id}, {
+                const res = await axios.post(`${process.env.API_URI}/get-notifications`, {userId: user.id}, {
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`, 
                     },
                 });
                 
