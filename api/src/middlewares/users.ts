@@ -673,29 +673,30 @@ export const handleSaveNotification = async (msg: any, recipients: string[] | Ob
 export const handleGetNotifications = async (req: Request, res: Response) => {
     try {
         const { userId } = req.body; 
-        const user = await User.findById(userId).select('notifications');
-        let notifications = await Notifications.find({
-            _id: { $in: user?.notifications }
-        }).populate('author', 'username tag');
-        if (user) {
-            if (notifications && notifications.length > 0) {
-                notifications = await Promise.all(
-                notifications.map(async (notification: any) => {
-                    let text = '';
-                    if (notification.text) {
-                        const { plaintext } = await decryptData(notification.text);
-                        text = Buffer.from(plaintext, 'base64').toString('utf-8');
-                    }
+        // const user = await User.findById(userId).select('notifications');
+        // let notifications = await Notifications.find({
+        //     _id: { $in: user?.notifications }
+        // }).populate('author', 'username tag');
+        // if (user) {
+        //     if (notifications && notifications.length > 0) {
+        //         notifications = await Promise.all(
+        //         notifications.map(async (notification: any) => {
+        //             let text = '';
+        //             if (notification.text) {
+        //                 const { plaintext } = await decryptData(notification.text);
+        //                 text = Buffer.from(plaintext, 'base64').toString('utf-8');
+        //             }
 
-                    return {
-                        ...notification.toObject(),
-                        text
-                    };
-                })
-            );
-            }
-        }
-        res.status(200).json({ notifications });
+        //             return {
+        //                 ...notification.toObject(),
+        //                 text
+        //             };
+        //         })
+        //     );
+        //     }
+        // }
+        // res.status(200).json({ notifications });
+        res.status(200).json({ userId });
     }
     catch (error) {
         console.log(error);
