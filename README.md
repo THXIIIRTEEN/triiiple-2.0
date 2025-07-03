@@ -4,7 +4,7 @@
 ![Next.js](https://img.shields.io/badge/Frontend-Next.js-000?logo=next.js)
 ![MongoDB](https://img.shields.io/badge/Database-MongoDB-4EA94B?logo=mongodb&logoColor=white)
 ![SCSS](https://img.shields.io/badge/Style-SCSS-cc6699?logo=sass&logoColor=white)
-![Node.js](https://img.shields.io/badge/Backend-Node.js-green)
+![Node.js](https://img.shields.io/badge/Backend-Node.js-43853D?logo=node.js&logoColor=white)
 ![Socket.IO](https://img.shields.io/badge/Real--time-Socket.io-black?logo=socket.io&logoColor=white)
 
 ![О проекте](https://i.postimg.cc/sf53RdFV/Frame-8.png)
