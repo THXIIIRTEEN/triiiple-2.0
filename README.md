@@ -5,7 +5,7 @@
 ![Node.js](https://img.shields.io/badge/Backend-Node.js-43853D?logo=node.js&logoColor=white)
 ![Socket.IO](https://img.shields.io/badge/Real--time-Socket.io-black?logo=socket.io&logoColor=white)
 
-![Ссылка на мессенджер](https:triiiple.ru)
+**[Ссылка на мессенджер](https:triiiple.ru)**
 <br>
 <br>
 ## ![О проекте](https://ucarecdn.com/e657af6a-b85e-4605-9492-1784123afd18/Frame8.svg)
