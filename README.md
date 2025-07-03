@@ -35,7 +35,7 @@
 **6.** Multer — middleware для обработки multipart/form-data (загрузка файлов)  
 **7.** Yandex Object Storage — хранение и раздача медиафайлов  
 **8.** Yandex Identity and Access Management — шифрование сообщений 
-**9.** JWT (JSON Web Token) — авторизация и защита API  
+**9.** JWT (JSON Web Token) — авторизация и защита API <br>
 **10.** Bcrypt — безопасное хеширование паролей  
 **11.** dotenv — управление переменными окружения  
 **12.** ESLint — поддержка стиля и читаемости кода
