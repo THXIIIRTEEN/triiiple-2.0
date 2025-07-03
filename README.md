@@ -1,5 +1,5 @@
 # Мессенджер triiiple
-[![Author](https://img.shields.io/badge/Author-YourName-blue)](https://github.com/THXIIIRTEEN)
+[![Author](https://img.shields.io/badge/Author-THXIIIRTEEN-white)](https://github.com/THXIIIRTEEN)
 [![GitHub Stars](https://img.shields.io/github/stars/YourUsername/YourRepo?style=social)](https://github.com/YourUsername/YourRepo/stargazers)
 ![React](https://img.shields.io/badge/Frontend-React-blue)
 ![Node.js](https://img.shields.io/badge/Backend-Node.js-green)
