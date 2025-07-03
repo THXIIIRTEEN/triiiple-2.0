@@ -7,7 +7,7 @@
 ![Node.js](https://img.shields.io/badge/Backend-Node.js-43853D?logo=node.js&logoColor=white)
 ![Socket.IO](https://img.shields.io/badge/Real--time-Socket.io-black?logo=socket.io&logoColor=white)
 
-<img src="https://disk.yandex.ru/d/oOnJFDWxXDPuRQ" width="150" alt="Project Logo" />
+<img src="https://disk.yandex.ru/d/O9kLqQ8-JuFZ2A" width="150" alt="Project Logo" />
 
 
 **Triiiple** — это MVP‑версия современного мессенджера с поддержкой общения в реальном времени, разработанная с акцентом на производительность, масштабируемость и пользовательский опыт. Проект реализует ключевые функции чата: мгновенный обмен сообщениями, уведомления, загрузку файлов и обработку пользовательских действий с использованием WebSocket‑соединения.
