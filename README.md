@@ -4,6 +4,8 @@
 ![React](https://img.shields.io/badge/Frontend-React-blue)
 ![Node.js](https://img.shields.io/badge/Backend-Node.js-green)
 ![WebSocket](https://img.shields.io/badge/Real--time-WebSocket-yellow)
+![Next.js](https://img.shields.io/badge/Frontend-Next.js-000?logo=next.js)
+![MongoDB](https://img.shields.io/badge/Database-MongoDB-4EA94B?logo=mongodb&logoColor=white)
 
 ![О проекте](https://i.postimg.cc/sf53RdFV/Frame-8.png)
 
