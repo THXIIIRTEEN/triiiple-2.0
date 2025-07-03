@@ -1,5 +1,5 @@
 # Мессенджер triiiple
-![О проекте](https://i.postimg.cc/5t9XX9Vq/Frame-8.png)](https://postimg.cc/HrKYKgjV)
+![О проекте](https://i.postimg.cc/5t9XX9Vq/Frame-8.png)]
 **triiiple** — это MVP проект мессенджера, позволяющий общаться в реальном времени. 
 
 ## Технологии
