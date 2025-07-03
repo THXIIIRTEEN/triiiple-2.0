@@ -1,6 +1,6 @@
 # Мессенджер triiiple
 [![Author](https://img.shields.io/badge/Author-THXIIIRTEEN-white)](https://github.com/THXIIIRTEEN)
-[![GitHub Stars](https://img.shields.io/github/stars/YourUsername/YourRepo?style=social)](https://github.com/YourUsername/YourRepo/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/THXIIIRTEEN/triiiple-2.0?style=social)](https://github.com/THXIIIRTEEN/triiiple-2.0/stargazers)
 ![React](https://img.shields.io/badge/Frontend-React-blue)
 ![Node.js](https://img.shields.io/badge/Backend-Node.js-green)
 ![WebSocket](https://img.shields.io/badge/Real--time-WebSocket-yellow)
