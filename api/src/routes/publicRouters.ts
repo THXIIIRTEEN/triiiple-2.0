@@ -5,6 +5,7 @@ export const publicRoutes = [
     '/',
     '/captcha',
     '/verify/:username/:token',
+    '/password/reset/:code',
     '/users/verification',
     '/auth/vk',
     '/auth/discord',

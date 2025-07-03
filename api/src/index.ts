@@ -71,6 +71,14 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Hello, World!');
 });
 
+app._router.stack
+//@ts-ignore
+.filter((r) => r.route)
+//@ts-ignore
+.map((r) => {
+  console.log(`${Object.keys(r.route.methods).join(', ').toUpperCase()} ${r.route.path}`);
+});
+
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

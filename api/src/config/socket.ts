@@ -19,13 +19,11 @@ export const initSocket = (server: HttpServer) => {
     });
 
     io.on('connection', (socket: Socket) => {
-        console.log('Пользователь подключился');
 
         socket.on('joinRoom', (data) => {
             const rooms = Array.isArray(data) ? data : [data];
             rooms.forEach(room => {
                 socket.join(room);
-                console.log(`Пользователь присоединился к комнате: ${room}`);
             });
         });
 
@@ -33,7 +31,6 @@ export const initSocket = (server: HttpServer) => {
             const rooms = Array.isArray(data) ? data : [data];
             rooms.forEach(room => {
                 socket.leave(room);
-                console.log(`Пользователь ${socket.id} вышел из комнаты: ${room}`);
             });
         });
 
@@ -139,7 +136,6 @@ export const initSocket = (server: HttpServer) => {
 
         socket.on('subscribeToOnlineStatus', ({ userId, friendId }) => {
             socket.join(userId);
-            console.log(`Пользователь ${userId} сейчас подписан на ${friendId} онлайн статус`);
         });
         
         socket.on('likePostNewsRequest', async (data) => {
@@ -163,7 +159,6 @@ export const initSocket = (server: HttpServer) => {
         });
         
         socket.on('disconnect', () => {
-            console.log('Пользователь отключился');
         });
     });
 };

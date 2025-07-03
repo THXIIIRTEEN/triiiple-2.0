@@ -28,11 +28,9 @@ const Notifications: React.FC = () => {
 
     useEffect(() => {
         const handleGetNotifications = async () => {
-            if (user && user.id) {
-                const res = await axios.post(`${process.env.API_URI}/get-notifications`, {userId: user.id}, {
-                    headers: {
-                        Authorization: `Bearer ${token}`, 
-                    },
+            if (user && user.id && token) {
+                const res = await axios.post(`${process.env.API_URI}/get-notifications`, { userId: user.id }, {
+                    headers: { Authorization: `Bearer ${token}` },
                 });
                 
                 setNotificationsArray(res.data.notifications);
@@ -43,7 +41,7 @@ const Notifications: React.FC = () => {
 
     useEffect(() => {
         const handleGetChatRooms = async () => {
-            if (user && user.id) {
+            if (user && user.id && token) {
                 const res = await axios.post(`${process.env.API_URI}/get-user-data`, {userId: user.id, requiredData: [`chatRooms`]}, {
                     headers: {
                         Authorization: `Bearer ${token}`,
