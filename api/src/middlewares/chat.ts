@@ -351,7 +351,7 @@ export const sendMessageWithFiles = async (req: CustomRequest, res: Response) =>
             const recipients = await ChatRoom.findById(req.chatId).select("members");
             if (!recipients) return;
             //@ts-ignore
-            const recipientsArray = recipients.members.filter((recipient) => {return recipient.toString() !== req.message.author._id});
+            const recipientsArray = recipients.members.filter((recipient) => {return recipient.toString() !== req.message.author._id.toString();});
             const notification = await handleSaveNotification(req.message, recipientsArray); 
             //@ts-ignore
             req.message.notification = notification;

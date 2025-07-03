@@ -7,6 +7,7 @@ import Notification from "./Notification";
 import NotificationPopup from "./NotificationPopup";
 import { useSocketEvent } from "@/utils/useSocketEvent";
 import { getToken } from "@/utils/cookies";
+import { useRouter } from "next/router";
 
 const Notifications: React.FC = () => {
 
@@ -17,6 +18,9 @@ const Notifications: React.FC = () => {
 
     const user = useAuthStore().user;
     const token = getToken();
+
+    const router = useRouter(); 
+    const { id: currentChatId } = router.query;
 
     const { addChatId } = useChatStore();  
 
@@ -33,7 +37,9 @@ const Notifications: React.FC = () => {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 
-                setNotificationsArray(res.data.notifications);
+                if (res.data.notifications.length > 0) {
+                    setNotificationsArray(res.data.notifications);
+                }
             }
         };
         handleGetNotifications();
@@ -69,14 +75,14 @@ const Notifications: React.FC = () => {
     };
 
     useSocketEvent('sendMessageResponse', async (msg) => {
-        if (user && msg.author._id !== user.id) {
+        if (user && msg.author._id !== user.id && currentChatId !== msg.chatId) {
             addMessageNotification(msg.notification);
             setNotificationPopup(msg.notification);
         }
     });
 
     useSocketEvent('sendMessageWithFilesResponse', async (msg) => {
-        if (user && msg.author._id !== user.id) {
+        if (user && msg.author._id !== user.id && currentChatId !== msg.chatId) {
             addMessageNotification(msg.notification);
             setNotificationPopup(msg.notification);
         }

@@ -40,7 +40,7 @@ export const initSocket = (server: HttpServer) => {
 
             const recipients = await ChatRoom.findById(msg.chatId).select("members");
             if (!recipients) return;
-            const recipientsArray = recipients.members.filter((recipient) => {return recipient.toString() !== msg.author._id});
+            const recipientsArray = recipients.members.filter((recipient) => {return recipient.toString() !== msg.author.toString()});
             const notification = await handleSaveNotification(msg, recipientsArray);
             //@ts-ignore
             message = message.toObject();

@@ -113,7 +113,7 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
                 </button>
                 </div>
                 { type !== 'friend' && text && <p>{renderMessageWithEmojis(text)}</p>}
-                { type !== 'friend' && !text && files && ( typeof files === 'number' ? files > 0 : Array.isArray(files) && files.length > 0 ) && <p>{renderMessageWithEmojis(text)}</p>}
+                { type !== 'friend' && !text && files && ( typeof files === 'number' ? files > 0 : Array.isArray(files) && files.length > 0 ) && <p>Файл</p>}
                 { type === 'friend' && <p>Отправил вам запрос дружбы</p>}
             </div>
         </div>
