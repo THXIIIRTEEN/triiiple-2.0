@@ -1,4 +1,4 @@
-# Мессенджер triiiple
+# ✉️ Мессенджер triiiple
 ![Next.js](https://img.shields.io/badge/Frontend-Next.js-000?logo=next.js)
 ![MongoDB](https://img.shields.io/badge/Database-MongoDB-4EA94B?logo=mongodb&logoColor=white)
 ![SCSS](https://img.shields.io/badge/Style-SCSS-cc6699?logo=sass&logoColor=white)
@@ -14,7 +14,7 @@
 <br>
 ![Технологии](https://ucarecdn.com/26f6e682-627a-4621-a34f-782fb2a58221/techs.svg)
 
-## CLient:
+## 🖥️ CLient:
 
 **1.** Next.js — SSR и SSG для высокой производительности и SEO  
 **2.** React — UI-компоненты и управление состоянием  
