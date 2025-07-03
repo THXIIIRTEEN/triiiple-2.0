@@ -1,6 +1,4 @@
 # Мессенджер triiiple
-[![Author](https://img.shields.io/badge/Author-THXIIIRTEEN-white)](https://github.com/THXIIIRTEEN)
-[![GitHub Stars](https://img.shields.io/github/stars/THXIIIRTEEN/triiiple-2.0?style=social)](https://github.com/THXIIIRTEEN/triiiple-2.0/stargazers)
 ![Next.js](https://img.shields.io/badge/Frontend-Next.js-000?logo=next.js)
 ![MongoDB](https://img.shields.io/badge/Database-MongoDB-4EA94B?logo=mongodb&logoColor=white)
 ![SCSS](https://img.shields.io/badge/Style-SCSS-cc6699?logo=sass&logoColor=white)
